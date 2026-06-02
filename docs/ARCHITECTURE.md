@@ -103,8 +103,66 @@ CSV 标签文件 ──→ train_val_split.py ──→ {train_map, val_map, phq
 - 默认 `val_ratio=0.1`
 - 固定 seed 保证可复现
 
-## 已知注意事项
+## 实际数据清单（2026-06-02 盘点）
+
+### 本地数据位置
+
+数据不在基线期望的 `MPDD-AVG2026/` 下，而在 `test/` 下：
+
+```
+test/
+├── Elder/                              # 87 个受试者，全为 train 集
+│   ├── Audio/train/
+│   │   ├── mfcc/       87 人  文件: A_1~4.npy
+│   │   ├── opensmile/  87 人  文件: A_1~4.npy
+│   │   └── wav2vec2/   87 人  文件: A_1~4.npy    ← 注意: 目录名 wav2vec2 非 wav2vec
+│   ├── Video/train/
+│   │   ├── densenet/   87 人  文件: V_1~4.npy
+│   │   ├── resnet/     87 人  文件: V_1~4.npy
+│   │   └── openface/   87 人  文件: V_1~4.npy
+│   ├── IMU/train/      87 人  文件: {id}.npy
+│   ├── split_labels_train.csv          ← 87 行, 列: split,label3,label2,ID,PHQ-9, BOM头
+│   └── descriptions_embeddings_with_ids.npy
+├── Young/                              # 88 个受试者，全为 train 集
+│   ├── Audio/train/
+│   │   ├── mfcc64/     88 人  文件: E1~3.npy     ← 注意: 目录名 mfcc64 非 mfcc
+│   │   ├── opensmile/  88 人  文件: E1~3.npy
+│   │   └── wav2vec2/   88 人  文件: E1~3.npy     ← 注意: 目录名 wav2vec2 非 wav2vec
+│   ├── Video/train/
+│   │   ├── densenet/   88 人  文件: event_1~3.npy
+│   │   ├── resnet/     88 人  文件: event_1~3.npy
+│   │   └── openface/   88 人  子目录: event_N/event_N_all.npy  ← 注意: 目录格式
+│   ├── IMU/train/      88 人  文件: {id}.npy
+│   ├── split_labels_train.csv          ← 88 行, 列: ID,split,label2,label3,phq9_score
+│   └── descriptions_embeddings_with_ids.npy
+├── MPDD-AVG-2026-main/                 # 基线代码 (已完整入库)
+├── MPDD-main/                          # MPDD 2025 参考代码
+├── MPDD-Elderly/                       # MPDD 2025 Elder 1s/5s 分段数据
+├── MPDD-Young/                         # MPDD 2025 Young 1s/5s 分段数据
+└── MPDD-Test/                          # MPDD 2025 测试集数据
+```
+
+### 数据统计
+
+| 指标 | Elder | Young |
+|------|-------|-------|
+| 受试者数 | 87 | 88 |
+| 每人 pair 数 | 1-4 | 1-3 |
+| split 分布 | 全部 train | 全部 train |
+| 特征目录 | mfcc, opensmile, wav2vec2, densenet, resnet, openface, IMU | mfcc64, opensmile, wav2vec2, densenet, resnet, openface, IMU |
+
+### baseline 代码兼容性
+
+dataset.py 已内置目录名兼容映射：
+- `mfcc` → 自动匹配 `mfcc` 或 `mfcc64`
+- `wav2vec` → 自动匹配 `wav2vec` 或 `wav2vec2` 或 `wav2vec2-FRA`
+- Young openface 目录格式 (`event_N/event_N_all.npy`) → 已兼容
+
+### 已知问题
 
 1. **Young test 视频特征为空**: `MPDD-AVG2026-test/Young/Video/densenet`、`resnet`、`openface` 目录下的文件为 0 字节，Track2 含视频的任务在 test 阶段视频分支退化为零输入
 2. **Young trainval OpenFace**: 部分样本无效，需参考训练日志中的有效样本数
 3. **PHQ-9 log 变换**: 训练时使用 `log1p` 处理的 PHQ-9 目标值
+4. **数据路径不匹配**: 数据在 `test/Elder/` 和 `test/Young/`，基线期望在 `MPDD-AVG2026/MPDD-AVG2026-trainval/`，运行前需传参指定
+5. **无 test 集数据**: `MPDD-AVG2026/MPDD-AVG2026-test/` 为空，暂时只能训练无法测试
+6. **CSV 格式不一致**: Elder CSV 列序 `split,label3,label2,ID,PHQ-9` (有 BOM)，Young CSV 列序 `ID,split,label2,label3,phq9_score`

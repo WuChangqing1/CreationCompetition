@@ -17,6 +17,16 @@
 - [2026-06-02] 竞赛提交工具 make_submission_forcodabench
 - [2026-06-02] 论文 PDF（MPDD 相关论文 4 篇）
 
+### Changed
+- [2026-06-02] GETTING_STARTED：环境名改为 creationcompetition，补充完整依赖清单（14 个包）
+- [2026-06-02] PROGRESS：conda 环境已创建，依赖已安装，进度更新
+- [2026-06-02] ARCHITECTURE：补充完整数据清单（目录树 + 统计表 + 兼容性说明 + 6 个已知问题）
+- [2026-06-02] GETTING_STARTED：修正训练命令使用实际数据路径（test/Elder, test/Young）
+- [2026-06-02] ISSUES：新增 K003-K007 共计 5 条数据相关问题
+- [2026-06-02] requirements.txt：创建，含全部 14 个 pip 依赖
+- [2026-06-02] smoke_test.py：创建，4 阶段冒烟测试全部通过
+- [2026-06-02] run_baseline.py：创建，统一批量训练脚本，支持 12 种赛道组合
+
 ## [1ff79da] — 2026-06-02
 
 ### Added
