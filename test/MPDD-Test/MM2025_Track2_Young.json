@@ -1,0 +1,1322 @@
+[
+    {
+        "test_id": "4705_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "4705_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "4705_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1054_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1054_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1054_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7918_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7918_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7918_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9001_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9001_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9001_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5063_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5063_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5063_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3775_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3775_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3775_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8770_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8770_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8770_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1557_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1557_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1557_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9604_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9604_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9604_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "2818_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "2818_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "2818_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6480_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6480_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6480_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6578_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6578_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6578_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9030_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9030_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9030_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5721_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5721_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5721_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8422_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8422_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8422_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1069_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1069_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1069_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3431_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3431_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3431_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7847_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7847_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7847_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9114_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9114_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9114_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5876_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5876_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5876_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5575_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5575_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5575_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8940_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8940_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8940_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3372_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3372_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3372_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3308_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3308_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3308_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9308_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9308_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9308_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6506_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6506_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6506_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1864_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1864_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1864_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4467_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4467_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4467_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8654_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8654_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8654_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7813_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7813_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7813_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3060_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3060_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3060_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7578_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7578_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7578_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "2951_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "2951_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "2951_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1624_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1624_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1624_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8563_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8563_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "8563_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "2099_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "2099_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "2099_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9652_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9652_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9652_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8207_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8207_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8207_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6208_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6208_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6208_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4245_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4245_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4245_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3759_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3759_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3759_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1444_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1444_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1444_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "2892_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "2892_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "2892_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9222_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9222_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9222_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9128_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9128_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9128_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7829_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7829_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7829_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "4237_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "4237_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "4237_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5258_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5258_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5258_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9824_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9824_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9824_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4117_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4117_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4117_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5022_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5022_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5022_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5430_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5430_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5430_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9936_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9936_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9936_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1826_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1826_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "1826_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3165_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3165_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3165_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4892_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4892_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4892_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6410_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6410_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6410_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3228_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3228_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "3228_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "2838_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "2838_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "2838_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9795_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9795_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9795_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1176_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1176_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1176_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5973_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5973_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5973_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6514_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6514_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6514_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5093_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5093_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5093_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "5339_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5339_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5339_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7738_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7738_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7738_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8789_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8789_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8789_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3620_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3620_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3620_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7870_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7870_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7870_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1744_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1744_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1744_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1395_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1395_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "1395_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7772_1",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7772_2",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "7772_3",
+        "label_tri": 2,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6373_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6373_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6373_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8727_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8727_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "8727_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4599_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4599_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4599_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9044_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9044_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "9044_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7616_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7616_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7616_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7787_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7787_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "7787_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5766_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5766_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "5766_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6207_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6207_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6207_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "4291_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "4291_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "4291_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9588_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9588_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9588_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6321_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6321_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6321_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9827_1",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9827_2",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "9827_3",
+        "label_tri": 1,
+        "label_bin": 1
+    },
+    {
+        "test_id": "6170_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6170_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "6170_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3924_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3924_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3924_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3862_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3862_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3862_3",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3349_1",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3349_2",
+        "label_tri": 0,
+        "label_bin": 0
+    },
+    {
+        "test_id": "3349_3",
+        "label_tri": 0,
+        "label_bin": 0
+    }
+]

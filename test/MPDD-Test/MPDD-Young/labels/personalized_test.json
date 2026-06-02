@@ -1,0 +1,1146 @@
+{
+    "1054": {
+        "id": "1054",
+        "age": "17",
+        "gender": "Male",
+        "native_place": "Shanxi Pingshun",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "1069": {
+        "id": "1069",
+        "age": "17",
+        "gender": "Male",
+        "native_place": "Henan Nanyang",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "1176": {
+        "id": "1176",
+        "age": "19",
+        "gender": "Female",
+        "native_place": "Hebei Baoding",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "1395": {
+        "id": "1395",
+        "age": "20",
+        "gender": "Male",
+        "native_place": "Neimenggu",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "1444": {
+        "id": "1444",
+        "age": "22",
+        "gender": "Male",
+        "native_place": "Sichuan Fushun",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "1557": {
+        "id": "1557",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Hebei",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "1624": {
+        "id": "1624",
+        "age": "18",
+        "gender": "Male",
+        "native_place": "Heilongjiang",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "1744": {
+        "id": "1744",
+        "age": "20",
+        "gender": "Male",
+        "native_place": "Neimenggu",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "1826": {
+        "id": "1826",
+        "age": "18",
+        "gender": "Male",
+        "native_place": "Anhui",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "1864": {
+        "id": "1864",
+        "age": "17",
+        "gender": "Female",
+        "native_place": "Shandong",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "2099": {
+        "id": "2099",
+        "age": "18",
+        "gender": "Male",
+        "native_place": "Heilongjiang",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "2818": {
+        "id": "2818",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Sichuan Shuangliu",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "2838": {
+        "id": "2838",
+        "age": "23",
+        "gender": "Male",
+        "native_place": "Hebei Baoding",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "2892": {
+        "id": "2892",
+        "age": "22",
+        "gender": "Male",
+        "native_place": "Sichuan Fushun",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "2951": {
+        "id": "2951",
+        "age": "18",
+        "gender": "Male",
+        "native_place": "Heilongjiang",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "3060": {
+        "id": "3060",
+        "age": "20",
+        "gender": "Female",
+        "native_place": "Heilongjiang Haerbin",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "3165": {
+        "id": "3165",
+        "age": "18",
+        "gender": "Male",
+        "native_place": "Anhui",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "3228": {
+        "id": "3228",
+        "age": "23",
+        "gender": "Male",
+        "native_place": "Hebei Baoding",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "3308": {
+        "id": "3308",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Shanxi",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 1
+        }
+    },
+    "3349": {
+        "id": "3349",
+        "age": "21",
+        "gender": "Female",
+        "native_place": "Hebei Gu'an",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "3372": {
+        "id": "3372",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Shanxi",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 1
+        }
+    },
+    "3431": {
+        "id": "3431",
+        "age": "19",
+        "gender": "Male",
+        "native_place": "Guizhou Bijie",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "3620": {
+        "id": "3620",
+        "age": "20",
+        "gender": "Female",
+        "native_place": "Henan Zhengzhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "3759": {
+        "id": "3759",
+        "age": "22",
+        "gender": "Male",
+        "native_place": "Sichuan Fushun",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "3775": {
+        "id": "3775",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Hebei",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "3862": {
+        "id": "3862",
+        "age": "21",
+        "gender": "Female",
+        "native_place": "Hebei Gu'an",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "3924": {
+        "id": "3924",
+        "age": "21",
+        "gender": "Female",
+        "native_place": "Hebei Gu'an",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "4117": {
+        "id": "4117",
+        "age": "26",
+        "gender": "Female",
+        "native_place": "Hebei Tangshan",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "4237": {
+        "id": "4237",
+        "age": "23",
+        "gender": "Male",
+        "native_place": "Neimenggu Huhehaote",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "4245": {
+        "id": "4245",
+        "age": "20",
+        "gender": "Male",
+        "native_place": "Shanxi Shuozhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "4291": {
+        "id": "4291",
+        "age": "23",
+        "gender": "Female",
+        "native_place": "Liaoning Jinzhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "4467": {
+        "id": "4467",
+        "age": "17",
+        "gender": "Female",
+        "native_place": "Shandong",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "4599": {
+        "id": "4599",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Shandong",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "4705": {
+        "id": "4705",
+        "age": "17",
+        "gender": "Male",
+        "native_place": "Shanxi Pingshun",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "4892": {
+        "id": "4892",
+        "age": "18",
+        "gender": "Male",
+        "native_place": "Anhui",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "5022": {
+        "id": "5022",
+        "age": "26",
+        "gender": "Female",
+        "native_place": "Hebei Tangshan",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "5063": {
+        "id": "5063",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Hebei",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "5093": {
+        "id": "5093",
+        "age": "19",
+        "gender": "Female",
+        "native_place": "Hebei Baoding",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "5258": {
+        "id": "5258",
+        "age": "23",
+        "gender": "Male",
+        "native_place": "Neimenggu Huhehaote",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "5339": {
+        "id": "5339",
+        "age": "20",
+        "gender": "Female",
+        "native_place": "Henan Zhengzhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "5430": {
+        "id": "5430",
+        "age": "26",
+        "gender": "Female",
+        "native_place": "Hebei Tangshan",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "5575": {
+        "id": "5575",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Shanxi",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 1
+        }
+    },
+    "5721": {
+        "id": "5721",
+        "age": "17",
+        "gender": "Male",
+        "native_place": "Henan Nanyang",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "5766": {
+        "id": "5766",
+        "age": "19",
+        "gender": "Female",
+        "native_place": "Jiangxi Yichun",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "5876": {
+        "id": "5876",
+        "age": "19",
+        "gender": "Male",
+        "native_place": "Guizhou Bijie",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "5973": {
+        "id": "5973",
+        "age": "19",
+        "gender": "Female",
+        "native_place": "Hebei Baoding",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "6170": {
+        "id": "6170",
+        "age": "21",
+        "gender": "Female",
+        "native_place": "Hebei Gu'an",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "6207": {
+        "id": "6207",
+        "age": "19",
+        "gender": "Female",
+        "native_place": "Jiangxi Yichun",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "6208": {
+        "id": "6208",
+        "age": "20",
+        "gender": "Male",
+        "native_place": "Shanxi Shuozhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "6321": {
+        "id": "6321",
+        "age": "23",
+        "gender": "Female",
+        "native_place": "Liaoning Jinzhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "6373": {
+        "id": "6373",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Shandong",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "6410": {
+        "id": "6410",
+        "age": "23",
+        "gender": "Male",
+        "native_place": "Hebei Baoding",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "6480": {
+        "id": "6480",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Sichuan Shuangliu",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "6506": {
+        "id": "6506",
+        "age": "17",
+        "gender": "Female",
+        "native_place": "Shandong",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "6514": {
+        "id": "6514",
+        "age": "19",
+        "gender": "Female",
+        "native_place": "Hebei Baoding",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "6578": {
+        "id": "6578",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Sichuan Shuangliu",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "7578": {
+        "id": "7578",
+        "age": "20",
+        "gender": "Female",
+        "native_place": "Heilongjiang Haerbin",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "7616": {
+        "id": "7616",
+        "age": "19",
+        "gender": "Female",
+        "native_place": "Jiangxi Yichun",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "7738": {
+        "id": "7738",
+        "age": "20",
+        "gender": "Female",
+        "native_place": "Henan Zhengzhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "7772": {
+        "id": "7772",
+        "age": "20",
+        "gender": "Male",
+        "native_place": "Neimenggu",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "7787": {
+        "id": "7787",
+        "age": "19",
+        "gender": "Female",
+        "native_place": "Jiangxi Yichun",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "7813": {
+        "id": "7813",
+        "age": "20",
+        "gender": "Female",
+        "native_place": "Heilongjiang Haerbin",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "7829": {
+        "id": "7829",
+        "age": "23",
+        "gender": "Male",
+        "native_place": "Neimenggu Huhehaote",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "7847": {
+        "id": "7847",
+        "age": "19",
+        "gender": "Male",
+        "native_place": "Guizhou Bijie",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "7870": {
+        "id": "7870",
+        "age": "20",
+        "gender": "Male",
+        "native_place": "Neimenggu",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "7918": {
+        "id": "7918",
+        "age": "17",
+        "gender": "Male",
+        "native_place": "Shanxi Pingshun",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "8207": {
+        "id": "8207",
+        "age": "20",
+        "gender": "Male",
+        "native_place": "Shanxi Shuozhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "8422": {
+        "id": "8422",
+        "age": "17",
+        "gender": "Male",
+        "native_place": "Henan Nanyang",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "8563": {
+        "id": "8563",
+        "age": "18",
+        "gender": "Male",
+        "native_place": "Heilongjiang",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "8654": {
+        "id": "8654",
+        "age": "20",
+        "gender": "Female",
+        "native_place": "Heilongjiang Haerbin",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "8727": {
+        "id": "8727",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Shandong",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "8770": {
+        "id": "8770",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Hebei",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "8789": {
+        "id": "8789",
+        "age": "20",
+        "gender": "Female",
+        "native_place": "Henan Zhengzhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "8940": {
+        "id": "8940",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Shanxi",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 1
+        }
+    },
+    "9001": {
+        "id": "9001",
+        "age": "17",
+        "gender": "Male",
+        "native_place": "Shanxi Pingshun",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "9030": {
+        "id": "9030",
+        "age": "17",
+        "gender": "Male",
+        "native_place": "Henan Nanyang",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "9044": {
+        "id": "9044",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Shandong",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "9114": {
+        "id": "9114",
+        "age": "19",
+        "gender": "Male",
+        "native_place": "Guizhou Bijie",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "9128": {
+        "id": "9128",
+        "age": "23",
+        "gender": "Male",
+        "native_place": "Neimenggu Huhehaote",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "9222": {
+        "id": "9222",
+        "age": "22",
+        "gender": "Male",
+        "native_place": "Sichuan Fushun",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 1,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "9308": {
+        "id": "9308",
+        "age": "17",
+        "gender": "Female",
+        "native_place": "Shandong",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "9588": {
+        "id": "9588",
+        "age": "23",
+        "gender": "Female",
+        "native_place": "Liaoning Jinzhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "9604": {
+        "id": "9604",
+        "age": "18",
+        "gender": "Female",
+        "native_place": "Sichuan Shuangliu",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "9652": {
+        "id": "9652",
+        "age": "20",
+        "gender": "Male",
+        "native_place": "Shanxi Shuozhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "9795": {
+        "id": "9795",
+        "age": "23",
+        "gender": "Male",
+        "native_place": "Hebei Baoding",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 1,
+            "Openness": 0
+        }
+    },
+    "9824": {
+        "id": "9824",
+        "age": "26",
+        "gender": "Female",
+        "native_place": "Hebei Tangshan",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 1,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 0
+        }
+    },
+    "9827": {
+        "id": "9827",
+        "age": "23",
+        "gender": "Female",
+        "native_place": "Liaoning Jinzhou",
+        "big5_traits": {
+            "Extraversion": 0,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    },
+    "9936": {
+        "id": "9936",
+        "age": "18",
+        "gender": "Male",
+        "native_place": "Anhui",
+        "big5_traits": {
+            "Extraversion": 1,
+            "Agreeableness": 0,
+            "Conscientiousness": 0,
+            "Neuroticism": 0,
+            "Openness": 1
+        }
+    }
+}

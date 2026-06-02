@@ -1,0 +1,1202 @@
+{
+    "1178": {
+      "id": "1178",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 2.0,
+        "Family_Members": 4
+      },
+      "disease": "4"
+    },
+    "1362": {
+      "id": "1362",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 1.0,
+        "Family_Members": 3
+      },
+      "disease": "4"
+    },
+    "2205": {
+      "id": "2205",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "2265": {
+      "id": "2265",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "2337": {
+      "id": "2337",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 2.0,
+        "Family_Members": 4
+      },
+      "disease": "4"
+    },
+    "2408": {
+      "id": "2408",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "2"
+    },
+    "2511": {
+      "id": "2511",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "2545": {
+      "id": "2545",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "1"
+    },
+    "2767": {
+      "id": "2767",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "1"
+    },
+    "2859": {
+      "id": "2859",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "2872": {
+      "id": "2872",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 2.0,
+        "Family_Members": 4
+      },
+      "disease": "4"
+    },
+    "2974": {
+      "id": "2974",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "2"
+    },
+    "3107": {
+      "id": "3107",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "3187": {
+      "id": "3187",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "1"
+    },
+    "3566": {
+      "id": "3566",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "3618": {
+      "id": "3618",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "3"
+    },
+    "3712": {
+      "id": "3712",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "2"
+    },
+    "3770": {
+      "id": "3770",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 2.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "3818": {
+      "id": "3818",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 1.0,
+        "Family_Members": 3
+      },
+      "disease": "4"
+    },
+    "3821": {
+      "id": "3821",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "4"
+    },
+    "3862": {
+      "id": "3862",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "3978": {
+      "id": "3978",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 5
+      },
+      "disease": "2"
+    },
+    "4085": {
+      "id": "4085",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 3.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "4133": {
+      "id": "4133",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "4173": {
+      "id": "4173",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "4"
+    },
+    "4204": {
+      "id": "4204",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "2"
+    },
+    "4295": {
+      "id": "4295",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 2.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "4387": {
+      "id": "4387",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "4489": {
+      "id": "4489",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "3"
+    },
+    "4621": {
+      "id": "4621",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "4"
+    },
+    "4666": {
+      "id": "4666",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "1"
+    },
+    "4740": {
+      "id": "4740",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "3"
+    },
+    "5063": {
+      "id": "5063",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "1"
+    },
+    "5083": {
+      "id": "5083",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "5206": {
+      "id": "5206",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "5272": {
+      "id": "5272",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "3"
+    },
+    "5353": {
+      "id": "5353",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "2"
+    },
+    "5495": {
+      "id": "5495",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "3"
+    },
+    "5522": {
+      "id": "5522",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "5533": {
+      "id": "5533",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "5724": {
+      "id": "5724",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "5794": {
+      "id": "5794",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "1"
+    },
+    "5854": {
+      "id": "5854",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "5956": {
+      "id": "5956",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "3"
+    },
+    "5959": {
+      "id": "5959",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "2"
+    },
+    "5969": {
+      "id": "5969",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "2"
+    },
+    "5994": {
+      "id": "5994",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "5995": {
+      "id": "5995",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "2"
+    },
+    "6118": {
+      "id": "6118",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 2.0,
+        "Family_Members": 4
+      },
+      "disease": "4"
+    },
+    "6250": {
+      "id": "6250",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "6470": {
+      "id": "6470",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "2"
+    },
+    "6488": {
+      "id": "6488",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "6516": {
+      "id": "6516",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "2"
+    },
+    "6596": {
+      "id": "6596",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "6710": {
+      "id": "6710",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 5
+      },
+      "disease": "2"
+    },
+    "6761": {
+      "id": "6761",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 3.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "6892": {
+      "id": "6892",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "7036": {
+      "id": "7036",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "2"
+    },
+    "7064": {
+      "id": "7064",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 1.0,
+        "Family_Members": 3
+      },
+      "disease": "4"
+    },
+    "7229": {
+      "id": "7229",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 2.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "7251": {
+      "id": "7251",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "3"
+    },
+    "7534": {
+      "id": "7534",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 3.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "7603": {
+      "id": "7603",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "2"
+    },
+    "7826": {
+      "id": "7826",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "2"
+    },
+    "8032": {
+      "id": "8032",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "1"
+    },
+    "8113": {
+      "id": "8113",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "1"
+    },
+    "8160": {
+      "id": "8160",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "8334": {
+      "id": "8334",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "3"
+    },
+    "8411": {
+      "id": "8411",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 1,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "4"
+    },
+    "8616": {
+      "id": "8616",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 1.0,
+        "Family_Members": 3
+      },
+      "disease": "4"
+    },
+    "8641": {
+      "id": "8641",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "2"
+    },
+    "8827": {
+      "id": "8827",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "2"
+    },
+    "8901": {
+      "id": "8901",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 5
+      },
+      "disease": "2"
+    },
+    "9136": {
+      "id": "9136",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "9197": {
+      "id": "9197",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 1
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "1"
+    },
+    "9364": {
+      "id": "9364",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "4"
+    },
+    "9522": {
+      "id": "9522",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "9700": {
+      "id": "9700",
+      "big5_traits": {
+        "Extraversion": 1,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 5
+      },
+      "disease": "2"
+    },
+    "9826": {
+      "id": "9826",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 1,
+        "Openness": 0,
+        "Neuroticism": 0,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 2
+      },
+      "disease": "0"
+    },
+    "9931": {
+      "id": "9931",
+      "big5_traits": {
+        "Extraversion": 0,
+        "Agreeableness": 0,
+        "Openness": 0,
+        "Neuroticism": 1,
+        "Conscientiousness": 0
+      },
+      "family_factors": {
+        "Financial_Stress": 0.0,
+        "Family_Members": 3
+      },
+      "disease": "2"
+    }
+  }

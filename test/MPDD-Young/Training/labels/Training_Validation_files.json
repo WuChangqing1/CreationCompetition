@@ -1,0 +1,1586 @@
+[
+    {
+        "audio_feature_path": "001_001.npy",
+        "video_feature_path": "001_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "001_002.npy",
+        "video_feature_path": "001_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "001_003.npy",
+        "video_feature_path": "001_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "002_001.npy",
+        "video_feature_path": "002_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "002_002.npy",
+        "video_feature_path": "002_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "002_003.npy",
+        "video_feature_path": "002_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "003_001.npy",
+        "video_feature_path": "003_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "003_002.npy",
+        "video_feature_path": "003_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "003_003.npy",
+        "video_feature_path": "003_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "006_001.npy",
+        "video_feature_path": "006_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "006_002.npy",
+        "video_feature_path": "006_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "006_003.npy",
+        "video_feature_path": "006_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "007_001.npy",
+        "video_feature_path": "007_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "007_002.npy",
+        "video_feature_path": "007_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "007_003.npy",
+        "video_feature_path": "007_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "009_001.npy",
+        "video_feature_path": "009_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "009_002.npy",
+        "video_feature_path": "009_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "009_003.npy",
+        "video_feature_path": "009_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "010_001.npy",
+        "video_feature_path": "010_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "010_002.npy",
+        "video_feature_path": "010_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "010_003.npy",
+        "video_feature_path": "010_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "011_001.npy",
+        "video_feature_path": "011_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "011_002.npy",
+        "video_feature_path": "011_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "011_003.npy",
+        "video_feature_path": "011_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "013_001.npy",
+        "video_feature_path": "013_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "013_002.npy",
+        "video_feature_path": "013_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "013_003.npy",
+        "video_feature_path": "013_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "014_001.npy",
+        "video_feature_path": "014_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "014_002.npy",
+        "video_feature_path": "014_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "014_003.npy",
+        "video_feature_path": "014_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "016_001.npy",
+        "video_feature_path": "016_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "016_002.npy",
+        "video_feature_path": "016_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "016_003.npy",
+        "video_feature_path": "016_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "017_001.npy",
+        "video_feature_path": "017_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "017_002.npy",
+        "video_feature_path": "017_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "017_003.npy",
+        "video_feature_path": "017_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "018_001.npy",
+        "video_feature_path": "018_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "018_002.npy",
+        "video_feature_path": "018_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "018_003.npy",
+        "video_feature_path": "018_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "020_001.npy",
+        "video_feature_path": "020_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "020_002.npy",
+        "video_feature_path": "020_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "020_003.npy",
+        "video_feature_path": "020_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "021_001.npy",
+        "video_feature_path": "021_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "021_002.npy",
+        "video_feature_path": "021_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "021_003.npy",
+        "video_feature_path": "021_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "023_001.npy",
+        "video_feature_path": "023_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "023_002.npy",
+        "video_feature_path": "023_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "023_003.npy",
+        "video_feature_path": "023_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "024_001.npy",
+        "video_feature_path": "024_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "024_002.npy",
+        "video_feature_path": "024_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "024_003.npy",
+        "video_feature_path": "024_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "025_001.npy",
+        "video_feature_path": "025_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "025_002.npy",
+        "video_feature_path": "025_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "025_003.npy",
+        "video_feature_path": "025_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "026_001.npy",
+        "video_feature_path": "026_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "026_002.npy",
+        "video_feature_path": "026_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "026_003.npy",
+        "video_feature_path": "026_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "027_001.npy",
+        "video_feature_path": "027_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "027_002.npy",
+        "video_feature_path": "027_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "027_003.npy",
+        "video_feature_path": "027_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "028_001.npy",
+        "video_feature_path": "028_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "028_002.npy",
+        "video_feature_path": "028_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "028_003.npy",
+        "video_feature_path": "028_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "029_001.npy",
+        "video_feature_path": "029_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "029_002.npy",
+        "video_feature_path": "029_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "029_003.npy",
+        "video_feature_path": "029_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "030_001.npy",
+        "video_feature_path": "030_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "030_002.npy",
+        "video_feature_path": "030_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "030_003.npy",
+        "video_feature_path": "030_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "031_001.npy",
+        "video_feature_path": "031_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "031_002.npy",
+        "video_feature_path": "031_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "031_003.npy",
+        "video_feature_path": "031_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "033_001.npy",
+        "video_feature_path": "033_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "033_002.npy",
+        "video_feature_path": "033_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "033_003.npy",
+        "video_feature_path": "033_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "034_001.npy",
+        "video_feature_path": "034_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "034_002.npy",
+        "video_feature_path": "034_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "034_003.npy",
+        "video_feature_path": "034_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "036_001.npy",
+        "video_feature_path": "036_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "036_002.npy",
+        "video_feature_path": "036_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "036_003.npy",
+        "video_feature_path": "036_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "037_001.npy",
+        "video_feature_path": "037_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "037_002.npy",
+        "video_feature_path": "037_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "037_003.npy",
+        "video_feature_path": "037_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "038_001.npy",
+        "video_feature_path": "038_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "038_002.npy",
+        "video_feature_path": "038_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "038_003.npy",
+        "video_feature_path": "038_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "039_001.npy",
+        "video_feature_path": "039_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "039_002.npy",
+        "video_feature_path": "039_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "039_003.npy",
+        "video_feature_path": "039_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "040_001.npy",
+        "video_feature_path": "040_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "040_002.npy",
+        "video_feature_path": "040_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "040_003.npy",
+        "video_feature_path": "040_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "041_001.npy",
+        "video_feature_path": "041_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "041_002.npy",
+        "video_feature_path": "041_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "041_003.npy",
+        "video_feature_path": "041_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "042_001.npy",
+        "video_feature_path": "042_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "042_002.npy",
+        "video_feature_path": "042_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "042_003.npy",
+        "video_feature_path": "042_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "044_001.npy",
+        "video_feature_path": "044_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "044_002.npy",
+        "video_feature_path": "044_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "044_003.npy",
+        "video_feature_path": "044_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "045_001.npy",
+        "video_feature_path": "045_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "045_002.npy",
+        "video_feature_path": "045_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "045_003.npy",
+        "video_feature_path": "045_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "046_001.npy",
+        "video_feature_path": "046_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "046_002.npy",
+        "video_feature_path": "046_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "046_003.npy",
+        "video_feature_path": "046_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "048_001.npy",
+        "video_feature_path": "048_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "048_002.npy",
+        "video_feature_path": "048_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "048_003.npy",
+        "video_feature_path": "048_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "050_001.npy",
+        "video_feature_path": "050_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "050_002.npy",
+        "video_feature_path": "050_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "050_003.npy",
+        "video_feature_path": "050_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "051_001.npy",
+        "video_feature_path": "051_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "051_002.npy",
+        "video_feature_path": "051_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "051_003.npy",
+        "video_feature_path": "051_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "053_001.npy",
+        "video_feature_path": "053_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "053_002.npy",
+        "video_feature_path": "053_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "053_003.npy",
+        "video_feature_path": "053_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "054_001.npy",
+        "video_feature_path": "054_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "054_002.npy",
+        "video_feature_path": "054_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "054_003.npy",
+        "video_feature_path": "054_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "055_001.npy",
+        "video_feature_path": "055_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "055_002.npy",
+        "video_feature_path": "055_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "055_003.npy",
+        "video_feature_path": "055_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "056_001.npy",
+        "video_feature_path": "056_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "056_002.npy",
+        "video_feature_path": "056_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "056_003.npy",
+        "video_feature_path": "056_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "057_001.npy",
+        "video_feature_path": "057_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "057_002.npy",
+        "video_feature_path": "057_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "057_003.npy",
+        "video_feature_path": "057_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "058_001.npy",
+        "video_feature_path": "058_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "058_002.npy",
+        "video_feature_path": "058_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "058_003.npy",
+        "video_feature_path": "058_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "059_001.npy",
+        "video_feature_path": "059_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "059_002.npy",
+        "video_feature_path": "059_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "059_003.npy",
+        "video_feature_path": "059_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "060_001.npy",
+        "video_feature_path": "060_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "060_002.npy",
+        "video_feature_path": "060_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "060_003.npy",
+        "video_feature_path": "060_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "061_001.npy",
+        "video_feature_path": "061_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "061_002.npy",
+        "video_feature_path": "061_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "061_003.npy",
+        "video_feature_path": "061_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "062_001.npy",
+        "video_feature_path": "062_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "062_002.npy",
+        "video_feature_path": "062_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "062_003.npy",
+        "video_feature_path": "062_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "063_001.npy",
+        "video_feature_path": "063_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "063_002.npy",
+        "video_feature_path": "063_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "063_003.npy",
+        "video_feature_path": "063_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "065_001.npy",
+        "video_feature_path": "065_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "065_002.npy",
+        "video_feature_path": "065_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "065_003.npy",
+        "video_feature_path": "065_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "066_001.npy",
+        "video_feature_path": "066_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "066_002.npy",
+        "video_feature_path": "066_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "066_003.npy",
+        "video_feature_path": "066_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "067_001.npy",
+        "video_feature_path": "067_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "067_002.npy",
+        "video_feature_path": "067_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "067_003.npy",
+        "video_feature_path": "067_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "069_001.npy",
+        "video_feature_path": "069_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "069_002.npy",
+        "video_feature_path": "069_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "069_003.npy",
+        "video_feature_path": "069_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "070_001.npy",
+        "video_feature_path": "070_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "070_002.npy",
+        "video_feature_path": "070_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "070_003.npy",
+        "video_feature_path": "070_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "071_001.npy",
+        "video_feature_path": "071_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "071_002.npy",
+        "video_feature_path": "071_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "071_003.npy",
+        "video_feature_path": "071_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "072_001.npy",
+        "video_feature_path": "072_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "072_002.npy",
+        "video_feature_path": "072_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "072_003.npy",
+        "video_feature_path": "072_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "073_001.npy",
+        "video_feature_path": "073_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "073_002.npy",
+        "video_feature_path": "073_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "073_003.npy",
+        "video_feature_path": "073_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "074_001.npy",
+        "video_feature_path": "074_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "074_002.npy",
+        "video_feature_path": "074_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "074_003.npy",
+        "video_feature_path": "074_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "075_001.npy",
+        "video_feature_path": "075_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "075_002.npy",
+        "video_feature_path": "075_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "075_003.npy",
+        "video_feature_path": "075_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "076_001.npy",
+        "video_feature_path": "076_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "076_002.npy",
+        "video_feature_path": "076_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "076_003.npy",
+        "video_feature_path": "076_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "077_001.npy",
+        "video_feature_path": "077_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "077_002.npy",
+        "video_feature_path": "077_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "077_003.npy",
+        "video_feature_path": "077_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "078_001.npy",
+        "video_feature_path": "078_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "078_002.npy",
+        "video_feature_path": "078_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "078_003.npy",
+        "video_feature_path": "078_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "079_001.npy",
+        "video_feature_path": "079_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "079_002.npy",
+        "video_feature_path": "079_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "079_003.npy",
+        "video_feature_path": "079_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "080_001.npy",
+        "video_feature_path": "080_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "080_002.npy",
+        "video_feature_path": "080_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "080_003.npy",
+        "video_feature_path": "080_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "083_001.npy",
+        "video_feature_path": "083_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "083_002.npy",
+        "video_feature_path": "083_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "083_003.npy",
+        "video_feature_path": "083_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "085_001.npy",
+        "video_feature_path": "085_001.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "085_002.npy",
+        "video_feature_path": "085_002.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "085_003.npy",
+        "video_feature_path": "085_003.npy",
+        "tri_category": 2,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "086_001.npy",
+        "video_feature_path": "086_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "086_002.npy",
+        "video_feature_path": "086_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "086_003.npy",
+        "video_feature_path": "086_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "087_001.npy",
+        "video_feature_path": "087_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "087_002.npy",
+        "video_feature_path": "087_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "087_003.npy",
+        "video_feature_path": "087_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "088_001.npy",
+        "video_feature_path": "088_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "088_002.npy",
+        "video_feature_path": "088_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "088_003.npy",
+        "video_feature_path": "088_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "089_001.npy",
+        "video_feature_path": "089_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "089_002.npy",
+        "video_feature_path": "089_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "089_003.npy",
+        "video_feature_path": "089_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "090_001.npy",
+        "video_feature_path": "090_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "090_002.npy",
+        "video_feature_path": "090_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "090_003.npy",
+        "video_feature_path": "090_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "091_001.npy",
+        "video_feature_path": "091_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "091_002.npy",
+        "video_feature_path": "091_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "091_003.npy",
+        "video_feature_path": "091_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "092_001.npy",
+        "video_feature_path": "092_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "092_002.npy",
+        "video_feature_path": "092_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "092_003.npy",
+        "video_feature_path": "092_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "093_001.npy",
+        "video_feature_path": "093_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "093_002.npy",
+        "video_feature_path": "093_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "093_003.npy",
+        "video_feature_path": "093_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "095_001.npy",
+        "video_feature_path": "095_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "095_002.npy",
+        "video_feature_path": "095_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "095_003.npy",
+        "video_feature_path": "095_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "096_001.npy",
+        "video_feature_path": "096_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "096_002.npy",
+        "video_feature_path": "096_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "096_003.npy",
+        "video_feature_path": "096_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "097_001.npy",
+        "video_feature_path": "097_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "097_002.npy",
+        "video_feature_path": "097_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "097_003.npy",
+        "video_feature_path": "097_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "098_001.npy",
+        "video_feature_path": "098_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "098_002.npy",
+        "video_feature_path": "098_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "098_003.npy",
+        "video_feature_path": "098_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "099_001.npy",
+        "video_feature_path": "099_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "099_002.npy",
+        "video_feature_path": "099_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "099_003.npy",
+        "video_feature_path": "099_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "100_001.npy",
+        "video_feature_path": "100_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "100_002.npy",
+        "video_feature_path": "100_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "100_003.npy",
+        "video_feature_path": "100_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "101_001.npy",
+        "video_feature_path": "101_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "101_002.npy",
+        "video_feature_path": "101_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "101_003.npy",
+        "video_feature_path": "101_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "104_001.npy",
+        "video_feature_path": "104_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "104_002.npy",
+        "video_feature_path": "104_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "104_003.npy",
+        "video_feature_path": "104_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "105_001.npy",
+        "video_feature_path": "105_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "105_002.npy",
+        "video_feature_path": "105_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "105_003.npy",
+        "video_feature_path": "105_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "106_001.npy",
+        "video_feature_path": "106_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "106_002.npy",
+        "video_feature_path": "106_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "106_003.npy",
+        "video_feature_path": "106_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "107_001.npy",
+        "video_feature_path": "107_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "107_002.npy",
+        "video_feature_path": "107_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "107_003.npy",
+        "video_feature_path": "107_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "109_001.npy",
+        "video_feature_path": "109_001.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "109_002.npy",
+        "video_feature_path": "109_002.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "109_003.npy",
+        "video_feature_path": "109_003.npy",
+        "tri_category": 1,
+        "bin_category": 1
+    },
+    {
+        "audio_feature_path": "110_001.npy",
+        "video_feature_path": "110_001.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "110_002.npy",
+        "video_feature_path": "110_002.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    },
+    {
+        "audio_feature_path": "110_003.npy",
+        "video_feature_path": "110_003.npy",
+        "tri_category": 0,
+        "bin_category": 0
+    }
+]
