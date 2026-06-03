@@ -26,7 +26,7 @@
 - 审计音频/视频特征加载（NaN、归一化）
 - 将 weighted_sampler/label_smoothing/cls_loss_weight 补回 train.py
 
-**提交**：[待填入]
+**提交**：73e409d
 
 ---
 
