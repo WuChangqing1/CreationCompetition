@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-06-03 会话 (第4次)
+
+**做了什么**：
+- 修复 run_baseline.py：移除 train.py 不接受的 `extra` CLI 参数（--selection_metric, --cls_loss_weight, --reg_loss_weight, --weighted_sampler, --label_smoothing），这些参数在当前 train.py 中未实现
+- 确认 shell 脚本与 train.py 版本不匹配：脚本引用了未实现的特性（损失权重、加权采样、标签平滑、自定义选择指标）
+- 跑通 Track1 G+P baseline：binary F1=0.75/kappa=0.50（可用但受限），ternary 完全失败（val_kappa=0.0，全猜 class 0）
+- 跑通 Track1 A-V+P baseline：binary F1=0.50/kappa=0.00（不如 G+P），ternary F1=0.36/kappa=0.08（微弱信号）。发现维度灾难：更多特征 + 同样 78 样本 = 更差性能
+- 诊断三个核心问题：① train.py 缺失高级特性 ② 78 样本 vs 2100 维特征的维度灾难 ③ 三元分类当前数据规模不可行
+- 新增 3 个 ISSUES（K008-K010），新增 2 个决策（D006-D007），更新 PROGRESS/CHANGELOG
+
+**环境状态**：
+- Python 3.10.20 / PyTorch 2.7.1+cu128 / CUDA 12.9 GPU OK
+- creationcompetition conda 环境完整可用
+- baseline 训练 pipeline 已验证可端到端运行
+
+**下次继续**：
+- 试 hybrid_attn 编码器对抗高维特征
+- 调优 A-V+P 超参（hidden_dim↑, lr↑, epochs↑）
+- 跑 Track2 Young（数据分布不同）
+- 审计音频/视频特征加载（NaN、归一化）
+- 将 weighted_sampler/label_smoothing/cls_loss_weight 补回 train.py
+
+**提交**：[待填入]
+
+---
+
 ## 2026-06-02 会话 (第3次)
 
 **做了什么**：

@@ -52,6 +52,23 @@
 - **详情**: Elder 和 Young 的 split_labels_train.csv 中 split 列全为 `train`，无预分割的 val 或 test
 - **影响**: 训练时 val 集完全依赖 train_val_split.py 的自动划分（val_ratio=0.1）
 
----
+### K008 — train.py 缺少 shell 脚本引用的高级训练特性
+- **发现日期**: 2026-06-03
+- **来源**: 基线训练首轮
+- **详情**: 12 个 shell 脚本使用 `--selection_metric`、`--cls_loss_weight`、`--reg_loss_weight`、`--weighted_sampler`、`--label_smoothing` 等参数，但当前 train.py argparse 完全不接受这些参数。选择指标硬编码为 f1/ccc，损失为 CE+MSE 等权，无加权采样和标签平滑
+- **影响**: ① 类别不平衡无法通过 cls_loss_weight 缓解 ② 无法用 kappa/ccc_floor 选最佳模型 ③ 小数据集下 label_smoothing 的防过拟合效果缺失
+- **处理**: run_baseline.py 已移除这些无效参数；后续需将这些特性补回 train.py
 
-（后续问题在开发过程中自动追加）
+### K009 — A-V+P 性能反而不如 G+P（维度灾难）
+- **发现日期**: 2026-06-03
+- **来源**: Track1 A-V+P vs G+P 对比训练
+- **详情**: G+P binary F1=0.75/kappa=0.50，A-V+P binary F1=0.50/kappa=0.00。加了音频+视频后性能下降。A-V+P 输入维度 ~2100d（opensmile~88d + resnet~1000d + personality~1024d），G+P 仅 ~1036d（gait 12d + personality 1024d），但训练样本只有 78 个
+- **根因**: ① 维度灾难 — 特征维度增加但样本量不变，模型需要更多数据才能从高维特征中提取信号 ② 超参不匹配 — A-V+P 的 hidden_dim(64) 反而小于 G+P(128)，lr(3e-5) 低于 G+P(8e-5)，epochs(60) 仅为 G+P(320) 的 1/5 ③ 特征归一化未知 — opensmile/resnet 特征的 scale 差异可能干扰训练
+- **状态**: 待解决
+
+### K010 — 三元分类（ternary）在 Track1 Elder 上完全失败
+- **发现日期**: 2026-06-03
+- **来源**: Track1 G+P 和 A-V+P ternary 训练
+- **详情**: G+P ternary val_kappa=0.0 best_epoch=1，A-V+P ternary val_kappa=0.08 best_epoch=10。两者模型均将所有样本预测为单一类别（全猜 class 0），完全无区分能力。78 训练样本 / 3 类别 / 仅 9 验证样本
+- **影响**: 三元分类在当前数据规模（Elder 87 人）和特征组合下不可行。可能需要：① 更大的训练集（Elder+Young 联合？）② 更强的特征组合（A-V-G+P）③ 数据增强
+- **状态**: 待解决

@@ -35,25 +35,26 @@ TRAIN_SCRIPT = BASELINE_DIR / "train.py"
 # 数据路径（修正为实际本地路径）
 DATA_PATHS = {
     "Track1": {
-        "data_root": "../../Elder",
-        "split_csv": "../../Elder/split_labels_train.csv",
-        "personality_npy": "../../Elder/descriptions_embeddings_with_ids.npy",
+        "data_root": "../../test/Elder",
+        "split_csv": "../../test/Elder/split_labels_train.csv",
+        "personality_npy": "../../test/Elder/descriptions_embeddings_with_ids.npy",
     },
     "Track2": {
-        "data_root": "../../Young",
-        "split_csv": "../../Young/split_labels_train.csv",
-        "personality_npy": "../../Young/descriptions_embeddings_with_ids.npy",
+        "data_root": "../../test/Young",
+        "split_csv": "../../test/Young/split_labels_train.csv",
+        "personality_npy": "../../test/Young/descriptions_embeddings_with_ids.npy",
     },
 }
 
 # G+P 子赛道 — 不需要 audio/video 特征循环
+# 注意: train.py 不接受 --selection_metric/--cls_loss_weight/--reg_loss_weight/
+# --weighted_sampler/--label_smoothing CLI 参数（shell 脚本与当前 train.py 版本不匹配）。
+# 选择指标硬编码为 f1（分类）/ ccc（回归），损失为 CrossEntropyLoss + MSELoss 等权。
 GP_CONFIGS = {
     "Track1": {
         "binary": {
             "epochs": 320, "batch_size": 2, "lr": 8e-5, "weight_decay": 1e-5,
             "hidden_dim": 128, "dropout": 0.3, "patience": 90, "seed": 42,
-            "extra": ["--selection_metric", "kappa", "--cls_loss_weight", "3.0",
-                       "--reg_loss_weight", "0.1", "--weighted_sampler"],
         },
         "ternary": {
             "epochs": 300, "batch_size": 2, "lr": 5e-5, "weight_decay": 1e-5,
@@ -79,8 +80,6 @@ AVP_CONFIGS = {
         "epochs": 60, "batch_size": 8, "lr": 3e-5, "weight_decay": 1e-5,
         "hidden_dim": 64, "dropout": 0.4, "patience": 20, "seed": 42,
         "encoder_type": "bilstm_mean",
-        "extra": ["--selection_metric", "acc_with_ccc_floor", "--selection_ccc_floor", "0.1",
-                   "--cls_loss_weight", "1.0", "--reg_loss_weight", "1.4", "--label_smoothing", "0.02"],
     },
     ("Track1", "A-V+P", "ternary"): {
         "audio_features": ["mfcc"], "video_features": ["resnet"],
@@ -93,18 +92,12 @@ AVP_CONFIGS = {
         "epochs": 140, "batch_size": 4, "lr": 8e-5, "weight_decay": 1e-5,
         "hidden_dim": 128, "dropout": 0.45, "patience": 35, "seed": 42,
         "encoder_type": "bilstm_mean",
-        "extra": ["--selection_metric", "kappa_with_ccc_floor", "--selection_ccc_floor", "0.1",
-                   "--cls_loss_weight", "1.25", "--reg_loss_weight", "1.25",
-                   "--weighted_sampler", "--label_smoothing", "0.03"],
     },
     ("Track1", "A-V-G+P", "ternary"): {
         "audio_features": ["wav2vec"], "video_features": ["openface"],
         "epochs": 160, "batch_size": 4, "lr": 8e-5, "weight_decay": 1e-5,
         "hidden_dim": 160, "dropout": 0.4, "patience": 40, "seed": 42,
         "encoder_type": "bilstm_mean",
-        "extra": ["--selection_metric", "acc_with_ccc_floor", "--selection_ccc_floor", "0.1",
-                   "--cls_loss_weight", "1.25", "--reg_loss_weight", "1.0",
-                   "--weighted_sampler", "--label_smoothing", "0.02"],
     },
     ("Track2", "A-V+P", "binary"): {
         "audio_features": ["mfcc", "opensmile", "wav2vec"],
@@ -164,8 +157,6 @@ def build_cmd(track, subtrack, task, cfg, audio_feature=None, video_feature=None
         cmd += ["--audio_feature", audio_feature]
     if video_feature:
         cmd += ["--video_feature", video_feature]
-    if not quick and "extra" in cfg:
-        cmd += cfg["extra"]
     return cmd
 
 

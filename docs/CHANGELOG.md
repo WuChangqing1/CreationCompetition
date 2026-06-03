@@ -9,6 +9,9 @@
 ## [Unreleased]
 
 ### Added
+- [2026-06-03] DOCS：新增 K008-K010 三个问题（train.py 缺失特性、维度灾难、三元分类失败）
+- [2026-06-03] DOCS：新增 D006-D007 两个决策（移除无效 CLI 参数、首轮训练策略）
+- [2026-06-03] baseline 训练首轮结果：G+P binary F1=0.75/kappa=0.50，A-V+P 性能不及 G+P
 - [2026-06-02] 初始化项目记忆系统（docs/ 全部 6 个文件）
 - [2026-06-02] 项目文档：README、ARCHITECTURE、GETTING_STARTED
 - [2026-06-02] .gitignore for Python/ML project
@@ -17,7 +20,11 @@
 - [2026-06-02] 竞赛提交工具 make_submission_forcodabench
 - [2026-06-02] 论文 PDF（MPDD 相关论文 4 篇）
 
+### Fixed
+- [2026-06-03] run_baseline.py：移除 train.py 不接受的 extra CLI 参数（--selection_metric, --cls_loss_weight, --reg_loss_weight, --weighted_sampler, --label_smoothing），修复 binary G+P 报错 "unrecognized arguments"
+
 ### Changed
+- [2026-06-03] PROGRESS：更新首轮训练结果和待办项，明确下一步方向
 - [2026-06-02] GETTING_STARTED：环境名改为 creationcompetition，补充完整依赖清单（14 个包）
 - [2026-06-02] PROGRESS：conda 环境已创建，依赖已安装，进度更新
 - [2026-06-02] ARCHITECTURE：补充完整数据清单（目录树 + 统计表 + 兼容性说明 + 6 个已知问题）
