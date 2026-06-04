@@ -4,22 +4,24 @@
 > 本文件由 Agent 自动初始化
 
 ## 进行中
-- [ ] 诊断基线训练问题：A-V+P 性能不如 G+P（维度灾难 / 超参不当 / 特征归一化）
-- [ ] 寻找更适配小数据集（87-88人）的训练策略
+- [ ] 实现 5-fold 交叉验证（替代 9:1 单次划分）
+- [ ] 实现 Elder+Young 联合训练（G+P 优先，二分类 175 样本）
 
 ## 待办
 - [ ] 下载 MPDD-AVG 2026 test 集（trainval 已就位，test 空）
 - [ ] 试 hybrid_attn 编码器替代 bilstm_mean
 - [ ] 调优 A-V+P 超参：提高 hidden_dim/lr/epochs，匹配高维特征需求
 - [ ] 跑 Track2 Young 基线（数据分布可能不同，超参更激进）
-- [ ] 审计音频/视频特征加载：检查 NaN、归一化、维度正确性
 - [ ] 修复 train.py 缺失的高级特性：weighted_sampler, label_smoothing, cls/reg loss weights
-- [ ] 分析基线模型结果，确定改进方向
+- [ ] 特征降维：对 1000d 视频特征做 PCA 降至 128-256d
+- [ ] 数据增强：对音频片段做时间偏移/加噪
+- [ ] 修复 Elder 5 人不完整样本（仅 2 片段）
 - [ ] 模型架构改进实验
 - [ ] 特征融合策略优化
 - [ ] 生成 CodaBench 提交文件
 
 ## 已完成
+- [x] [2026-06-04] 数据集全面分析：17,231 个文件，9 大章节（概览、目录、标签、特征维度、数据质量、划分、跨数据集差异、诊断、改进建议），写入 数据集分析.md
 - [x] [2026-06-03] run_baseline.py 修复：移除 train.py 不接受的 extra CLI 参数（--selection_metric, --cls_loss_weight 等）
 - [x] [2026-06-03] 基线训练首轮完成：G+P binary (F1=0.75, kappa=0.50) + ternary (失败), A-V+P binary (F1=0.50) + ternary (F1=0.36)
 - [x] [2026-06-03] 诊断结论：① train.py 缺失 shell 脚本引用的高级特性 ② 78 样本 vs 2100 维特征导致维度灾难 ③ 三元分类当前数据规模不可行
