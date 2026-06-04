@@ -9,6 +9,7 @@
 ## [Unreleased]
 
 ### Added
+- [2026-06-04] FEAT: 5-fold CV + Elder/Young 联合训练（experiments/train_cv.py + train_val_split.py create_kfold_splits），含 JointDataset + per-cohort ID 去重
 - [2026-06-04] DOCS：数据集全面分析报告（数据集分析.md），17,231 文件扫描，9 章节，8 条改进建议
 - [2026-06-03] DOCS：新增 K008-K010 三个问题（train.py 缺失特性、维度灾难、三元分类失败）
 - [2026-06-03] DOCS：新增 D006-D007 两个决策（移除无效 CLI 参数、首轮训练策略）

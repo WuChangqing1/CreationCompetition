@@ -36,6 +36,10 @@ logs/
 *.npy
 *.npz
 
+# Experiment outputs (generated)
+experiments/cv_logs/
+experiments/cv_checkpoints/
+
 # Data directories (large files)
 MPDD-AVG2026/
 

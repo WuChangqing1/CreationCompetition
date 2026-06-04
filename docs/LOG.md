@@ -8,15 +8,18 @@
 
 **做了什么**：
 - 生成数据集全面分析报告：扫描 17,231 个文件，覆盖 Elder 87人 + Young 88人
-- 分析报告含 9 大章节：总体概览、目录结构、标签分布、特征维度详解、数据质量、训练/验证/测试划分、跨数据集差异、诊断结论、改进建议
-- 关键发现：78 训练样本 vs 2100 维特征（27:1 维度灾难）、9 人验证集极不稳定、三分类不可行、seed 顺序 bug、wav2vec2 维度不一致
-- 确定下一步实现方向：5-fold CV + Elder/Young 联合训练
-- 更新 PROGRESS/LOG/CHANGELOG
+- 分析报告含 9 大章节 + 8 条改进建议
+- 关键发现：78 训练样本 vs 2100 维特征（27:1 维度灾难）、9 人验证集极不稳定、三分类不可行、seed 顺序 bug、Elder/Young 61 个 ID 重叠
+- 实现 5-fold CV：train_val_split.py 新增 create_kfold_splits()（StratifiedKFold）
+- 实现 Elder+Young 联合训练：experiments/train_cv.py（JointDataset + per-cohort label_map 解决 ID 重叠）
+- 修复 train_val_split.py 的 seed 顺序 bug（seed 在 split 之前设置）
+- 冒烟测试通过：3-fold CV pipeline 端到端跑通
+- 更新 PROGRESS/CHANGELOG/DECISIONS(D008)/LOG
 
 **下次继续**：
-- 实现 5-fold 交叉验证（train_val_split.py + experiments/train_cv.py）
-- 实现 Elder+Young 联合数据集（experiments/joint_dataset.py）
-- G+P 子赛道优先（无维度不一致问题）
+- 跑正式 5-fold CV 训练（G+P binary, 320 epochs）
+- 跑 Elder+Young 联合训练（G+P binary, 175 样本）
+- 对比单赛道 CV vs 联合 CV 结果
 
 ---
 

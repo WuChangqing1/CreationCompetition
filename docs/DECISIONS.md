@@ -42,6 +42,13 @@
 - **为什么**: 当前 train.py 的 argparse 仅接受 28 个参数，不包含这些高级特性。shell 脚本引用了这些参数但 train.py 未实现（代码版本不匹配）。选择指标硬编码为 f1（分类）/ ccc（回归），损失为 CrossEntropyLoss + MSELoss 等权。强行传入会导致 argparse 报错退出
 - **后果**: G+P/A-V+P 训练均使用简化版损失函数，缺少 weighted sampling 和 label smoothing，可能是基线性能偏低的原因之一。后续需将这些特性补回 train.py
 
+## D008 — CV + 联合训练架构决策
+
+- **日期**: 2026-06-04
+- **决策**: ① 创建独立的 `experiments/train_cv.py` 而非修改原 `train.py`（避免破坏基线完整性）② 联合训练使用 per-cohort label_map（Elder/Young 各自独立构建 `MPDDElderDataset`，通过 `JointDataset` 拼接）③ CV 划分使用数组索引而非 ID 做 key（解决 61 个 Elder/Young ID 重叠问题）
+- **为什么**: ① 基线 train.py 应保持不变作为对照 ② ID 重叠意味着直接用 `int(ID)` 做 key 会导致标签混淆 ③ 数组索引+per-cohort 分解方案零侵入，不修改 baseline dataset.py
+- **结果**: `experiments/train_cv.py` 同时支持单赛道 CV（`--track Track1`）和联合训练 CV（`--joint`），代码复用同一 `train_one_fold()` 函数
+
 ## D007 — 首轮训练策略：优先验证 pipeline，暂不铺全量
 
 - **日期**: 2026-06-03

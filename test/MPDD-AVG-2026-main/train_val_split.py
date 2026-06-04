@@ -8,7 +8,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
+from sklearn.model_selection import ShuffleSplit, StratifiedKFold, StratifiedShuffleSplit
 
 from dataset import REGRESSION_TASK, get_phq9_target, get_task_label, resolve_project_path
 
@@ -79,6 +79,54 @@ def create_train_val_split(
         "val_phq_map": {int(row["ID"]): get_phq9_target(row) for row in rows if int(row["ID"]) in val_id_set},
     }
     return payload
+
+
+def create_kfold_splits(
+    split_csv: str | Path,
+    task: str,
+    n_splits: int = 5,
+    regression_label: str = "label2",
+    seed: int = 42,
+) -> list[dict[str, Any]]:
+    """生成 K-Fold 划分，返回 list of fold payloads（格式与 create_train_val_split 一致）。"""
+    rows = _load_train_rows(split_csv)
+    sample_ids = [int(row["ID"]) for row in rows]
+    sample_labels = [get_task_label(row, task, regression_label) for row in rows]
+
+    if len(sample_ids) < n_splits:
+        raise ValueError(f"样本数 {len(sample_ids)} 少于 fold 数 {n_splits}，无法做 K-Fold")
+    if n_splits < 2:
+        raise ValueError(f"n_splits 至少为 2，当前值 {n_splits}")
+
+    label_counts = Counter(int(label) for label in sample_labels)
+    has_stratify = label_counts and min(label_counts.values()) >= n_splits
+
+    folds: list[dict[str, Any]] = []
+    for train_indices, val_indices in StratifiedKFold(
+        n_splits=n_splits, shuffle=True, random_state=seed,
+    ).split(sample_ids, sample_labels if has_stratify else sample_ids):
+        train_id_split = sorted(int(sample_ids[idx]) for idx in train_indices)
+        val_id_split = sorted(int(sample_ids[idx]) for idx in val_indices)
+        train_id_set = set(train_id_split)
+        val_id_set = set(val_id_split)
+
+        source_split_map = {int(row["ID"]): "train" for row in rows}
+        train_map = {int(row["ID"]): get_task_label(row, task, regression_label) for row in rows if int(row["ID"]) in train_id_set}
+        val_map = {int(row["ID"]): get_task_label(row, task, regression_label) for row in rows if int(row["ID"]) in val_id_set}
+
+        payload = {
+            "train_ids": train_id_split,
+            "val_ids": val_id_split,
+            "train_map": train_map,
+            "val_map": val_map,
+            "source_split_map": source_split_map,
+            "rows": rows,
+            "split_label": regression_label if task == REGRESSION_TASK else ("label2" if task == "binary" else "label3"),
+            "train_phq_map": {int(row["ID"]): get_phq9_target(row) for row in rows if int(row["ID"]) in train_id_set},
+            "val_phq_map": {int(row["ID"]): get_phq9_target(row) for row in rows if int(row["ID"]) in val_id_set},
+        }
+        folds.append(payload)
+    return folds
 
 
 def save_split_preview(

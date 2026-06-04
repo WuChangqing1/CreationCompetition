@@ -4,8 +4,7 @@
 > 本文件由 Agent 自动初始化
 
 ## 进行中
-- [ ] 实现 5-fold 交叉验证（替代 9:1 单次划分）
-- [ ] 实现 Elder+Young 联合训练（G+P 优先，二分类 175 样本）
+- [ ] 跑 5-fold CV + 联合训练 正式结果（当前仅冒烟测试通过）
 
 ## 待办
 - [ ] 下载 MPDD-AVG 2026 test 集（trainval 已就位，test 空）
@@ -21,7 +20,8 @@
 - [ ] 生成 CodaBench 提交文件
 
 ## 已完成
-- [x] [2026-06-04] 数据集全面分析：17,231 个文件，9 大章节（概览、目录、标签、特征维度、数据质量、划分、跨数据集差异、诊断、改进建议），写入 数据集分析.md
+- [x] [2026-06-04] 实现 5-fold CV + Elder/Young 联合训练：train_val_split.py 新增 create_kfold_splits()，experiments/train_cv.py 含 JointDataset + per-cohort ID 去重
+- [x] [2026-06-04] 数据集全面分析：17,231 个文件，9 大章节，写入 数据集分析.md
 - [x] [2026-06-03] run_baseline.py 修复：移除 train.py 不接受的 extra CLI 参数（--selection_metric, --cls_loss_weight 等）
 - [x] [2026-06-03] 基线训练首轮完成：G+P binary (F1=0.75, kappa=0.50) + ternary (失败), A-V+P binary (F1=0.50) + ternary (F1=0.36)
 - [x] [2026-06-03] 诊断结论：① train.py 缺失 shell 脚本引用的高级特性 ② 78 样本 vs 2100 维特征导致维度灾难 ③ 三元分类当前数据规模不可行
