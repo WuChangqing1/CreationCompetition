@@ -1,10 +1,10 @@
 # 项目进度
 
-> 最后更新：2026-06-03
+> 最后更新：2026-07-18
 > 本文件由 Agent 自动初始化
 
 ## 进行中
-- [ ] 跑 5-fold CV + 联合训练 正式结果（当前仅冒烟测试通过）
+- [ ] 阅读 HOPE 论文（PDF/3746027.3762063.txt），评估模型架构改进方向
 
 ## 待办
 - [ ] 下载 MPDD-AVG 2026 test 集（trainval 已就位，test 空）
@@ -20,6 +20,10 @@
 - [ ] 生成 CodaBench 提交文件
 
 ## 已完成
+- [x] [2026-07-18] PyTorch nightly cu130 安装：RTX 5070 Blackwell sm_120 兼容，CUDA 13.3 可用
+- [x] [2026-07-18] 正式基线训练：Track1 G+P binary (F1≈0.65) + ternary (失败，kappa=0)
+- [x] [2026-07-18] 5-fold CV Elder G+P binary：F1=0.6405±0.1197, Kappa=0.3076±0.2222（5 folds, 148s）
+- [x] [2026-07-18] 5-fold CV Joint Elder+Young G+P binary：F1=0.6592±0.0959, Kappa=0.3231±0.1898（5 folds, 218s）
 - [x] [2026-06-04] 实现 5-fold CV + Elder/Young 联合训练：train_val_split.py 新增 create_kfold_splits()，experiments/train_cv.py 含 JointDataset + per-cohort ID 去重
 - [x] [2026-06-04] 数据集全面分析：17,231 个文件，9 大章节，写入 数据集分析.md
 - [x] [2026-06-03] run_baseline.py 修复：移除 train.py 不接受的 extra CLI 参数（--selection_metric, --cls_loss_weight 等）

@@ -1,0 +1,739 @@
+DepFormer: A Unified Framework with Bimodal Collaborative
+Transformer for Depression Detection
+Fangyuan Liu∗
+University of Science and Technology
+of China
+Hefei, China
+liufangyuan@mail.ustc.edu.cnSirui Zhao∗†
+University of Science and Technology
+of China
+Hefei, China
+siruit@ustc.edu.cnKang Yin∗
+University of Science and Technology
+of China
+Hefei, China
+yinkang@mail.ustc.edu.cn
+Tong Xu
+University of Science and Technology
+of China
+Hefei, China
+tongxu@ustc.edu.cnEnhong Chen†
+University of Science and Technology
+of China
+Hefei, China
+cheneh@ustc.edu.cn
+Abstract
+Depression is an increasingly prevalent mental health issue world-
+wide, especially among the elderly, where effective early detection
+is crucial for timely intervention. While recent multimodal ap-
+proaches demonstrate promise in leveraging visual and auditory
+cues for automatic depression recognition, existing methods often
+fail to extract fine-grained, depression-specific patterns from pre-
+extracted features and underutilize cross-modal interactions. To
+address these challenges, we propose DepFormer, a unified frame-
+work that incorporates a Bimodal Collaborative Transformer (BCT)
+for cross-modal representation learning and a personalized fusion
+module to enhance individual-specific modeling. The architecture
+comprises: (1) unimodal feature extraction, (2) bimodal collabora-
+tive representation learning via the BCT, (3) personalized feature
+fusion, and (4) final depression classification. Critically, the BCT
+employs symmetric bidirectional branches comprising an Audio-
+to-Video Transformer and a Video-to-Audio Transformer to enable
+mutual enhancement and complementary learning across modal-
+ities. Extensive experiments validate DepFormer’s effectiveness,
+securing first place in the MPDD Challenge 2025 (Elderly Track),
+underscoring its strong practical potential.
+CCS Concepts
+•Computing methodologies →Artificial intelligence.
+Keywords
+Affective Computing, Automatic Depression Detection, Multimodal
+Fusion
+∗These authors contributed equally to this research.
+†Corresponding authors: Sirui Zhao and Enhong Chen.
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for components of this work owned by others than the
+author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or
+republish, to post on servers or to redistribute to lists, requires prior specific permission
+and/or a fee. Request permissions from permissions@acm.org.
+MM ’25, Dublin, Ireland
+©2025 Copyright held by the owner/author(s). Publication rights licensed to ACM.
+ACM ISBN 979-8-4007-2035-2/2025/10
+https://doi.org/10.1145/3746027.3762062ACM Reference Format:
+Fangyuan Liu, Sirui Zhao, Kang Yin, Tong Xu, and Enhong Chen. 2025.
+DepFormer: A Unified Framework with Bimodal Collaborative Transformer
+for Depression Detection. In Proceedings of the 33rd ACM International
+Conference on Multimedia (MM ’25), October 27–31, 2025, Dublin, Ireland.
+ACM, New York, NY, USA, 7 pages. https://doi.org/10.1145/3746027.3762062
+1 Introduction
+Depression is a common and disabling mental disorder marked
+by persistent sadness, loss of interest, and cognitive decline. Ac-
+cording to the World Health Organization, over 280 million people
+worldwide suffer from depression, with incidence rates continuing
+to rise, particularly among the elderly1. If not properly treated,
+depression can lead to severe outcomes such as social withdrawal,
+reduced quality of life, and even suicide. These risks underscore the
+need for early and reliable detection. Given that traditional clinical
+interviews for depression are costly and unscalable, particularly in
+the face of a growing patient population, the development of an
+automated detection system has become an urgent need [1].
+Automated depression detection based on multimodal data (e.g.,
+video, audio, and text) has shown great promise. Existing research
+mainly focused on two key aspects: extracting depression-relevant
+features from each modality and effectively fusing these heteroge-
+neous features into a unified representation. Early works employed
+CNNs and RNNs to capture spatial and temporal patterns [ 2–8],
+while recent studies leverage Transformer-based architectures and
+state-space models like Mamba for improved long-range temporal
+modeling [ 9–15]. Regarding fusion, methods vary from decision-
+level aggregation of unimodal predictions [ 16–18] to feature-level
+concatenation or projection before classification [ 16–18]. More
+recent approaches explore model-level fusion with cross-modal
+attention mechanisms to enable richer interaction [10, 15, 19, 20].
+While these methods have achieved promising results, they still
+face two key limitations: (1) insufficient extraction of depression-
+relevant patterns from pre-extracted features (e.g., MFCCs, Open-
+Face), which often suffer from semantic loss and limited expressive-
+ness due to the unavailability of raw data under privacy constraints;
+and (2) sub-optimal multimodal fusion strategies that fail to fully
+1https://www.who.int/news-room/fact-sheets/detail/depression
+13930
+MM ’25, October 27–31, 2025, Dublin, Ireland Fangyuan Liu, Sirui Zhao, Kang Yin, Tong Xu, and Enhong Chen
+Unimodal Feature Extraction
+AudioBimodal Collaborative Representation Learning
+AvgPool
+AvgPoolCMFCCs,
+OpenSmile,
+Wave2Vec FeaturesLSTM
+Encoder
+Bimodal Collaborative TransformerVideo→Audio
+Collaborative Transformer
+Video
+Openface,
+resnet,
+Densenet FeaturesLSTM
+EncoderAudio→Video
+Collaborative TransformerPersonalized 
+Feature
+Linear Layer
+FC
+ClassifierNormal
+DepressedC
+Figure 1: Overview of DepFormer. Temporal features from pre-extracted audio and video inputs are refined by a Bimodal
+Collaborative Transformer with personalized information, then used for depression classification.
+exploit the complementary nature of different modalities. To ad-
+dress these challenges, we propose DepFormer, a unified frame-
+work that leverages a Bimodal Collaborative Transformer for cross-
+modal representation learning, along with personalized feature
+fusion to enhance depression detection. As illustrated in Fig. 1, the
+model begins with unimodal feature extraction modules that learn
+modality-specific temporal representations from pre-extracted fea-
+ture sequences. The extracted representations are then fed into a
+Bimodal Collaborative Transformer, which enables bidirectional
+interaction between audio and video features, allowing each modal-
+ity to enrich the other through a cross-attention mechanism. To
+further enhance adaptability, we incorporate personalized fusion,
+aligning the learned representation with individual-specific traits
+to better reflect subject variability. Finally, the joint representation,
+which is enriched through cross-modal interaction and person-
+alized adaptation, is used for depression classification. Extensive
+experimental results on benchmark dataset demonstrate that our
+method achieves superior performance for depression detection.
+Our main contributions can be summarized as follows:
+•We propose a unified framework for multimodal depression
+detection that integrates Bimodal Collaborative Transform-
+ers and personalized fusion to model temporal dependencies
+and cross-modal interactions effectively.
+•We design a dual-branch collaborative transformer struc-
+ture that facilitates modality-specific enhancement through
+mutual guidance and complementary learning.
+•Extensive experiments demonstrate the effectiveness of our
+method, and we achieved rank 1 in the MPDD 2025 [ 9] El-
+derly Track, highlighting the practical value and robustness
+of our approach.
+2 Related Work
+2.1 Multimodal Depression Detection
+Automatic depression detection has attracted increasing attention
+in recent years, especially with the availability of multimodal be-
+havioral data such as audio and video. However, unlike many other
+multimodal tasks, depression detection often involves sensitive
+information, making the collection and release of raw audio and
+video data difficult due to privacy concerns. As a result, datasetssuch as DAIC-WOZ [ 21], D-Vlog [ 10] and MPDD [ 9] provide only
+pre-extracted features instead of raw video and audio, which brings
+new challenges to depression detection.
+Early studies on multimodal depression detection relied on hand-
+crafted features. Visual cues were captured using local descriptors
+like LBP and LBP-TOP [ 22,23], while MFCCs [ 24] and LIWC [ 25]
+were commonly used for audio and text, respectively. Although
+interpretable and easy to implement, these methods depend heavily
+on manually designed features, limiting their capacity to model
+complex patterns and generalize to real-world scenarios.
+Recent advances in deep learning enable richer representation
+learning from multimodal features. To model temporal visual dy-
+namics, CNN-based methods have been widely explored, typically
+using 3D CNNs or 2D CNNs combined with temporal modules such
+as attentive convolutions [ 2–5]. However, these methods are limited
+in capturing long-range dependencies. To address this, RNN-based
+models, particularly those using LSTM units, have been introduced
+to better capture temporal progression in visual and acoustic cues.
+These methods [ 6–8] leverage sequential modeling to capture dy-
+namic changes in mood-related cues. While such models enhance
+sequential modeling, their generalization to real-world depression
+analysis remains limited, especially under diverse subject condi-
+tions and varying recording environments [26].
+More recently, Transformer-based architectures [ 9–14] and Mamba-
+based models [ 15] have been applied to depression detection, offer-
+ing enhanced long-range dependency modeling through attention
+or state-space mechanisms. For example, Yoon et al. [ 10] proposed
+a Transformer-based multimodal model with cross-attention to
+effectively capture relationships across acoustic and visual features,
+while Ye et al. [ 15] introduced DepMamba, leveraging Mamba for
+hierarchical contextual modeling and progressive fusion. Building
+on these developments, we introduce a unified framework incorpo-
+rating a Bimodal Collaborative Transformer for bimodal represen-
+tation learning and personalized depression severity classification.
+2.2 Multimodal Fusion Methods
+In recent years, multimodal fusion techniques, which integrate cues
+from heterogeneous sources such as audio and video, have become
+important for improving depression detection. These multimodal
+13931
+DepFormer: A Unified Framework with Bimodal Collaborative Transformer for Depression Detection MM ’25, October 27–31, 2025, Dublin, Ireland
+fusion approaches can typically be categorized into feature-level,
+decision-level, and model-level fusion strategies.
+Feature-level fusion involves concatenating features from vari-
+ous modalities to learn a unified representation before classifica-
+tion [ 16–18]. For instance, Fu et al. [ 16] fused facial action units and
+speech features by extracting complementary emotional features
+by integrating them via a graph-based temporal attention model to
+enhance depression detection. However, feature-level fusion may
+suffer from feature incompatibility and high dimensionality when
+combining heterogeneous modalities.
+Alternatively, decision-level fusion ensembles the predictions
+from models trained on single modalities to reach a collective classi-
+fication [ 27–30]. Zhang et al. [ 28] proposed a decision-level method
+using a multi-agent system. While straightforward, decision-level
+fusion lacks deep interaction between modalities, potentially limit-
+ing its ability to capture subtle cross-modal correlations.
+Model-level fusion incorporates cross-modal interactions within
+the model architecture, allowing more integrated learning [ 10,15,
+19,20]. Tao et al. [ 20] proposed DepMSTAT, a model-level fusion
+framework that jointly captures spatio-temporal acoustic and vi-
+sual features with a unified transformer for depression detection.
+In contrast, our work explores a different direction by leverag-
+ing a bimodal collaborative transformer to dynamically enhance
+modality-specific representations through mutual refinement, fur-
+ther incorporating personalized features for robust classification.
+3 Methodology
+In this section, we present our proposed DepFormer, a unified multi-
+modal depression detection framework, which integrates acoustic,
+video, and personalized features to achieve effective depression
+detection. The core idea of our model is to first extract modality-
+specific temporal representations, then enhance them through a
+Bimodal Collaborative Transformer, and finally incorporate person-
+alized information to form a unified representation for final classifi-
+cation. The entire architecture consists of four key stages: Unimodal
+Feature Extraction, Bimodal Collaborative Representation Learn-
+ing, Personalized Feature Fusion, and Depression Classification. An
+overview of the model is illustrated in Fig. 1.
+3.1 Unimodal Feature Extraction
+In the first stage of our model, we encode acoustic and video tem-
+poral sequences independently. Given the inherently sequential
+nature of both audio and video data, we adopt Long Short-Term
+Memory (LSTM) networks to capture temporal dependencies within
+each modality. This allows the model to learn modality-specific
+representations that preserve important temporal dynamics.
+Let the acoustic and video feature sequences be denoted as X𝑎∈
+R𝑇𝑎×𝐷𝑎andX𝑣∈R𝑇𝑣×𝐷𝑣, where𝑇𝑎and𝑇𝑣represent the sequence
+lengths, and 𝐷𝑎and𝐷𝑣are the feature dimensions of the acoustic
+and video modalities, respectively.
+We employ two separate LSTM encoders to model each modal-
+ity’s temporal structure, with outputs computed as:
+L𝑎=LSTM audio(X𝑎),L𝑣=LSTM video(X𝑣). (1)
+Each LSTM encoder produces a sequence of high-level represen-
+tations, followed by a dense transformation layer applied at every
+Bimodal Collaborative Transformer
+Multi-Head
+Cross AttentionAdd & NormFeed ForwardAdd & Norm
+Multi-Head
+Cross AttentionAdd & NormFeed ForwardAdd & Norm
+QaKvVv VaKaQv
+Audio Feature Video FeatureN× N×Figure 2: Illustration of Bimodal Collaborative Transformer.
+timestep:
+F𝑎=tanh(L𝑎W𝑎),F𝑣=tanh(L𝑣W𝑣), (2)
+where W𝑎∈R𝐷𝑎×𝑑model,W𝑣∈R𝐷𝑣×𝑑model are learnable projec-
+tion matrices specific to each modality. This dense embedding strat-
+egy enables the model to transform raw LSTM outputs into a com-
+pact, non-linear feature space while preserving temporal resolution.
+The resulting modality-specific embeddings F𝑎andF𝑣are then
+forwarded to the Bimodal Collaborative Representation Learning
+module.
+3.2 Bimodal Collaborative Representation
+Learning
+A key component of our model is the Bimodal Collaborative
+Transformer (BCT), which is designed to enable deep interaction
+between the acoustic and video modalities. As illustrated in Fig. 2,
+this module consists of two symmetric branches: an Audio-to-Video
+Collaborative Transformer and a Video-to-Audio Collaborative Trans-
+former. Each branch is implemented as a stack of 𝑁Transformer
+layers, where each layer refines the temporal representation of one
+modality by attending to the complementary modality through
+multi-head cross-attention.
+Each layer in the collaborative Transformer branch adopts a
+standard Transformer architecture, where self-attention is replaced
+by multi-head cross-attention to capture inter-modal dependen-
+cies. The layer is composed of a cross-attention module, residual
+connections, layer normalization, and a feed-forward network.
+Let𝑀𝑣
+attn∈{0,−∞}𝑇𝑣×𝑇𝑣and𝑀𝑎
+attn∈{0,−∞}𝑇𝑎×𝑇𝑎denote the
+attention masks for the visual and acoustic modalities, respectively.
+LetF[𝑖]
+𝑎andF[𝑖]
+𝑣denote the input acoustic and visual features to
+the𝑖-th Transformer layer, where 𝑖∈{1,...,𝑁}. The inputs to the
+first layer are initialized as F[0]
+𝑎=F𝑎andF[0]
+𝑣=F𝑣.
+13932
+MM ’25, October 27–31, 2025, Dublin, Ireland Fangyuan Liu, Sirui Zhao, Kang Yin, Tong Xu, and Enhong Chen
+The layer-wise computation for the Video-to-Audio branch is
+detailed below, with the Audio-to-Video branch following the same
+structure but with modality roles reversed:
+(1) Multi-Head Cross-Attention. We first project the input features
+into query, key, and value representations:
+Q[𝑖]
+𝑎=F[𝑖]
+𝑎W𝑄,K[𝑖]
+𝑣=F[𝑖]
+𝑣W𝐾,V[𝑖]
+𝑣=F[𝑖]
+𝑣W𝑉, (3)
+where W𝑄,W𝐾,W𝑉∈R𝑑model×(ℎ𝑑model)are projection matrices.
+The projected features are reshaped and split into ℎheads, each
+of dimension 𝑑model . For the𝑖-th layer and 𝑗-th attention head, the
+query matrix is Q[𝑖]
+𝑎,𝑗∈R𝑇𝑎×𝑑model, and the key and value matrices
+areK[𝑖]
+𝑣,𝑗,V[𝑖]
+𝑣,𝑗∈R𝑇𝑣×𝑑model. The attention output for the 𝑗-th head is
+computed as:
+head[𝑖]
+𝑗=softmax©­
+«Q[𝑖]
+𝑎,𝑗(K[𝑖]
+𝑣,𝑗)⊤+Mattn
+𝑣√𝑑modelª®
+¬V[𝑖]
+𝑣,𝑗, (4)
+The outputs from all heads are concatenated and projected to
+form the final result:
+MultiHead[𝑖]=Concat(head[𝑖]
+1,..., head[𝑖]
+ℎ)W𝑂, (5)
+where W𝑂∈R(ℎ𝑑model)×𝑑model is the output projection matrix.
+(2) Add & LayerNorm. A residual connection and layer normal-
+ization are applied:
+Z[𝑖]
+𝑎=LayerNorm(F[𝑖]
+𝑎+MultiHead(F[𝑖]
+𝑎,F[𝑖]
+𝑣,Mattn
+𝑣)).(6)
+(3) Feed-Forward & Normalization. Each block concludes with a
+feed-forward network, followed by a residual connection and layer
+normalization:
+F[𝑖+1]
+𝑎=LayerNorm(Z[𝑖]
+𝑎+FFN(Z[𝑖]
+𝑎)), (7)
+where FFN(·)denotes a two-layer fully connected network with
+ReLU activation.
+To obtain fixed-length representations, we apply masked aver-
+age pooling over the sequence length dimension of the final-layer
+outputs from both branches. Specifically, F[𝑁]
+𝑎denotes the final
+output of the Video-to-Audio branch, and F[𝑁]
+𝑣corresponds to the
+final output of the Audio-to-Video branch. The resulting global
+representations for each modality can be formulated as:
+ˆF𝑎=MaskedAvgPool(F[𝑁]
+𝑎,Mpool
+𝑎),
+ˆF𝑣=MaskedAvgPool(F[𝑁]
+𝑣,Mpool
+𝑣),(8)
+where Mpool
+𝑎∈{0,1}𝑇𝑎andMpool
+𝑣∈{0,1}𝑇𝑣are binary masks used
+to ignore padded positions. The final bimodal representation is
+obtained by concatenating the modality-specific embeddings:
+Fbimodal =Concat(ˆF𝑎,ˆF𝑣). (9)
+3.3 Personalized Feature Fusion
+As the MPDD dataset provides static personalized features P∈R𝑑𝑝,
+which capture participant-specific information. To integrate these
+features with the dynamic bimodal representations, we first project
+the original personalized features P, which have dimension 𝑑𝑝, into
+the model’s hidden feature space R𝑑𝑚𝑜𝑑𝑒𝑙 via a linear layer:
+P′=Linear(P),P′∈R𝑑model. (10)The personalized embedding P′is then concatenated with the
+bimodal collaborative feature Fbimodal to form the final feature rep-
+resentation:
+Ffinal=Concat(Fbimodal,P′). (11)
+This fusion strategy allows the model to leverage both the static
+participant-specific attributes and the dynamic audio-visual fea-
+tures for improved prediction.
+3.4 Depression Classification
+To improve robustness and mitigate class imbalance, we adopt a
+dual-head classification strategy. The final fused representation
+Ffinalis fed into two parallel classifiers: one trained with cross-
+entropy loss and the other with focal loss. Formally, the two sets of
+logits are given by:
+zCE=Classifier CE(Ffinal),zFL=Classifier FL(Ffinal), (12)
+where zCEandzFLare the logits predicted by the two classifiers.
+The total training loss is defined as:
+L=LCE(zCE,y)+𝜆FL·LFocal(zFL,y), (13)
+whereLCEandLFocal denote the cross-entropy and focal loss func-
+tions, respectively, yis the ground-truth label, and 𝜆FLcontrols the
+contribution of the focal loss.
+Only the Classifier CEis used during inference, while both heads
+are trained jointly to improve robustness. The final prediction is
+obtained by applying a softmax to the logits zCE:
+ˆy=𝑠𝑜𝑓𝑡𝑚𝑎𝑥(zCE). (14)
+4 Experimentation
+4.1 Dataset and Evaluation Metrics
+The MPDD-Elderly dataset is a multimodal dataset focused on de-
+pression detection in elderly individuals. It includes audio-visual
+recordings and personalized information to better capture depression-
+related cues while considering individual differences. Each sample
+is associated with all three classification schemes: binary (normal vs.
+depressed), ternary (normal, mild, severe), and quinary (five-level
+PHQ-9 severity).
+For evaluation, we adopt two standard classification metrics:
+Accuracy (Acc) and F1 Score (F1). Both weighted and unweighted
+versions are calculated to evaluate performance on the MPDD-
+Elderly dataset.
+4.2 Implementation Details
+We evaluate our model on three classification tasks—binary, ternary,
+and quinary—under two split window settings (1-second and 5-
+second clips). The model is implemented in PyTorch and trained
+using either the Adam or AdamW optimizer, with hyperparameters
+summarized in Table 2.
+Our model is implemented using PyTorch. All experiments are
+conducted on a machine equipped with an NVIDIA RTX 3090 GPU.
+Guided by empirical results, we set the hidden dimension 𝑑model to
+256, the number of Transformer layers 𝑁to 1, and the number of
+attention heads ℎto 2 to balance efficiency and performance.. For
+input features, we use DenseNet-based visual features for the video
+13933
+DepFormer: A Unified Framework with Bimodal Collaborative Transformer for Depression Detection MM ’25, October 27–31, 2025, Dublin, Ireland
+Table 1: Results (%) of different methods on MPDD-Elderly. (W/U: weighted/unweighted)
+Task Window Method Audio Video Acc (W) Acc (U) F1 (W) F1 (U)
+Binary1sBaseline [9] mfcc openface 85.40 84.62 85.71 79.13
+DepMamba [15] mfcc densenet 85.72 94.27 93.98 89.15
+Ours mfcc densenet 88.75 96.03 95.83 92.48
+5sBaseline [9] opensmile resnet 75.40 80.77 81.75 72.37
+DepMamba [15] mfcc densenet 73.75 90.75 89.35 79.55
+Ours mfcc densenet 91.25 96.92 96.80 94.29
+Ternary1sBaseline [9] opensmile resnet 55.49 56.41 56.48 55.64
+DepMamba [15] mfcc densenet 71.88 74.32 74.23 72.85
+Ours mfcc densenet 81.55 86.34 85.93 83.23
+5sBaseline [9] wav2vec openface 59.62 57.69 58.22 59.37
+DepMamba [15] mfcc densenet 72.82 69.47 69.37 68.65
+Ours mfcc densenet 85.21 81.50 81.73 81.45
+Quinary1sBaseline [9] opensmile densenet 45.79 69.23 66.26 46.66
+DepMamba [15] mfcc densenet 48.87 77.09 73.10 49.55
+Ours mfcc densenet 70.23 81.50 76.82 73.38
+5sBaseline [9] mfcc densenet 57.71 78.21 75.62 58.40
+DepMamba [15] mfcc densenet 61.54 78.85 75.78 55.62
+Ours mfcc densenet 70.08 79.30 76.2 67.71
+Table 2: Training hyperparameters for each task
+Task Optimizer Batch Size Learning Rate Epochs
+1s Binary AdamW 8 2e-5 300
+5s Binary AdamW 2 1.8e-5 200
+1s Ternary Adam 4 4.58e-5 200
+5s Ternary Adam 4 4.58e-5 300
+1s Quinary Adam 1 9.8e-5 300
+5s Quinary Adam 1 9.75e-5 200
+modality and MFCCs for the audio modality, as these configura-
+tions yielded superior performance in our empirical evaluations.
+During training, input sequences within each batch are padded to
+the maximum sequence length in that batch, and corresponding
+attention masks are generated to ensure proper temporal modeling.
+For more details, please refer to our code2.
+Note: For the final competition submission, we adopt two strate-
+gies to further boost model performance. First, for the 1s and 5s
+quinary classification tasks, we perform ensemble learning by av-
+eraging predictions from multiple checkpoints, weighted by their
+performance. Second, to ensure label consistency across clips from
+the same subject, we apply a subject-level voting strategy. Specifi-
+cally, since each subject may have multiple non-overlapping clips
+in the test set, we first predict each clip independently, then as-
+sign the majority-voted label across clips as the final subject-level
+prediction, which is propagated back to all associated samples.
+4.3 Comparison with Existing Methods
+We compare our method with the official baseline and a recent
+state-of-the-art model, DepMamba [ 15], which adopts a progressive
+audio-visual fusion strategy for multimodal depression detection.
+2https://github.com/lfy-ustc/MPDD25-Track1-SolutionIt leverages convolutional networks and Mamba layers for hierar-
+chical sequence modeling and multimodal fusion. To ensure fair
+comparison, we incorporate the same personalized feature embed-
+dings into the reproduced DepMamba model using our integration
+strategy. All methods are evaluated on the test set of the MPDD-
+Elderly dataset across binary, ternary, and quinary classification
+tasks under both 1-second and 5-second window settings.
+Table 1 presents the results across binary, ternary, and quinary
+classification tasks under both 1-second and 5-second window set-
+tings. Our method consistently outperforms both DepMamba and
+the official baseline in all settings, achieving substantial gains in
+both accuracy and F1 scores. Notably, the performance advantage
+holds across all levels of label granularity, from coarse (binary) to
+fine-grained (quinary) classification, showing the effectiveness of
+our approach in recognizing varying degrees of depression severity.
+4.4 Performance Fluctuation Analysis
+Given the inherent variability among participants in the MPDD-
+Elderly dataset (e.g., health conditions, personal traits), we observe
+noticeable performance fluctuations across different training runs.
+To provide a more comprehensive evaluation, we evaluate all mod-
+els on the MPDD-Elderly test set by repeating each experiment 10
+times, reporting the mean and standard deviation of Accuracy and
+F1, and conducting paired t-tests to assess significance.
+As shown in Table 3, compared to DepMamba, our method gen-
+erally achieves higher average accuracy and F1 scores across all
+tasks. For example, in the 5s quinary classification task, our model
+reaches an average accuracy of 68.09% with a standard deviation of
+8.26, while DepMamba achieves 55.20% with a larger fluctuation
+(std = 17.91). A similar pattern is observed in the F1 score (65.95 ±
+7.97 vs. 50.04 ±19.00). These improvements are not only substan-
+tial but also statistically significant in most tasks and metrics, as
+indicated by paired t-tests.
+13934
+MM ’25, October 27–31, 2025, Dublin, Ireland Fangyuan Liu, Sirui Zhao, Kang Yin, Tong Xu, and Enhong Chen
+Table 3: Mean ±SD (%) of accuracy and F1 score, averaged
+over weighted and unweighted results. Asterisks indicate
+significance over the DepMamba (paired t-test: * 𝑝<0.05, **
+𝑝<0.01).
+Task Method Acc F1
+1s BinaryDepMamba [15] 81.85 ±8.23 81.81 ±7.48
+Ours 81.92 ±8.38 82.34 ±7.86
+1s TernaryDepMamba [15] 60.27 ±8.64 60.50 ±8.56
+Ours 69.19± 11.49* 68.31 ±11.61*
+1s QuinaryDepMamba [15] 59.38 ±15.24 56.67 ±14.96
+Ours 66.63 ±11.36** 64.86 ±9.61**
+5s BinaryDepMamba [15] 77.67 ±8.94 77.07 ±8.18
+Ours 85.94 ±7.25** 85.23 ±7.61**
+5s TernaryDepMamba [15] 55.77 ±12.14 54.81 ±11.32
+Ours 67.07 ±12** 65.31 ±11.97**
+5s QuinaryDepMamba [15] 55.20 ±17.91 50.04 ±19
+Ours 68.09 ±8.26** 65.95 ±7.97**
+Despite these improvements, we still observe non-trivial vari-
+ance across different training runs, especially in the fine-grained
+(ternary, quinary) tasks. This highlights the challenge posed by
+the inherent variability of the dataset. Overall, our method demon-
+strates relatively better consistency than DepMamba, but stability
+remains an open issue deserving further investigation.
+4.5 Ablation Study
+To investigate the contribution of each key component in our model,
+we conduct an ablation study on the 5-second quinary classifica-
+tion task using the MPDD-Elderly dataset. We choose this setting
+due to its higher difficulty and finer-grained classification, which
+provides a more rigorous evaluation of each module’s effectiveness.
+All results are evaluated on the test set and reported as the mean
+and standard deviation over 5 independent runs. The results are
+summarized in Table 4.
+Table 4: Ablation study results (wo = without the component).
+Metrics are averaged over weighted and unweighted results.
+Methods ACC F1
+Unimodal Feature Extraction
+wo LSTM encoder 60.20±15.83 57.47±15.59
+wo Dense layer 61.93±9.88 59.38±9.00
+Bimodal Feature Fusion
+wo BCT 60.20±8.19 57.53±10.35
+wo Cross-attention 60.13±15.07 59.01±12.80
+Personalized Feature Fusion
+wo personalized feature 64.17±10.08 61.50±9.81
+ours 69.33±8.21 66.91±7.59
+Unimodal Feature Extraction As shown in Table 4, replac-
+ing the LSTM encoder with a 1D convolutional layer results in a
+marked performance drop, indicating the effectiveness of sequentialmodeling for temporal features. Additionally, removing the dense
+projection layer (by directly applying max pooling) also leads to
+degraded performance, underscoring its role in transforming and
+enhancing the unimodal representations before fusion.
+Bimodal Feature Fusion Removing the Bimodal Collabora-
+tive Transformer (BCT) entirely causes a notable reduction in both
+accuracy and F1 score, confirming its importance in cross-modal
+integration and alignment. Moreover, replacing the cross-attention
+mechanism within BCT with a standard self-attention module yields
+further performance degradation. These results highlight the neces-
+sity of explicitly modeling inter-modality interactions to enhance
+multimodal alignment.
+Personalized Feature Fusion As shown in Table 4, removing
+the personalized features leads to a moderate performance drop.
+This suggests that while personalized information is not the domi-
+nant factor, it helps the model better adapt to individual differences,
+which is particularly valuable in depression detection tasks where
+personal context is critical.
+4.6 Presentation of Final Results
+As shown in Table 5, our method ranks first on the MPDD-Elderly
+test set with a final score of 0.8623, achieving the highest accu-
+racy and competitive F1 score among all submissions. This result
+highlights the effectiveness of our approach.
+Table 5: Final scores on MPDD-Elderly test datasets.
+Team Score Accuracy F1 Score
+wakk (ours) 0.8623 0.8613 0.8633
+ZBX_LMC 0.8580 0.8519 0.8640
+SEU_AIPLab 0.8576 0.8611 0.8541
+y61329697 0.8464 0.8446 0.8482
+5 Conclusion
+This paper presents a unified framework for multimodal depression
+detection, aiming to enhance the learning of depression-relevant
+features from pre-extracted multimodal inputs and to improve
+cross-modal fusion. To this end, we propose a Bimodal Collabora-
+tive Transformer that facilitates bidirectional interaction between
+modalities, along with a personalized fusion strategy to incorporate
+individual-specific information. Experimental results on the MPDD
+benchmark demonstrate that our method achieves state-of-the-art
+performance and ranks first in the MPDD-Elderly track, confirm-
+ing its effectiveness and practical value for privacy-constrained,
+real-world applications.
+6 Acknowledgments
+This work was supported in part by grants from the National Natu-
+ral Science Foundation of China (No.6240624, 61727809, 62222213,
+U22B2059).
+References
+[1]Kaining Mao, Yuqi Wu, and Jie Chen. 2023. A Systematic Review on Automated
+Clinical Depression Diagnosis. npj Mental Health Research 2, 1 (Nov. 2023), 20.
+doi:10.1038/s44184-023-00040-z
+13935
+DepFormer: A Unified Framework with Bimodal Collaborative Transformer for Depression Detection MM ’25, October 27–31, 2025, Dublin, Ireland
+[2]Wheidima Carneiro de Melo, Eric Granger, and Abdenour Hadid. 2019. Combining
+Global and Local Convolutional 3D Networks for Detecting Depression from
+Facial Expressions. In 2019 14th IEEE International Conference on Automatic Face
+& Gesture Recognition (FG 2019). 1–8. doi:10.1109/FG.2019.8756568
+[3]Zhengyin Du, Weixin Li, Di Huang, and Yunhong Wang. 2019. Encoding Visual
+Behaviors with Attentive Temporal Convolution for Depression Prediction. In
+2019 14th IEEE International Conference on Automatic Face & Gesture Recognition
+(FG 2019). 1–7. doi:10.1109/FG.2019.8756584
+[4]Mingyue Niu, Ming Li, and Changzeng Fu. 2024. PointTransform Networks for
+automatic depression level prediction via facial keypoints. Knowledge-Based
+Systems 297 (2024), 111951. doi:10.1016/j.knosys.2024.111951
+[5]Li Zhou, Zhenyu Liu, Zixuan Shangguan, Xiaoyan Yuan, Yutong Li, and Bin Hu.
+2023. TAMFN: Time-Aware Attention Multimodal Fusion Network for Depression
+Detection. IEEE Transactions on Neural Systems and Rehabilitation Engineering
+31 (2023), 669–679. doi:10.1109/TNSRE.2022.3224135
+[6]Xingchen Ma, Hongyu Yang, Qiang Chen, Di Huang, and Yunhong Wang. 2016.
+DepAudioNet: An Efficient Deep Model for Audio based Depression Classifica-
+tion. In Proceedings of the 6th International Workshop on Audio/Visual Emotion
+Challenge (Amsterdam, The Netherlands) (AVEC ’16). Association for Computing
+Machinery, New York, NY, USA, 35–42. doi:10.1145/2988257.2988267
+[7]Mingyue Niu, Jianhua Tao, Bin Liu, Jian Huang, and Zheng Lian. 2023. Multimodal
+Spatiotemporal Representation for Automatic Depression Level Detection. IEEE
+Transactions on Affective Computing 14, 1 (2023), 294–307. doi:10.1109/TAFFC.
+2020.3031345
+[8]Mohamad Al Jazaery and Guodong Guo. 2021. Video-Based Depression Level
+Analysis by Encoding Deep Spatiotemporal Features. IEEE Transactions on Affec-
+tive Computing 12, 1 (2021), 262–268. doi:10.1109/TAFFC.2018.2870884
+[9]Changzeng Fu, Zelin Fu, Qi Zhang, Xinhe Kuang, Jiacheng Dong, Kaifeng Su, Yikai
+Su, Wenbo Shi, Junfeng Yao, Yuliang Zhao, Shiqi Zhao, Jiadong Wang, Siyang
+Song, Chaoran Liu, Yuichiro Yoshikawa, Björn Schuller, and Hiroshi Ishiguro.
+2025. The First MPDD Challenge: Multimodal Personality-aware Depression
+Detection. arXiv:2505.10034 [cs.AI] https://arxiv.org/abs/2505.10034
+[10] Jeewoo Yoon, Chaewon Kang, Seungbae Kim, and Jinyoung Han. 2022. D-vlog:
+Multimodal Vlog Dataset for Depression Detection. Proceedings of the AAAI
+Conference on Artificial Intelligence 36, 11 (Jun. 2022), 12226–12234. doi:10.1609/
+aaai.v36i11.21483
+[11] Kai Shao, Rui Wang, Yixue Hao, Long Hu, Min Chen, and Hans Arno Jacobsen.
+2024. Multimodal Physiological Signals Representation Learning via Multiscale
+Contrasting for Depression Recognition. In Proceedings of the 32nd ACM Interna-
+tional Conference on Multimedia (Melbourne VIC Australia, 2024-10-28). ACM,
+5692–5701. doi:10.1145/3664647.3681605
+[12] Xin Li, Haizhuang Liu, Rongquan Wang, Bochao Zou, Yuxin Lin, and Huimin
+Ma. 2024. EMo Transformer: Transformer-Based Depression Detection via Eye
+Movements. In 2024 IEEE International Conference on Multimedia and Expo (ICME).
+1–6. doi:10.1109/ICME57554.2024.10688241
+[13] Yazhou Zhang, Yu He, Lu Rong, and Yijie Ding. 2022. A Hybrid Model for
+Depression Detection With Transformer and Bi-directional Long Short-Term
+Memory. In 2022 IEEE International Conference on Bioinformatics and Biomedicine
+(BIBM). 2727–2734. doi:10.1109/BIBM55620.2022.9995184
+[14] Yongfeng Tao, Minqiang Yang, Yushan Wu, Kevin Lee, Adrienne Kline, and Bin
+Hu. 2024. Depressive semantic awareness from vlog facial and vocal streams via
+spatio-temporal transformer. Digital Communications and Networks 10, 3 (2024),
+577–585. doi:10.1016/j.dcan.2023.03.007
+[15] Jiaxin Ye, Junping Zhang, and Hongming Shan. 2025. DepMamba: Progressive
+Fusion Mamba for Multimodal Depression Detection. In ICASSP 2025 IEEE Interna-
+tional Conference on Acoustics, Speech and Signal Processing (ICASSP), Hyderabad,
+India, April 06-11, 2025. 1–5.
+[16] Zhaolong Ning, Hao Hu, Ling Yi, Zihan Qie, Amr Tolba, and Xiaojie Wang. 2024. A
+Depression Detection Auxiliary Decision System Based on Multi-Modal Feature-
+Level Fusion of EEG and Speech. IEEE Transactions on Consumer Electronics 70, 1
+(2024), 3392–3402. doi:10.1109/TCE.2024.3370310
+[17] Rahul Gupta, Nikolaos Malandrakis, Bo Xiao, Tanaya Guha, Maarten Van Seg-
+broeck, Matthew Black, Alexandros Potamianos, and Shrikanth Narayanan.
+2014. Multimodal Prediction of Affective Dimensions and Depression in Human-
+Computer Interactions. In Proceedings of the 4th International Workshop on Au-
+dio/Visual Emotion Challenge (Orlando, Florida, USA) (AVEC ’14). Association forComputing Machinery, New York, NY, USA, 33–40. doi:10.1145/2661806.2661810
+[18] Changzeng Fu, Fengkui Qian, Yikai Su, Kaifeng Su, Siyang Song, Mingyue Niu,
+Jiaqi Shi, Zhigang Liu, Chaoran Liu, Carlos Toshinori Ishi, and Hiroshi Ishiguro.
+2025. Facial action units guided graph representation learning for multimodal
+depression detection. Neurocomputing 619 (2025), 129106. doi:10.1016/j.neucom.
+2024.129106
+[19] Huiting Fan, Xingnan Zhang, Yingying Xu, Jiangxiong Fang, Shiqing Zhang,
+Xiaoming Zhao, and Jun Yu. 2024. Transformer-based multimodal feature en-
+hancement networks for multimodal depression detection integrating video,
+audio and remote photoplethysmograph signals. Information Fusion 104 (2024),
+102161. doi:10.1016/j.inffus.2023.102161
+[20] Yongfeng Tao, Minqiang Yang, Huiru Li, Yushan Wu, and Bin Hu. 2024. DepM-
+STAT: Multimodal Spatio-Temporal Attentional Transformer for Depression
+Detection. 36, 7 (July 2024), 2956–2966. doi:10.1109/TKDE.2024.3350071
+[21] Jonathan Gratch, Ron Artstein, Gale M. Lucas, Giota Stratou, Stefan Scherer, An-
+gela Nazarian, Rachel Wood, Jill Boberg, David DeVault, Stacy Marsella, David R.
+Traum, Skip Rizzo, and Louis-Philippe Morency. 2014. The Distress Analysis Inter-
+view Corpus of human and computer interviews. In Proceedings of the Ninth Inter-
+national Conference on Language Resources and Evaluation, LREC 2014, Reykjavik,
+Iceland, May 26-31, 2014, Nicoletta Calzolari, Khalid Choukri, Thierry Declerck,
+Hrafn Loftsson, Bente Maegaard, Joseph Mariani, Asunción Moreno, Jan Odijk,
+and Stelios Piperidis (Eds.). European Language Resources Association (ELRA),
+3123–3128. http://www.lrec-conf.org/proceedings/lrec2014/summaries/508.html
+[22] Jyoti Joshi, Roland Goecke, Gordon Parker, and Michael Breakspear. 2013. Can
+body expressions contribute to automatic depression analysis?. In 2013 10th IEEE
+International Conference and Workshops on Automatic Face and Gesture Recognition
+(FG). 1–7. doi:10.1109/FG.2013.6553796
+[23] Abhinav Dhall and Roland Goecke. 2015. A temporally piece-wise fisher vector
+approach for depression analysis. In 2015 International Conference on Affective
+Computing and Intelligent Interaction (ACII). 255–259. doi:10.1109/ACII.2015.
+7344580
+[24] Nicholas Cummins, Stefan Scherer, Jarek Krajewski, Sebastian Schnieder, Julien
+Epps, and Thomas F. Quatieri. 2015. A review of depression and suicide risk
+assessment using speech analysis. Speech Communication 71 (2015), 10–49. doi:10.
+1016/j.specom.2015.03.004
+[25] Michelle Morales, Stefan Scherer, and Rivka Levitan. 2018. A Linguistically-
+Informed Fusion Approach for Multimodal Depression Detection. In Proceedings
+of the Fifth Workshop on Computational Linguistics and Clinical Psychology: From
+Keyboard to Clinic, Kate Loveys, Kate Niederhoffer, Emily Prud’hommeaux, Re-
+becca Resnik, and Philip Resnik (Eds.). Association for Computational Linguistics,
+New Orleans, LA, 13–24. doi:10.18653/v1/W18-0602
+[26] Siyang Song, Yiming Luo, Tugba Tumer, Changzeng Fu, Michel Valstar, and Hatice
+Gunes. 2024. Loss Relaxation Strategy for Noisy Facial Video-based Automatic
+Depression Recognition. ACM Trans. Comput. Healthcare 5, 2, Article 12 (April
+2024), 24 pages. doi:10.1145/3648696
+[27] Md Nasir, Arindam Jati, Prashanth Gurunath Shivakumar, Sandeep Nal-
+lan Chakravarthula, and Panayiotis Georgiou. 2016. Multimodal and Multires-
+olution Depression Detection from Speech and Facial Landmark Features. In
+Proceedings of the 6th International Workshop on Audio/Visual Emotion Challenge
+(Amsterdam, The Netherlands) (AVEC ’16). Association for Computing Machinery,
+New York, NY, USA, 43–50. doi:10.1145/2988257.2988261
+[28] Xiaowei Zhang, Jian Shen, Zia ud Din, Jinyong Liu, Gang Wang, and Bin Hu.
+2019. Multimodal Depression Detection: Fusion of Electroencephalography and
+Paralinguistic Behaviors Using a Novel Strategy for Classifier Ensemble. IEEE
+Journal of Biomedical and Health Informatics 23, 6 (2019), 2265–2275. doi:10.1109/
+JBHI.2019.2938247
+[29] Bingtao Zhang, Hanshu Cai, Yubo Song, Lei Tao, and Yanlin Li. 2022. Computer-
+Aided Recognition Based on Decision-Level Multimodal Fusion for Depression.
+IEEE Journal of Biomedical and Health Informatics 26, 7 (2022), 3466–3477. doi:10.
+1109/JBHI.2022.3165640
+[30] Michel Valstar, Jonathan Gratch, Björn Schuller, Fabien Ringeval, Denis Lalanne,
+Mercedes Torres Torres, Stefan Scherer, Giota Stratou, Roddy Cowie, and Maja
+Pantic. 2016. AVEC 2016: Depression, Mood, and Emotion Recognition Workshop
+and Challenge. In Proceedings of the 6th International Workshop on Audio/Visual
+Emotion Challenge (Amsterdam, The Netherlands) (AVEC ’16). Association for
+Computing Machinery, New York, NY, USA, 3–10. doi:10.1145/2988257.2988258
+13936

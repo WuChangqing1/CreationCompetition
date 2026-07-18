@@ -9,6 +9,8 @@
 ## [Unreleased]
 
 ### Added
+- [2026-07-18] CV 正式结果：Elder G+P binary F1=0.64±0.12，Joint G+P binary F1=0.66±0.10，回归头(CCC)≈0 不可行
+- [2026-07-18] PyTorch nightly cu130：修复 RTX 5070 Blackwell GPU 兼容性
 - [2026-06-04] FEAT: 5-fold CV + Elder/Young 联合训练（experiments/train_cv.py + train_val_split.py create_kfold_splits），含 JointDataset + per-cohort ID 去重
 - [2026-06-04] DOCS：数据集全面分析报告（数据集分析.md），17,231 文件扫描，9 章节，8 条改进建议
 - [2026-06-03] DOCS：新增 K008-K010 三个问题（train.py 缺失特性、维度灾难、三元分类失败）

@@ -1,0 +1,627 @@
+HOPE: Hierarchical Fusion for Optimized and Personality-Aware
+Estimation of Depression
+Hanlei Shi∗
+Yu Liu∗
+Haoxun Li∗
+Yuxuan Ding∗
+shihanlei23@mails.ucas.ac.cn
+liuyu233@mails.ucas.ac.cn
+lihaoxun23@mails.ucas.ac.cn
+dingyuxuan23@mails.ucas.ac.cn
+Hangzhou Institute for Advanced Study, University of
+Chinese Academy of Sciences
+Hangzhou, Zhejiang, ChinaJiaxi Hu
+hujiaxi23@mails.ucas.ac.cn
+Hangzhou Institute for Advanced Study, University of
+Chinese Academy of Sciences
+Hangzhou, Zhejiang, China
+Leyuan Qu†
+leyuan.qu@ucas.ac.cn
+Hangzhou Institute for Advanced Study, University of
+Chinese Academy of Sciences
+Hangzhou, Zhejiang, ChinaTaihao Li†
+lith@ucas.ac.cn
+Hangzhou Institute for Advanced Study, University of
+Chinese Academy of Sciences
+Hangzhou, Zhejiang, China
+Abstract
+Depression detection remains challenged by generalized modeling
+approaches that fail to account for individual heterogeneity. To ad-
+dress this, the Multimodal Personality-aware Depression Detection
+(MPDD) Challenge introduced personalized features into the model-
+ing process, aiming to better capture individual variability. However,
+the baseline models still exhibit two critical limitations: the neglect
+of textual semantics embedded in audio, and inconsistent predic-
+tions for the same subject across tasks and samples. Motivated
+by these limitations, we introduce HOPE (Hierarchical fusion for
+Optimized and Personality-aware Estimation of Depression), a uni-
+fied framework for consistent, subject-level depression estimation.
+HOPE first employs a Latent Semantic Projection (LSP) module to
+reconstruct textual semantics from audio features when transcripts
+are unavailable. It then introduces a consistency-aware integration
+mechanism that hierarchically fuses multi-branch predictions to
+resolve inter-task and inter-sample contradictions. HOPE achieved
+first place in the MPDD Challenge Young Track, demonstrating
+∗These authors contributed equally to this work.
+Hanlei Shi: Designed and implemented the modified multi-branch architecture, with
+specialized integration of the LSP module. Yu Liu: Developed the consistency-aware
+subject-level fusion strategy; led the writing and completed final code integration
+and open-source release preparation. Haoxun Li: Proposed and implemented the
+LSP module, including its architecture design, feature alignment strategy, and su-
+pervised training pipeline. Yuxuan Ding: Procured and preprocessed MER datasets;
+conducted component-wise analysis attributing gains to innovations. Author order
+was randomized to reflect equal contribution.
+†Corresponding author.
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+MM ’25, Dublin, Ireland
+©2025 Copyright held by the owner/author(s).
+ACM ISBN 979-8-4007-2035-2/2025/10
+https://doi.org/10.1145/3746027.3762063strong cross-modal learning capabilities and consistent, subject-
+level depression prediction.
+CCS Concepts
+•Computing methodologies →Artificial intelligence.
+Keywords
+Depression Detection; Multimodal Learning; Personality-aware
+Modeling; Hierarchical Fusion
+ACM Reference Format:
+Hanlei Shi, Yu Liu, Haoxun Li, Yuxuan Ding, Jiaxi Hu, Leyuan Qu, and Taihao
+Li. 2025. HOPE: Hierarchical Fusion for Optimized and Personality-Aware
+Estimation of Depression. In Proceedings of the 33rd ACM International
+Conference on Multimedia (MM ’25), October 27–31, 2025, Dublin, Ireland.
+ACM, New York, NY, USA, 7 pages. https://doi.org/10.1145/3746027.3762063
+1 Introduction
+Depression is a mental health disorder and has emerged as a major
+public health concern worldwide [ 15,22]. This disorder not only
+severely impairs an individual’s quality of life and social function-
+ing but also poses long-term risks to their physical health, family
+relationships, and professional development [ 16,19]. Traditionally,
+depression assessment methods have mainly relied on psychometric
+scales [ 1,8] and shallow learning algorithms applied to structured
+data [ 4,21]. In recent years, the rapid progress of deep learning has
+opened new directions for depression detection, especially through
+multimodal approaches that integrate information from speech,
+facial expressions, and text data [2, 6, 24].
+However, most existing approaches still adopt a generalized mod-
+eling paradigm which often fail to account for the heterogeneity
+of depression across individuals [ 13,18]. For instance, even at the
+same level of depression severity, people with different personality
+13937
+MM ’25, October 27–31, 2025, Dublin, Ireland Hanlei Shi et al.
+Figure 1: The overview of HOPE. We first employ a LSP module to extract corresponding textual semantic features from the
+audio. In the first stage, four modal features (video, audio, personalized text, and pseudo-text feature) are fed into the branch
+model for preliminary fusion to enhance the capability of individual branches. During the second stage, sample confusion is
+conducted based on the branch model outputs from the first-stage, followed by secondary feature fusion. The system ultimately
+generates both binary and ternary classification results through a dual-classifier architecture.
+traits may display distinct patterns in their speech prosody, facial
+cues, or linguistic style [ 23]. Due to individual variability, current
+depression detection models exhibit limited performance [ 3,7,14].
+To highlight these limitations, the ACM Multimedia 2025 MPDD
+Challenge [ 5] introduced a benchmark task based on pre-extracted
+multimodal features. While the baseline MPDD models have vali-
+dated the critical role of personality traits in depression modeling
+and demonstrated that incorporating personality information sig-
+nificantly improves prediction accuracy, two key limitations persist.
+First, the baseline models ignore the textual semantic content con-
+veyed by the audio (i.e., the actual verbal expressions of the subjects),
+which often contains crucial clinical cues for identifying depressive
+tendencies. Second, in the MPDD dataset, each subject is associ-
+ated with three distinct samples, each evaluated under two window
+lengths (1s and 5s) and two classification tasks (binary and ternary).
+In the baseline setting, these are treated as independent instances,
+disregarding subject identity. As a result, existing methods often
+produce inconsistent and contradictory clinical predictions across
+samples, window lengths, and tasks for the same individual.
+To address these limitations, we propose HOPE—Hierarchical
+fusion for Optimized and Personality-aware Estimation of
+depression, a unified framework tailored for consistency-aware,
+subject-level depression prediction. The innovations of this study
+are as follows: first, inspired by the observation that textual infor-
+mation in audio-visual dialogues can provide richer text seman-
+tic features [ 17,19], we construct a novel LSP module trained onextensive external dataset. In scenarios where raw dialogue tran-
+scripts are unavailable and access to original audio-visual data is
+restricted, this module reconstructs textual semantic representa-
+tions from audio features, effectively supplementing critical text-
+based semantic information. Second, to address the subject-level
+prediction inconsistency observed in the MPDD baseline, we de-
+sign a consistency-aware individual-level integration mechanism.
+By hierarchically fusing outputs from multiple task-specific and
+sample-specific branches, the model learns to resolve logical con-
+tradictions and amplify the most reliable signals, ensuring coherent
+and clinically plausible subject-level predictions. The main contri-
+butions of this study can be summarized as follows:
+•We propose the LSP module, which extracts transcript-level
+semantic information from audio features when the raw
+dialogue text data and audio-visual data are inaccessible,
+thereby supplementing critical text-based semantic informa-
+tion carried by the audio.
+•We propose a consistency-aware individual-level integration
+mechanism that hierarchically fuses multi-branch predic-
+tions to resolve inter-task and inter-sample contradictions in
+the baseline of MPDD, thereby enhancing the subject-level
+reliability of depression assessment.
+•Our proposed HOPE framework secured first place in the
+MPDD-Young competition track, demonstrating superior
+cross-modal learning capabilities under strict privacy con-
+straints (only pre-extracted features were permitted) and
+limited training samples.
+13938
+HOPE: Hierarchical Fusion for Optimized and Personality-Aware Estimation of Depression MM ’25, October 27–31, 2025, Dublin, Ireland
+2 Method
+2.1 Method Overview
+To address two limitations of the baseline which neglect audio’s
+textual semantics (containing clinically vital verbal expressions)
+and which yield inconsistent judgments by processing same-subject
+samples independently, we propose HOPE. As shown in Fig. 1, its
+framework contains LSP Module and consistency-aware individual-
+level integration mechanism , specifically addressing these issues.
+Inspired by evidence that textual modalities provide richer clini-
+cal cues than audio-visual data for depression detection [ 17,19], we
+trained the LSP Module on the auxiliary MER2025 dataset [ 10] to es-
+tablish end-to-end mapping from audio to textual features—enabling
+direct semantic extraction without speech transcripts [ 9]. The re-
+sulting "Pseudo-Text Features" are incorporated as a new modality
+into our framework, with technical implementations detailed in
+Section 2.2.
+While preserving the four-branch subtask structure defined by
+the MPDD challenge, HOPE builds on the baseline design where
+separate feature extractors are used for each window length (1s,
+5s) and task type (binary, ternary), forming four distinct branches.
+Each subject contributes 12 inputs in total—three samples under
+two window lengths and two task settings. However, the baseline
+treats these inputs independently, often yielding conflicting predic-
+tions across tasks and temporal windows for the same subject. To
+resolve this, we introduce a two-stage hierarchical fusion mecha-
+nism that promotes subject-level consistency. Sample outputs are
+first aggregated into task-level embeddings via learned attention,
+then integrated through a temporal reasoning module that rec-
+onciles discrepancies across branches. This allows the model to
+selectively amplify reliable predictions, producing coherent and
+clinically meaningful outcomes at the subject level. Further techni-
+cal details are elaborated in Section 2.3, and Section 2.4.
+2.2 Latent Semantic Projection Module
+In addition to leveraging static personality traits, HOPE introduces a
+dynamic semantic representation derived from the subject’s spoken
+audio. This representation is designed to encode the high-level
+linguistic meaning—complementing what it was said (content) and
+by whom (personality). The goal is to project each audio segment
+into a semantic space aligned with sentence-level language models,
+enabling deeper understanding of depression-relevant content.
+Due to privacy protection constraints in the MPDD, only pre-
+extracted Wav2Vec [ 20] features are available instead of raw audio
+data. To extract richer semantic representations from these limited
+audio features that better capture textual content, as shown in Fig 2,
+we design a pooled mapping approach that transforms the available
+512-dimensional audio features into a text-aligned semantic space
+of 1024 dimensions.
+Our approach, formalized in Algorithm 1, adopts a streamlined
+training strategy that treats the entire utterance as a unit during
+training while applying the learned mapping segment-wise during
+inference. Specifically, during the training phase, we average-pool
+the full Wav2Vec feature sequence from each utterance to produce
+a global 512-dimensional representation. This pooled feature is
+then processed through a three-layer feedforward network 𝑓𝜃with
+intermediate dimensions of 1024, incorporating ReLU activations,
+Figure 2: Illustration of the feature mapping process. The
+LSP module converts audio features into corresponding tex-
+tual semantic features. The Virtual Data Flow represents the
+processing pipeline when raw audio data is available, while
+the Real Data Flow denotes the scenario where only audio
+features are used.
+Algorithm 1 Pseudo Code of LSP Module
+Input: Training pairs{(𝑎𝑖,𝑡𝑖)}, where𝑎𝑖∈R512,𝑡𝑖∈R1024;
+MPDD audio feature 𝐴𝑐𝑜𝑚𝑝∈R𝑇×512(5-second).
+Output: Semantic sequence 𝑇𝑠𝑒𝑚𝑎𝑛𝑡𝑖𝑐∈R𝑇×1024
+Training Phase:
+repeat
+Sample(𝑎,𝑡)from training set
+𝑡𝑝𝑟𝑒𝑑←𝑓𝜃(𝑎)
+𝐿←1−cos(𝑡𝑝𝑟𝑒𝑑,𝑡)
+𝜃←𝜃−𝛼∇𝜃𝐿
+until convergence
+Inference Phase (MPDD Data):
+𝑇𝑠𝑒𝑚𝑎𝑛𝑡𝑖𝑐←[]
+for𝑗=1to𝑇do
+𝑡𝑗←𝑓𝜃(𝐴𝑐𝑜𝑚𝑝[𝑗])
+𝑇𝑠𝑒𝑚𝑎𝑛𝑡𝑖𝑐.append(𝑡𝑗)
+end for
+return𝑇𝑠𝑒𝑚𝑎𝑛𝑡𝑖𝑐∈R𝑇×1024
+dropout (𝑝=0.2), and layer normalization. The network is trained
+using cosine similarity loss to minimize the semantic distance be-
+tween predicted features and ground-truth RoBERTa [ 12] sentence
+embeddings.
+At inference time, we apply the trained mapping network 𝑓𝜃
+to each 5-second audio segment of the MPDD data independently.
+As detailed in Algorithm 1, given segment-level input features
+of shape(𝑇,512)where each segment corresponds to a 5-second
+audio chunk, our model outputs a sequence of semantic vectors
+13939
+MM ’25, October 27–31, 2025, Dublin, Ireland Hanlei Shi et al.
+with shape(𝑇,1024). Each output vector captures the latent lin-
+guistic semantics of the corresponding audio segment, creating a
+temporally-aligned semantic representation that preserves both the
+temporal structure of the original audio and the semantic richness
+of the corresponding textual content.
+These generated pseudo-text features provide the Keys and Val-
+ues in a cross-attention [ 11] mechanism, while the personalized
+texts serve as Queries. This interaction allows the model to align
+what the subject expresses with who they are, encouraging the
+extraction of highly personalized, depression-relevant cues. This
+attention mechanism operates exclusively at the segment level, pro-
+ducing personality-conditioned representations that serve as fixed
+inputs to the subsequent hierarchical fusion module.
+Importantly, the resulting pseudo-text features are treated as an
+additional text-aligned modality, orthogonal to raw audio features,
+and seamlessly integrated into the multimodal fusion process. Em-
+pirical results in Section 3 confirm that this design leads to improved
+discrimination in both binary and ternary settings.
+2.3 Consistency-aware Individual-level Feature
+Integration
+Building upon the MPDD baseline, each of the four branches in
+our HOPE framework corresponds to a distinct temporal resolution
+and classification task. To enhance feature quality under the strict
+input constraints of the challenge, we introduce three lightweight
+and effective modifications: (i) convolutional layers to capture lo-
+cal audio–visual patterns, (ii) a Q-Former module for cross-modal
+alignment between audio and visual features, and (iii) a personality-
+aware attention mechanism that injects subject-specific priors into
+sample-level representations.
+These enriched embeddings are used to derive a stable and con-
+sistent representation for each subject through a two-stage fusion
+strategy, which integrates features across both subtasks and tem-
+poral samples in a 12 →3→1 pattern. This layered integration
+enables the model to consolidate heterogeneous cues into a co-
+herent individual-level semantic representation. Unlike conven-
+tional attention-based fusion that assumes feature compatibility,
+our approach shifts the paradigm from feature aggregation to
+conflict arbitration, explicitly addressing cross-task prediction
+conflicts through personality-aware resolution.
+At the stage one, we aggregate information from four distinct
+modality-specific branches—audio, video, personalized text, and
+pseudo-text—each of which is processed by a corresponding sub-
+network within the Binary/Ternary Branch Model (see Fig. 1). These
+sub-networks transform their respective inputs into intermediate
+representations, denoted as f(𝑖)
+𝑏𝑟𝑎𝑛𝑐ℎ. To enable effective fusion, each
+branch-specific feature vector is linearly transformed into a shared
+latent space:
+f(𝑖)
+𝑎𝑙𝑖𝑔𝑛𝑒𝑑=Linear𝑖(f(𝑖)
+𝑏𝑟𝑎𝑛𝑐ℎ)∈R512, 𝑖∈{1,2,3,4} (1)
+The aligned vectors are stacked into a tensor of shape 4×512and
+passed through a multi-head attention (MHA) module to model
+inter-branch dependencies:
+F𝑎𝑡𝑡𝑛=MHA(F𝑠𝑡𝑎𝑐𝑘𝑒𝑑,F𝑠𝑡𝑎𝑐𝑘𝑒𝑑,F𝑠𝑡𝑎𝑐𝑘𝑒𝑑) (2)where F𝑠𝑡𝑎𝑐𝑘𝑒𝑑 =stack([f(1)
+𝑎𝑙𝑖𝑔𝑛𝑒𝑑,..., f(4)
+𝑎𝑙𝑖𝑔𝑛𝑒𝑑]). The output from
+the attention layer is averaged across branches and enhanced using
+a two-layer MLP with residual connections and layer normalization:
+f𝑓𝑢𝑠𝑒𝑑 =LayerNorm(MLP(mean(F𝑎𝑡𝑡𝑛)))∈R512(3)
+This fused vector captures a consistent subtask-level embedding
+at a given time step, combining signals across temporal scales and
+classification granularities.
+The stage two of fusion integrates temporal information across
+the three input windows. As illustrated in Fig. 1, we obtain three
+fused vectors f(1)
+𝑓𝑢𝑠𝑒𝑑,f(2)
+𝑓𝑢𝑠𝑒𝑑,f(3)
+𝑓𝑢𝑠𝑒𝑑corresponding to different sam-
+ples for each subject. These are fed into a BiLSTM to encode tem-
+poral dependencies:
+H𝑡𝑒𝑚𝑝𝑜𝑟𝑎𝑙 =BiLSTM([f(1)
+𝑓𝑢𝑠𝑒𝑑,f(2)
+𝑓𝑢𝑠𝑒𝑑,f(3)
+𝑓𝑢𝑠𝑒𝑑])∈R3×512(4)
+We apply another MHA layer over the temporal outputs to capture
+varying importance across samples:
+H𝑎𝑡𝑡𝑛,W𝑎𝑡𝑡𝑛=MHA(H𝑡𝑒𝑚𝑝𝑜𝑟𝑎𝑙,H𝑡𝑒𝑚𝑝𝑜𝑟𝑎𝑙,H𝑡𝑒𝑚𝑝𝑜𝑟𝑎𝑙)(5)
+Attention weights are averaged across heads and normalized with a
+softmax function to compute the temporal importance distribution:
+w𝑡𝑒𝑚𝑝𝑜𝑟𝑎𝑙 =SoftMax(mean(W𝑎𝑡𝑡𝑛,dim=1)) (6)
+Finally, a weighted sum of the attended temporal features is com-
+puted, followed by an MLP to produce the final subject-level repre-
+sentation:
+f𝑓𝑖𝑛𝑎𝑙 =MLP 3∑︁
+𝑡=1w(𝑡)
+𝑡𝑒𝑚𝑝𝑜𝑟𝑎𝑙·H(𝑡)
+𝑎𝑡𝑡𝑛!
+∈R512(7)
+The resulting vector f𝑓𝑖𝑛𝑎𝑙 encodes semantically rich, temporally
+aware, and personality-aligned information. It serves as the input
+for downstream multi-task classification, enabling coherent binary
+and ternary predictions per subject.
+2.4 Multi-task Classification
+To support nuanced depression assessment, HOPE adopts a multi-
+task learning strategy that simultaneously predicts both binary
+(healthy vs. depressed) and ternary (healthy vs. mild vs. severe)
+labels. This formulation encourages the model to learn shared rep-
+resentations that capture core depressive signals while allowing
+task-specific classifiers to focus on different severity granularity.
+Both classification heads operate on the same final feature vector
+f𝑓𝑖𝑛𝑎𝑙∈R512, which encodes personality-aware, temporally inte-
+grated, and multimodally aligned information. We adopt the same
+fully connected classification architecture as used in the MPDD
+baseline for both heads. The binary classifier C𝑏𝑖𝑛𝑎𝑟𝑦 outputs log-
+its for two classes, while the ternary classifier C𝑡𝑒𝑟𝑛𝑎𝑟𝑦 produces
+logits over three severity levels. Given the shared feature input
+h𝑠ℎ𝑎𝑟𝑒𝑑 =f𝑓𝑖𝑛𝑎𝑙 , the predicted distributions are:
+𝑃(𝑦𝑏𝑖𝑛𝑎𝑟𝑦)=SoftMax(C𝑏𝑖𝑛𝑎𝑟𝑦(h𝑠ℎ𝑎𝑟𝑒𝑑)), (8)
+𝑃(𝑦𝑡𝑒𝑟𝑛𝑎𝑟𝑦)=SoftMax(C𝑡𝑒𝑟𝑛𝑎𝑟𝑦(h𝑠ℎ𝑎𝑟𝑒𝑑)) (9)
+The overall training objective is a weighted combination of bi-
+nary and ternary cross-entropy losses:
+L𝑡𝑜𝑡𝑎𝑙=𝛼𝑏·L𝑏𝑖𝑛𝑎𝑟𝑦+(1−𝛼𝑏)·L𝑡𝑒𝑟𝑛𝑎𝑟𝑦 (10)
+13940
+HOPE: Hierarchical Fusion for Optimized and Personality-Aware Estimation of Depression MM ’25, October 27–31, 2025, Dublin, Ireland
+where𝛼𝑏is the binary-task weighting factor. We empirically set
+𝛼𝑏=0.5, which yielded the best overall performance across both
+tasks on the validation set. This balanced weighting ensures that
+neither task dominates the learning process, promoting effective
+representation sharing and mutual reinforcement. Both losses are
+computed using standard categorical cross-entropy:
+L𝑏𝑖𝑛𝑎𝑟𝑦 =−𝑁∑︁
+𝑖=1𝑦𝑏𝑖𝑛𝑎𝑟𝑦
+𝑖log𝑃(𝑦𝑏𝑖𝑛𝑎𝑟𝑦
+𝑖), (11)
+L𝑡𝑒𝑟𝑛𝑎𝑟𝑦 =−𝑁∑︁
+𝑖=1𝑦𝑡𝑒𝑟𝑛𝑎𝑟𝑦
+𝑖log𝑃(𝑦𝑡𝑒𝑟𝑛𝑎𝑟𝑦
+𝑖) (12)
+3 Experiment
+3.1 Dataset and metrics
+LSP module dataset and metrics. To train and evaluate the pro-
+posed LSP module, we utilize the MER2025 dataset—a large-scale
+multimodal dataset developed for emotion recognition in real-world
+Chinese media content [ 10]. The full dataset contains more than
+180,000 utterances, each annotated with corresponding emotional
+labels and aligned across audio, text, and video modalities. For our
+purposes, we focus exclusively on paired audio-text samples, select-
+ing 100,000 utterances for training the LSP module. These are split
+into training, validation, and test sets in a 7:1.5:1.5 ratio. To evaluate
+the quality of the projected Pseudo-Text Features, we employ Root
+Mean Square Error (RMSE) and Cosine Similarity (Cosine Sim) as
+complementary metrics.
+Full model dataset and metrics. We evaluate our full model
+on the MPDD-Young dataset [ 5], a multimodal dataset designed
+for depression detection in young adults. This dataset provides
+synchronized audio, visual, and demographic data, alongside PHQ-
+9-based depression severity labels and personality attributes based
+on the BigFive-10 scale. Each sample is further enriched with gender,
+age, and birth region metadata to support more nuanced analysis.
+Instead of raw audio or video, the organizers provide pre-extracted
+multimodal features for each participant. Each individual has three
+data samples per modality (denoted as _1, _2, _3). The audio, visual,
+and personalized semantic features used in our experiments follow
+the configuration provided in the MPDD-Young dataset [5].
+Following the baseline evaluation protocol, we adopt four met-
+rics: weighted and unweighted F1 scores ( 𝑊𝐹1/𝑈𝐹1) as well as
+weighted and unweighted accuracies ( 𝑊𝐴𝑐𝑐/𝑈𝐴𝑐𝑐). The final score
+is computed as a weighted average of the F1 scores and accuracies
+across the four tasks.
+In our evaluation, each task𝑖in the above equations corresponds
+to a specific classification setup supported by the dataset. The
+MPDD-Young dataset defines two tasks: (1) binary classification
+between normal anddepressed, and (2) ternary classification among
+normal, mildly depressed, and severely depressed. Performance met-
+rics are averaged across these tasks to compute the final track-level
+score.
+3.2 Experimental Setup
+LSP module experimental setup. We compare two strategies for
+generating pseudo-text features from audio inputs, distinguishedTable 1: LSP Result Of Different Mapping Model
+Model Text encoder Cosine Sim ↑RMSE ↓
+Map1Bert 87.85 51.50
+RoBERTa 95.63 33.82
+Map2Bert 87.84 46.62
+RoBERTa 95.63 25.46
+primarily by the structure of their outputs. The first approach pro-
+duces a single 1024-dimensional vector for each utterance, while the
+second—our adopted strategy—yields a sequence of vectors with
+shape(𝑇,1024), where𝑇denotes the number of 5-second segments
+in the utterance.
+In the first method called Map1, each utterance is divided into
+5-second chunks, from which 512-dimensional Wav2Vec2 features
+are extracted and stacked into a sequence of shape (𝑇,512). This
+sequence is then passed through a Transformer encoder prepended
+with a[𝑐𝑙𝑠]token, and the output corresponding to [𝑐𝑙𝑠]is trained
+to regress the RoBERTa embedding of the full transcription. In con-
+trast, our approach processes each 5-second segment independently
+using a trained mapping network, which we called Map2, produc-
+ing a sequence of segment-level semantic embeddings with shape
+(𝑇,1024). This design retains the temporal dynamics inherent in the
+pre-extracted audio features and enables the capture of fine-grained
+semantic cues over time. Such a representation is inherently com-
+patible with our hierarchical fusion mechanism, which operates
+across time and modality.
+Full model experimental setup. Our full model’s experiments
+adopt a two-stage training strategy: (1) The first stage focuses on
+training each branch model to specialize in depression detection
+for its specific input type—defined by a particular combination of
+sample, window length, and classification task—thereby enhancing
+task-specific performance; (2) The second stage builds upon the
+trained branch models from the first stage, employing a hierarchi-
+cal fusion mechanism that integrates task-specific features across
+branches and temporal samples.
+The first stage adopts a 10-fold cross-validation strategy follow-
+ing the baseline configuration, where each of the four task-specific
+branches is trained separately using parameters consistent with
+the original setting. The second stage inherits the overall configu-
+ration from the first stage—including data loading strategies and
+random seed settings—and is trained for 100 epochs using the best-
+performing fold’s weights. For all experiments, we use a batch
+size of 8 and fix the random seed. The dataset is split by subject
+IDs to prevent identity leakage between training and validation.
+The network employs ReLU activations, with a dropout rate of 0.3
+applied to the classifier layers. Optimization is conducted using
+Adam (learning rate = 0.001, 𝛽1= 0.9, weight decay = 1e-4), and a
+plateau-based scheduler reduces the learning rate when validation
+accuracy stagnates. All models are implemented in PyTorch 2.3.0
+and trained on 8×L20 GPUs.
+3.3 Experimental Results
+Feature mapping comparison. As shown in Table 1, RoBERTa
+consistently outperforms BERT across both mapping strategies,
+indicating better suitability for our semantic projection task. Both
+13941
+MM ’25, October 27–31, 2025, Dublin, Ireland Hanlei Shi et al.
+Table 2: Results on the validation set with 1-second and 5-second windowed inputs. The symbols ∗,†, and‡indicate that
+the corresponding models are built upon the best-performing configuration from the previous group within the table (as
+highlighted by the light blue row).
+Model 1s/5s Binary 1s/5s Ternary
+𝑈𝐹1𝑊𝐹1𝑈𝐴𝑐𝑐.𝑊𝐴𝑐𝑐. 𝑈𝐹1𝑊𝐹1𝑈𝐴𝑐𝑐.𝑊𝐴𝑐𝑐.
+Baseline 49.77/54.64 49.77/54.64 50.00/54.92 50.00/54.92 35.05/45.75 41.60/54.64 41.60/54.65 34.85/46.09
+Baseline + GRU 60.10/60.59 60.10/60.59 60.23/60.61 60.23/60.61 38.77/44.81 45.99/53.51 45.83/53.41 38.67/45.04
+Baseline + CNN 68.18/67.04 68.18/67.04 68.18/67.05 68.18/67.05 45.48/44.75 53.07/51.02 52.57/51.14 46.34/45.30
+∗+ Mix up 74.88/74.99 74.88/74.99 75.00/75.00 75.00/75.00 51.95/58.56 58.74/64.46 57.95/64.77 51.55/57.23
+∗+ SMOTE 54.52/59.42 54.52/59.42 54.55/59.47 54.55/59.47 35.05/45.75 41.60/54.64 41.67/54.55 34.85/46.09
+∗+ Class-weighted 70.44/71.56 70.44/71.56 70.45/71.59 70.45/71.59 49.27/52.55 55.77/59.38 55.68/59.09 49.46/52.59
+∗+ Border-SMOTE 78.34/78.34 78.34/78.34 78.41/78.41 78.41/78.41 59.35/58.21 64.35/64.93 63.64/64.77 59.66/57.23
+∗+ Mix up+SMOTE 65.86/63.47 65.86/63.47 65.91/63.64 65.91/63.64 42.00/42.13 47.32/50.14 47.73/50.00 40.32/42.20
+∗+ Mix up+Border-SMOTE 75.98/73.86 75.98/73.86 76.14/73.86 76.14/73.86 52.95/55.70 59.96/61.22 59.09/61.36 52.59/54.10
+∗+ Mix up+Class-weighted 69.31/68.16 69.31/68.18 69.32/68.18 69.32/68.18 45.96/49.27 55.42/55.77 55.68/55.68 45.99/49.46
+†+ Concat 77.17/76.06 77.17/76.06 77.27/76.14 77.27/76.14 57.46/63.39 63.90/66.35 63.64/65.91 56.47/62.03
+†+ Q-former 81.73/82.95 81.73/82.95 81.82/82.95 81.82/82.95 71.68/67.44 75.44/72.51 76.14/72.73 76.14/66.57
+‡+ Map1 BERT Concat 80.66/82.90 80.66/82.90 80.68/82.95 80.68/82.95 62.24/72.69 67.44/76.62 67.05/77.27 62.22/77.27
+‡+ Map1 RoBERTa + Concat 86.36/86.36 86.36/86.36 86.36/86.36 86.36/86.36 80.91/78.97 81.72/80.57 81.82/80.68 81.82/80.68
+‡+ Map2 RoBERTa + Concat 88.63/92.04 88.63/92.04 88.64/92.05 88.64/92.05 82.75/76.00 82.83/81.64 82.95/81.82 82.95/75.51
+‡+ Map2 RoBERTa + Q-former 91.64/95.45 91.64/95.45 91.67/95.45 91.67/95.45 85.05/78.77 85.71/85.12 85.98/85.23 85.98/78.35
+‡+ Map2 RoBERTa + Cross-Att 96.21/97.73 96.21/97.73 96.21/97.73 96.21/97.73 86.09/80.71 86.93/87.53 87.12/87.50 87.12/80.43
+methods achieve comparable cosine similarity scores when using
+the same text encoder, suggesting that semantic directionality is
+generally well preserved. However, our method yields a notably
+lower RMSE under RoBERTa supervision, highlighting its advan-
+tage in preserving the numerical fidelity of semantic features.
+We innovatively designed two audio-text feature mapping archi-
+tectures and applied the generated features to the optimal Stage
+One model for comparative validation. Experimental data in Table 1
+clearly demonstrates that the novel feature mapping approach ex-
+hibits competitive performance. The final implement of LSP module
+is recording to "Map2 RoBERTa" settings according to the result
+shows in Table 1 and Table 2.
+Branch model results. (1) To capture local audio-visual pat-
+terns, we augmented the baseline’s LSTM feature extraction with
+additional CNN or GRU layers. As shown in Table 2, the results
+demonstrate that CNN layers significantly improve local pattern
+recognition capability. (2) Addressing class imbalance and small
+sample issues in the dataset, we implemented multiple data aug-
+mentation approaches. Table 2 shows the Border-SMOTE strategy
+achieved optimal performance.
+(3) For better multimodal fusion in branch models, we introduced
+the Q-former fusion method. The " †+ Q-former" results in Table 2
+validate its effectiveness. (4) To further enhance branch model per-
+formance, we developed Personality-aware Audio Map Text Fea-
+ture. After obtaining different audio-map-text features through
+modality mapping model training, various text feature fusion meth-
+ods were tested. As shown in Table 2, the " ‡+ Map2 RoBERTa
++ Cross-Att" combination delivered the best performance. Here,
+"Map2 RoBERTa" denotes the Pseudo-Text Feature obtained by
+training the corresponding LSP model, and "Cross-Att" represents
+the cross-attention fusion method between Pseudo-Text Feature
+and Personalized Text Feature.Table 3: Final result on the test set
+Training Stage Final Score Final F1 Final Acc.
+Stage One 85.39 85.43 85.35
+Stage Two 94.51 94.27 94.76
+Consistency-aware individual-level feature integration
+results. In the second stage, we introduce a hierarchical fusion
+mechanism to integrate task-specific features across branches and
+temporal samples, based on the first-stage branch models. As shown
+in Table 3, this two-stage framework significantly improves perfor-
+mance: Final F1 increases from 85.43% to 94.27% (+8.84), Accuracy
+from 85.35% to 94.76% (+9.41), and Final Score from 85.39% to 94.51%.
+These results validate the effectiveness of the proposed hierarchical
+fusion mechanism within the two-stage training framework.
+4 Conclusion
+In this work, we propose HOPE, a novel hierarchical multimodal
+framework for depression estimation that explicitly incorporates
+personality-aware representations and subject-level consistency
+modeling. By introducing the LSP module, HOPE effectively bridges
+the semantic gap between audio features and textual representa-
+tions under privacy-constrained settings. The hierarchical fusion
+strategy integrates heterogeneous modalities and sample-level pre-
+dictions into coherent subject-level outputs. HOPE achieved 1st
+place in the ACM MM 2025 MPDD Challenge (Young Track), demon-
+strating outstand performance. Our findings underscore the impor-
+tance of modeling individualized behaviors in multimodal affec-
+tive computing and open avenues for future work on personality-
+informed mental health assessment.
+13942
+HOPE: Hierarchical Fusion for Optimized and Personality-Aware Estimation of Depression MM ’25, October 27–31, 2025, Dublin, Ireland
+Acknowledgments
+This work was supported in part by the Key R&D Program of Zhe-
+jiang (2025C01104), in part by the Scientific Research Staring Foun-
+dation of Hangzhou Institute for Advanced Study (2024HIASC2001),
+and in part by Zhejiang Provincial Natural Science Foundation of
+China (No. LQN25F020001).
+References
+[1]Aaron T Beck, Robert A Steer, and Gregory K Brown. 1996. Beck Depression
+Inventory–II. Psychological Assessment 7, 3 (1996), 490–498.
+[2]Ziqiang Chen, Dandan Wang, Liangliang Lou, Shiqing Zhang, Xiaoming Zhao,
+Shuqiang Jiang, Jun Yu, and Jun Xiao. 2025. Text-guided multimodal depression
+detection via cross-modal feature reconstruction and decomposition. Information
+Fusion 117 (2025), 102861.
+[3]Jiaee Cheong, Aditya Bangar, Sinan Kalkan, and Hatice Gunes. 2025. U-Fair:
+Uncertainty-based Multimodal Multitask Learning for Fairer Depression Detec-
+tion. Proceedings of Machine Learning for Health (PMLR) 259 (2025), 1–14.
+[4]Munmun De Choudhury, Michael Gamon, Scott Counts, and Eric Horvitz. 2013.
+Predicting depression via social media. In Proceedings of ICWSM. 128–137.
+[5]Changzeng Fu, Zelin Fu, Qi Zhang, Xinhe Kuang, Jiacheng Dong, Kaifeng Su, Yikai
+Su, Wenbo Shi, Junfeng Yao, Yuliang Zhao, Shiqi Zhao, Jiadong Wang, Siyang
+Song, Chaoran Liu, Yuichiro Yoshikawa, Björn Schuller, and Hiroshi Ishiguro.
+2025. The First MPDD Challenge: Multimodal Personality-aware Depression
+Detection. arXiv:2505.10034 [cs.AI] https://arxiv.org/abs/2505.10034
+[6]Md Rafiqul Islam, Muhammad Ashad Kabir, Ashir Ahmed, Abu Raihan M Kamal,
+Hua Wang, and Anwaar Ulhaq. 2018. Depression detection from social network
+data using machine learning techniques. Health information science and systems
+6 (2018), 1–12.
+[7]Zhe Ji, Dongjie Yu, and Baoxun Wang. 2021. Personality-aware depression detec-
+tion via semi-supervised deep learning. Information Processing & Management
+58, 3 (2021), 102539.
+[8]Kurt Kroenke, Robert L Spitzer, and Janet BW Williams. 2001. The PHQ-9: validity
+of a brief depression severity measure. Journal of general internal medicine 16, 9
+(2001), 606–613.
+[9]Yunhao Li, Xi Zhang, and Jintao Huang. 2023. Cross-modal depression detec-
+tion: Aligning acoustic and semantic representations via contrastive learning.
+Information Fusion 92 (2023), 102784.
+[10] Zheng Lian, Rui Liu, Kele Xu, Bin Liu, Xuefei Liu, Yazhou Zhang, Xin Liu, Yong Li,
+Zebang Cheng, Haolin Zuo, Ziyang Ma, Xiaojiang Peng, Xie Chen, Ya Li, Erik Cam-
+bria, Guoying Zhao, Björn W. Schuller, and Jianhua Tao. 2025. MER 2025: WhenAffective Computing Meets Large Language Models. arXiv:2504.19423 [cs.HC]
+https://arxiv.org/abs/2504.19423
+[11] Hezheng Lin, Xing Cheng, Xiangyu Wu, Fan Yang, Dong Shen, Zhongyuan Wang,
+Qing Song, and Wei Yuan. 2021. CAT: Cross Attention in Vision Transformer.
+arXiv:2106.05786 [cs.CV] https://arxiv.org/abs/2106.05786
+[12] Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer
+Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov. 2019. Roberta: A
+robustly optimized bert pretraining approach. arXiv preprint arXiv:1907.11692
+(2019).
+[13] Junwen Ma, Yue Zhang, Wenjie Li, and Tong Zhao. 2023. Individualized depres-
+sion detection: Challenges and future directions. IEEE Transactions on Affective
+Computing (2023). doi:10.1109/TAFFC.2023.3278541 Early Access.
+[14] Michelle R Morales, Stefan Scherer, and Rivka Levitan. 2018. A Cross-cultural
+Study on Depression Detection from Speech: Prototypical vs. Individualized
+Models. In Proceedings of Interspeech. 1215–1219.
+[15] Saba Moussavi, Somnath Chatterji, Emese Verdes, Ajay Tandon, Vikram Patel,
+and Bedirhan Ustun. 2007. Depression, chronic diseases, and decrements in
+health: results from the World Health Surveys. The Lancet (2007).
+[16] World Health Organization et al .2017. Depression and other common mental
+disorders: global health estimates. (2017).
+[17] Anupama Ray, Siddharth Kumar, Rutvik Reddy, Prerana Mukherjee, and Ritu Garg.
+2019. Multi-level attention network using text, audio and video for depression
+prediction. In Proceedings of the 9th international on audio/visual emotion challenge
+and workshop. 81–88.
+[18] E. Ryumina, M. Pechenizkiy, and V. Petrushin. 2023. Multimodal Personality
+Traits Assessment (MuPTA) Corpus. Proceedings of Interspeech (2023), 341–345.
+[19] Misha Sadeghi, Robert Richer, Bernhard Egger, Lena Schindler-Gmelch, Lydia He-
+lene Rupp, Farnaz Rahimi, Matthias Berking, and Bjoern M Eskofier. 2024. Har-
+nessing multimodal approaches for depression detection using large language
+models and facial expressions. npj Mental Health Research 3, 1 (2024), 66.
+[20] Steffen Schneider, Alexei Baevski, Ronan Collobert, and Michael Auli. 2019.
+wav2vec: Unsupervised pre-training for speech recognition. arXiv preprint
+arXiv:1904.05862 (2019).
+[21] Adrian B R Shatte, David M Hutchinson, and Samantha J Teague. 2019. Ma-
+chine learning in mental health: A scoping review of methods and applications.
+Psychological Medicine 49, 9 (2019), 1426–1448.
+[22] Financial Times. 2024. The big question: What is driving the global mental health
+crisis? Financial Times (2024). https://www.ft.com/. . . .
+[23] Michael Trotzek, Sebastian Koitka, and Christoph M Friedrich. 2020. Cross-corpus
+depression detection using unsupervised domain adaptation. Expert Systems with
+Applications 161 (2020), 113666.
+[24] Zhenrong Xu, Yuan Gao, Fang Wang, Longqian Zhang, Li Zhang, Junke Wang,
+and Jie Shu. 2025. Depression detection methods based on multimodal fusion of
+voice and text. Scientific Reports 15 (07 2025). doi:10.1038/s41598-025-03524-4
+13943

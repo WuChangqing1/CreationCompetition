@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-07-18 会话 (第6次)
+
+**做了什么**：
+- 修复 CUDA 兼容性：RTX 5070 (Blackwell sm_120) → PyTorch nightly cu130，GPU 正常
+- 跑通完整基线训练：Track1 G+P binary (F1≈0.65, 151 epochs) + ternary (kappa=0, 71 epochs)
+- 5-fold CV Elder G+P binary：F1=0.6405±0.1197, Kappa=0.3076±0.2222，Fold 间波动很大
+- 5-fold CV Joint Elder+Young G+P binary：F1=0.6592±0.0959, Kappa=0.3231±0.1898，改善有限
+- 确认回归头 CCC≈0（PHQ-9 预测不可行），三分类 kappa=0（全猜 class 0）
+- 更新 PROGRESS/DECISIONS(D009)/CHANGELOG/LOG
+- 发现 HOPE 论文（PDF/3746027.3762063.txt）作为模型改进参考
+
+**下次继续**：
+- 阅读 HOPE 论文，评估分层融合架构
+- 引入音频/视频特征（需先解决维度灾难：PCA 降维 or 更强的正则化）
+- 尝试 A-V+P + 5-fold CV，对比纯 G+P
+- 探索更激进的数据增强
+
+---
+
 ## 2026-06-04 会话 (第5次)
 
 **做了什么**：

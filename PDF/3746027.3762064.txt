@@ -1,0 +1,707 @@
+Multi-Level Segment Fusion Based on Adaptive Time-Window
+Selection for Multimodal Personality-Aware Elderly Depression
+Detection
+Yuyun Liu
+School of Biological Science
+and Medical Engineering,
+Southeast University
+Nanjing, China
+liuyuyun@seu.edu.cnKaifei Zhang
+School of Biological Science
+and Medical Engineering,
+Southeast University
+Nanjing, China
+220242613@seu.edu.cnYinghao Ma
+School of Biological Science
+and Medical Engineering,
+Southeast University
+Nanjing, China
+220242615@seu.edu.cn
+Xiaolin Xu
+School of Biological Science
+and Medical Engineering,
+Southeast University
+Nanjing, China
+xuxiaolin@seu.edu.cnTianhua Qi
+School of Biological Science
+and Medical Engineering,
+Southeast University
+Nanjing, China
+qitianhua@seu.edu.cnWenming Zheng
+Key Laboratory of Child Development
+and Learning Science of Ministry of
+Education, Southeast University
+Nanjing, China
+wenming_zheng@seu.edu.cn
+Cheng Lu∗
+School of Biological Science
+and Medical Engineering,
+Southeast University
+Nanjing, China
+cheng.lu@seu.edu.cnYuan Zong∗
+School of Biological Science
+and Medical Engineering,
+Southeast University
+Nanjing, China
+xhzongyuan@seu.edu.cn
+Abstract
+Major Depressive Disorder (MDD) is a prevalent and severe psychi-
+atric disorder, and its detection remains challenging due to the com-
+plexity and variability of its symptoms. Traditional single-modality
+methods often fail to capture the full spectrum of depressive cues,
+which has led to the rise of multimodal methods. The ACM Multi-
+media 2025 "Multimodal Personality-Aware Depression Detection
+Challenge" (MPDD 2025) aims to advance the development of more
+accurate depression detection models by incorporating multimodal
+data. In this paper, we proposed a Multi-Level Segment Fusion Based
+on Adaptive Time-Window Selection (MSF-ATS) method for the
+MPDD-Elderly Track. To address the challenge of sparse and tran-
+sient depressive symptoms, we fuse segment-level classifications
+to obtain subject-level classifications. An adaptive time-window
+selection based on mean class variance is employed to choose the
+window with the smallest variance for more stable detection results.
+Our method achieved an average score of 0.8576 on the MPDD 2025
+∗Corresponding Authors
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for components of this work owned by others than the
+author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or
+republish, to post on servers or to redistribute to lists, requires prior specific permission
+and/or a fee. Request permissions from permissions@acm.org.
+MM ’25, Dublin, Ireland
+©2025 Copyright held by the owner/author(s). Publication rights licensed to ACM.
+ACM ISBN 979-8-4007-2035-2/2025/10
+https://doi.org/10.1145/3746027.3762064official test set, significantly outperforming the baseline score of
+0.6675.
+CCS Concepts
+•Computing methodologies →Artificial intelligence; •Ap-
+plied computing →Health informatics; •Information sys-
+tems→Multimedia information systems.
+Keywords
+depression detection, multimodal fusion, subject-level classification,
+time-window selection
+ACM Reference Format:
+Yuyun Liu, Kaifei Zhang, Yinghao Ma, Xiaolin Xu, Tianhua Qi, Wenming
+Zheng, Cheng Lu, and Yuan Zong. 2025. Multi-Level Segment Fusion Based
+on Adaptive Time-Window Selection for Multimodal Personality-Aware
+Elderly Depression Detection. In Proceedings of the 33rd ACM International
+Conference on Multimedia (MM ’25), October 27–31, 2025, Dublin, Ireland.
+ACM, New York, NY, USA, 7 pages. https://doi.org/10.1145/3746027.3762064
+1 Introduction
+Major Depressive Disorder (MDD) is one of the most common and
+deadliest psychiatric disorders worldwide, affecting hundreds of
+millions of people across all age groups [ 10]. Determining whether
+a person has depression and assessing its severity can effectively
+control the condition and prevent further deterioration. However,
+due to the complexity and variety of symptoms associated with
+MDD, traditional single-modality methods often struggle to capture
+the full range of depressive cues [ 3,4]. This limitation has led to
+13944
+MM ’25, October 27–31, 2025, Dublin, Ireland Yuyun Liu et al.
+growing interest in multimodal methods for depression detection.
+By integrating multiple data sources, such as audio, visual, and tex-
+tual information, multimodal depression detection models capture
+a broader range of depressive cues, thereby improving the overall
+performance of depression detection tasks [2, 16, 23].
+To accelerate the clinical translation of multimodal depression
+detection methods, ACM Multimedia 2025 organized the "Multi-
+modal Personality-Aware Depression Detection Challenge" (MPDD
+2025) [ 7]. This competition innovatively introduces the dimension
+of personality awareness by providing each participant with struc-
+tured identity information including demographic attributes and
+the Big Five personality traits, filling the gap in previous databases
+where such data was missing. The competition comprises two
+sub-tracks: the MPDD-Elderly Track, which targets the elderly
+population with data from real clinical interview records and the
+MPDD-Young Track, which focuses on younger subjects with data
+derived from reading tasks and self-reported questionnaires. The
+competition aims to encourage researchers to develop more accu-
+rate multimodal depression detection models.
+In the process of automated depression detection, how to appro-
+priately segment the data into time windows is a key challenge. Re-
+search has shown that the choice of data segments directly impacts
+the performance of depression detection models [ 15]. Some studies
+support using shorter segments to capture subtle and rapid changes
+in depression signals [21]. However, short segments are more sus-
+ceptible to noise interference, potentially leading the model to over-
+fit irrelevant information, thus affecting detection performance. In
+contrast, longer segments provide more contextual information,
+helping to enhance the model’s stability and reduce sensitivity to
+brief noise [ 5]. However, long time windows also have limitations,
+as they may obscure some brief but crucial depressive signals. This
+reflects the trade-off between granularity and robustness. How to
+reasonably choose the time window for data remains a significant
+challenge in current depression detection. Moreover, depressive
+symptoms in clinical interviews are often not consistently present
+throughout the entire interview [ 21]. Therefore, a multi-level seg-
+ment fusion is needed to integrate the segment-based detection
+results, forming a more comprehensive and robust subject-level
+depression detection framework.
+To address these challenges, this paper focuses on the MPDD-
+Elderly Track and proposes a Multi-Level Segment Fusion Based on
+Adaptive Time-Window Selection (MSF-ATS) method. We classify
+the audio and visual feature segments in two time windows accord-
+ing to the competition setup. Then, we combine the segment-level
+classification results of different features through weighted fusion
+to obtain subject-level classifications for each time window. Sub-
+sequently, we propose an adaptive time-window selection based
+on mean class variance (MCV). By comparing the MCV at differ-
+ent time windows, we select the time window with the smallest
+variance across the two time window divisions in the competition
+achieving more stable detection results. Experimental results show
+that our method achieves an average score of 0.8576 on the MPDD
+2025 official test set, significantly outperforming the official base-
+line score of 0.6675, thus proving the effectiveness of the proposed
+method in elderly depression detection tasks.2 Method
+The MSF-ATS is shown in Figure 1. The first part is subject-level
+classification, which utilizes audio, visual, and textual modalities,
+along with multi-level segment fusion to obtain subject-level clas-
+sifications for each time window. The second part is adaptive time-
+window selection based on MCV, which selects the most suitable
+time scale by comparing the MCV at different time windows to
+obtain more stable and accurate detection results.
+2.1 Subject-Level Classification
+Depressive symptoms in clinical interviews typically appear only in
+brief segments rather than persisting throughout an entire conver-
+sation. To capture these sparse cues and generate clinically mean-
+ingful subject-level classification, we design a subject-level classifi-
+cation module that aggregates segment-level classifications across
+multiple modalities. In common segment-level settings, all audio or
+video fragments from the same participant are assigned the same
+label [ 8,20]; however, when an explicit identity indicator is ab-
+sent, the model may fail to exploit cross-fragment consistency. To
+address this, we concatenate a text-derived subject identity embed-
+ding to each video or audio feature segment, providing an explicit
+affiliation signal that encourages the model to treat segments from
+the same participant coherently.
+All input features in this module are drawn from the fixed feature
+sets provided for the MPDD 2025 Challenge. Audio features include
+Wav2Vec [ 19] embeddings and Mel-Frequency Cepstral Coefficients
+(MFCCs) [ 17]. Visual features are extracted using DenseNet [ 11],
+ResNet [ 9], and OpenFace [ 1]. Text features representing the subject
+identity embedding are obtained by encoding subject-level demo-
+graphic and clinical attributes with a pretrained RoBERTa [ 14]
+model and using the [CLS] token representation.
+We process 𝑀=5time-series feature streams from the audio
+and video modalities. For subject 𝑠, window size 𝜏∈{1s,5s}, and
+segment index 𝑗, the𝑚-th stream input is denoted as 𝑋𝑠,𝜏,𝑗,𝑚∈
+R𝑇𝑠,𝜏,𝑗,𝑚×𝐷𝑚, where𝑇𝑠,𝜏,𝑗,𝑚 represents the time dimension and 𝐷𝑚
+represents the feature dimension. For brevity, we drop the indices
+𝑠,𝜏,𝑗 when the context is clear and write 𝑋𝑚.
+To obtain a temporally informed fixed-length summary, we adopt
+the Attention Statistics Pooling (ASP) method proposed by Okabe et
+al [18]. Each sequence is first processed through a fully connected
+layer, followed by the application of a hyperbolic tangent activation
+function:
+𝐹𝑚=tanh(𝑊𝑋𝑚+𝑏), (1)
+Here,𝑊and𝑏are the weights and biases of the fully connected
+layer, and tanh(·)is the hyperbolic tangent function. The output
+𝐹𝑚∈R𝑇𝑚×𝐷𝑚is the original feature set after nonlinear activation.
+We compute attention weights over time steps using a learnable
+query vector 𝑝𝑚∈R𝐷𝑚as follows:
+𝑤𝑚=softmax 𝐹𝑚·𝑝𝑚, (2)
+where the softmax operates along the temporal dimension. The
+·represents matrix multiplication, and the resulting 𝑤𝑚∈R𝑇𝑚
+indicates the importance of each frame.
+Temporal attention weights modulate the original sequence via
+broadcasted element-wise multiplication:
+𝑋att
+𝑚=𝑤𝑚⊙𝑋𝑚, (3)
+13945
+Multi-Level Segment Fusion Based on Adaptive Time-Window
+Selection for Multimodal Personality-Aware Elderly Depression Detection MM ’25, October 27–31, 2025, Dublin, Ireland
+Adaptive 
+Time -window 
+Selection 
+Based on 
+Mean Class 
+Variance
+1s_segment21s_segment31s_segment4
+5s_segment25s_segment35s_segment4
+Audio
+Video …
+……
+…ASP
+ASP
+ASP
+ASP
+ASP MLPMLPMLPMLPMLP
+Audio
+Video …
+……
+MLPMLPMLPMLP
+…
+…ASP
+ASP
+ASP
+ASP
+ASP MLP
+FCtanh
+𝒘𝒎𝝐ℝ𝑻m…SUM dim=T
+STD  
+dim=T𝑿m′𝝐ℝ𝟐𝑫+𝟏𝟎𝟐𝟒
+… … …𝑿𝒎𝝐ℝ𝑻m∗𝑫𝒎
+𝒊𝒅𝒔𝝐ℝ𝟏𝟎𝟐𝟒MLP1s_segment1
+5s_segment1Subject -Level ClassificationText
+Text
+𝑭𝒎𝝐ℝ𝑻m∗𝑫𝒎𝑾𝟏𝒔,𝟏 Avg
+Avg𝑾𝟏𝒔,𝟐
+𝑾𝟏𝒔,𝟑
+𝑾𝟏𝒔,𝟒
+𝑾𝟏𝒔,𝟓
+𝑾𝟓𝒔,𝟏
+𝑾𝟓𝒔,𝟐
+𝑾𝟓𝒔,𝟑
+𝑾𝟓𝒔,𝟒
+𝑾𝟓𝒔,𝟓1s_subject
+5s_subject
+Figure 1: The Overall Architecture of Multi-Level Segment Fusion Based on Adaptive Time-Window Selection (MSF-ATS).
+Orange lines represent the data flow during training, while blue lines represent the data flow during inference.
+Here⊙denotes element-wise multiplication with broadcasting of
+𝑤𝑚over the feature dimension 𝐷𝑚, yielding𝑋att𝑚∈R𝑇𝑚×𝐷𝑚that
+highlights informative regions.
+We then apply global sum pooling and standard-deviation pool-
+ing along time and concatenate the two statistics:
+𝑥pool
+𝑚=h
+SUM 𝑋att
+𝑚; STD 𝑋att
+𝑚i
+∈R2𝐷𝑚, (4)
+Each operator produces a 𝐷𝑚dimensional vector; concatenation
+yields𝑥pool
+𝑚∈R2𝐷𝑚that preserves both overall magnitude and
+temporal variability.
+To inject subject identity, we concatenate the pooled vector with
+the identity embedding:
+𝑥′
+𝑚=[𝑥pool
+𝑚;𝑖𝑑𝑠]∈R2𝐷𝑚+1024, (5)
+where𝑖𝑑𝑠∈R1024is the subject identity for subject 𝑠.
+Next, we apply a multilayer perceptron (MLP) to obtain the
+segment-level classification:
+𝑃𝑚=MLP𝑚 𝑥′
+𝑚. (6)
+Then, we fuse the 𝑀stream predictions for segment (𝑠,𝜏,𝑗)using
+nonnegative reliability weights 𝑊𝜏,𝑚. Each feature’s segment-levelclassification is aggregated into a subject-level classification:
+𝑃sub
+𝑠,𝜏=1
+𝐽𝑠,𝜏𝐽𝑠,𝜏∑︁
+𝑗=1 𝑀∑︁
+𝑚=1𝑊𝜏,𝑚𝑃𝑠,𝜏,𝑗,𝑚!
+, (7)
+where𝑃𝑠,𝜏,𝑗,𝑚 is the prediction from the 𝑚-th stream for subject
+𝑠and segment 𝑗at window size 𝜏. The term 𝐽𝑠,𝜏represents the
+total number of segments for subject 𝑠under window size 𝜏. The
+resulting𝑃sub𝑠,𝜏is the subject-level classification for subject 𝑠under
+window size 𝜏.
+2.2 Adaptive Time-window Selection Based on
+Mean Class Variance
+To improve robustness across temporal granularities, we propose
+an adaptive time-window selection based on MCV. This strategy
+selects the time-window length that yields a more robust subject-
+level classification for each classification task.
+We define the predicted probability for subject 𝑠in class𝑐for
+task𝑡under window 𝜏as𝑃sub
+𝑠,𝜏,𝑡,𝑐. Next, we compute the class-wise
+mean probability for task 𝑡under window 𝜏:
+¯𝑃𝜏,𝑡,𝑐=1
+𝑁𝜏,𝑡,𝑐𝑁𝜏,𝑡,𝑐∑︁
+𝑠=1𝑃sub
+𝑠,𝜏,𝑡,𝑐, (8)
+13946
+MM ’25, October 27–31, 2025, Dublin, Ireland Yuyun Liu et al.
+where ¯𝑃𝜏,𝑡,𝑐is the mean predicted probability for class 𝑐in task𝑡at
+window𝜏.𝑁𝜏,𝑡,𝑐represents the total number of subjects for each
+class𝑐, task𝑡and window size 𝜏.
+We then compute the corresponding class-wise variance:
+𝜎2
+𝜏,𝑡,𝑐=1
+𝑁𝜏,𝑡,𝑐𝑁𝜏,𝑡,𝑐∑︁
+𝑠=1
+𝑃sub
+𝑠,𝜏,𝑡,𝑐−¯𝑃𝜏,𝑡,𝑐2
+, (9)
+where𝜎2
+𝜏,𝑡,𝑐represents the variance of the predicted probabilities
+for class𝑐in task𝑡at window𝜏.
+The MCV for task 𝑡at window𝜏is computed as:
+MCV 1𝑠,𝑡=1
+𝐶𝑡𝐶𝑡∑︁
+𝑐=1𝜎2
+𝜏1,𝑡,𝑐, (10)
+MCV 5𝑠,𝑡=1
+𝐶𝑡𝐶𝑡∑︁
+𝑐=1𝜎2
+𝜏5,𝑡,𝑐, (11)
+Here, MCV 1𝑠,𝑡andMCV 5𝑠,𝑡represent the MCV computed at time
+windows of 𝜏∈{1s,5s}, with each task 𝑡.
+A lower MCV indicates more consistent predictions for task 𝑡at
+temporal resolution 𝜏. To select the optimal window for each task,
+we define:
+b𝜏𝑡=(
+1s,ifMCV 1𝑠,𝑡<MCV 5𝑠,𝑡,
+5s,otherwise,(12)
+whereb𝜏𝑡denotes the selected optimal window size for task 𝑡based
+on the comparison of the MCV values at 1s and 5s temporal resolu-
+tions. By selecting the window with the lower MCV for each task,
+we can choose a more compact time window for classification
+2.3 Loss function
+Following prior work that demonstrated the effectiveness of com-
+bining Cross-Entropy (CE) and Focal Loss for addressing class imbal-
+ance in classification tasks [ 7,13,22], we adopt a similar composite
+loss function during the feature -stream training stage. Specifically,
+the total loss is defined as:
+Ltotal=𝜆CE·LCE+𝜆Focal·LFocal, (13)
+where𝜆CEand𝜆Focal are hyperparameters that control the contri-
+bution of each component.
+The CE loss and Focal Loss are given as:
+LCE=−1
+𝑁𝑁∑︁
+𝑛=1𝐶∑︁
+𝑐=1𝑦𝑛,𝑐log𝑝𝑛,𝑐, (14)
+LFocal=−1
+𝑁𝑁∑︁
+𝑛=1𝐶∑︁
+𝑐=1𝛼𝑐(1−𝑝𝑛,𝑐)𝛾𝑦𝑛,𝑐log𝑝𝑛,𝑐. (15)
+Here,𝐶is the total number of class c, and 𝑁is the total number of
+samples in this batch. 𝑦𝑛,𝑐denotes the ground-truth label of sample
+𝑛for class𝑐, and𝑝𝑛,𝑐is the corresponding softmax probability. 𝛾is
+the focusing parameter, and 𝛼𝑐is the class-specific balancing factor.
+Both𝛾and𝛼𝑐are empirically set according to the data distribution.3 Experiments
+3.1 Database
+The MPDD 2025 [ 7] Challenge hosted at ACM Multimedia 2025 pro-
+vides a standardized benchmark to advance research in automated
+depression detection. It consists of two tracks: MPDD-Elderly which
+focuses on depression detection in elderly subjects and MPDD-
+Young which targets younger adults. This paper focuses on MPDD-
+Elderly which aims to classify depressive symptoms in older adults
+using multimodal behavioral signals and demographic features.
+The Challenge consists of three classification levels: binary classi-
+fication (normal vs depressed), ternary classification (normal, mildly
+depressed, severely depressed), and quinary classification (normal,
+mildly depressed, moderately depressed, moderately severe, severe).
+The dataset consists of 337 labeled training samples, 227 official
+test samples, and an additional subset of 78 early-released test sam-
+ples for model selection. Model training is strictly confined to the
+training set, while the early-released subset is used for model se-
+lection. The final evaluation is performed on the complete official
+test set. For clarity, we refer to the early-released test subset as the
+validation set throughout the rest of this paper.
+Because of privacy and ethical constraints, direct access to raw
+audio, video, and textual data is prohibited; consequently, the chal-
+lenge organizers supply only a set of pre-extracted multimodal fea-
+tures for model development. These features span three complemen-
+tary streams: the visual modality is extracted through DenseNet [ 11],
+ResNet [ 9], and OpenFace [ 1]. DenseNet and ResNet are convolu-
+tional neural networks used for deep facial representation, while
+OpenFace captures dynamic facial features such as action units,
+gaze direction, and head movements. The audio modality includes
+Wav2Vec [ 19] embeddings, MFCCs [ 17] and OpenSMILE [ 6]. Wav2V-
+ec is a self-supervised model based on the Transformer architecture
+that learns context-aware representations from raw audio signals,
+while MFCCs describe the spectral characteristics of audio. OpenS-
+MILE is a feature extraction toolkit used to capture prosodic cues,
+emotion, and speaker characteristics. The text modality includes
+subject-level metadata, such as demographic and clinical attributes,
+provided in a structured JSON format. These descriptions are pro-
+cessed with a pretrained RoBERTa model, from which the [CLS]
+token embedding represents individual characteristics in a fixed-
+length vector.
+3.2 Experimental setup
+The experiments were conducted using the PyTorch framework,
+with model training performed using the Adam [ 12] optimizer. In
+the first stage, all training and evaluation processes were executed
+on an NVIDIA GeForce RTX 4090D GPU. For each unimodal feature,
+the training and hyperparameter tuning process was conducted
+as follows: First, we performed a comprehensive hyperparameter
+search, exploring different learning rates, including 1×10−3,1×
+10−4and1×10−5. The weight for the CE loss was fixed at 1.0,
+while the weight for the Focal Loss was tuned across different
+ranges: from 0.01 to 0.1 (step size 0.001), from 0.1 to 1 (step size
+0.1), from 1 to 10 (step size 1) and from 10 to 100 (step size 10).
+Additionally, the 𝛾value for Focal Loss was set to 2, 3, and 4. The
+𝛼was also adjusted based on the classification task: for binary
+13947
+Multi-Level Segment Fusion Based on Adaptive Time-Window
+Selection for Multimodal Personality-Aware Elderly Depression Detection MM ’25, October 27–31, 2025, Dublin, Ireland
+classification,[0.25,0.75]; for ternary classification, [0.15,0.25,0.6];
+and for quinary classification, [0.05,0.1,0.15,0.25,0.45].
+The classification layer uses an MLP with the following structure:
+[2𝐷𝑚+1024,1024, 512, 128, 64, task_label], where task_label de-
+notes the number of classes for each specific subtask. The training
+configuration for each subtask includes a batch size of 256 and 200
+training epochs.
+The model that achieved the highest validation score—defined as
+the average of both weighted (w) and unweighted (u) Accuracy (Acc)
+and F1 scores was selected and saved. Specifically, the evaluation
+Score is computed as follows:
+Acc𝑤=1
+𝐾𝐾∑︁
+𝑘=1Acc𝑤
+task 𝑘, (16)
+Acc𝑢=1
+𝐾𝐾∑︁
+𝑘=1Acc𝑢
+task 𝑘, (17)
+where𝐾is the total number of tasks, and Acc𝑤
+task 𝑘andAcc𝑢
+task 𝑘are
+the weighted and unweighted accuracy for task 𝑘.
+F1𝑤=1
+𝐾𝐾∑︁
+𝑘=1F1𝑤
+task 𝑘, (18)
+F1𝑢=1
+𝐾𝐾∑︁
+𝑘=1F1𝑢
+task 𝑘, (19)
+where F1𝑤
+task 𝑘and F1𝑢
+task 𝑘are the weighted and unweighted F1
+scores for task 𝑘.
+Acc=Acc𝑤+Acc𝑢
+2, (20)
+F1=F1𝑤+F1𝑢
+2, (21)
+Score =Acc+F1
+2. (22)
+This score is used as the criterion for selecting the optimal model
+parameters across all tasks.
+Under the condition that the set {𝑊𝜏,𝑚}𝑀
+𝑚=1is satisfied, we per-
+form a search with a step size of 0.01 from 0 to 1 to identify the
+optimal feature fusion coefficient that maximizes the subject-level
+classification score. This search is conducted on the validation set
+to determine the optimal weight configuration for fusing each fea-
+ture’s segment-level classification into a subject-level classification
+feature fusion coefficient, which will then be applied during the
+testing phase.
+3.3 Results and Analysis
+We evaluated the segment-level classification score of each feature
+on the validation set across different tasks. Due to the loss not
+converging when using OpenSMILE features in our method, we
+excluded this feature. The performance of the remaining features is
+shown in Table 1. In the visual modality, DenseNet outperformed
+other visual features in four out of the six tasks. Specifically, it
+achieved a score of 0.8785 on the 1s binary (1s_2) task, 0.7018 on
+the 1s quinary (1s_5) task, 0.8952 on the 5s binary (5s_2) task, and
+0.7721 on the 5s quinary (5s_5) task. ResNet delivered the best
+performance on the 1s ternary (1s_3) task with a score of 0.6979,
+and on the 5s ternary (5s_3) task with a score of 0.7020. In contrast,Table 1: Segment-Level Classification Score of Each feature
+on the Validation Set Across Different Tasks
+Feature 1s_2 1s_3 1s_5 5s_2 5s_3 5s_5
+DenseNet 0.8785 0.6476 0.7018 0.8952 0.6532 0.7721
+ResNet 0.8371 0.6979 0.5772 0.8371 0.7020 0.6048
+OpenFace 0.8347 0.5394 0.4753 0.7116 0.4958 0.4509
+Wav2Vec 0.7647 0.6300 0.5987 0.7597 0.6902 0.6062
+MFCCs 0.8662 0.6798 0.6600 0.8569 0.6283 0.6600
+OpenFace consistently underperformed compared to other visual
+features across all tasks, especially in the two quinary tasks, where
+it achieved lower scores of 0.4753 on the 1s_5 task and 0.4509 on the
+5s_5 task. In the audio modality, MFCCs outperformed Wav2Vec in
+five out of six tasks, achieving scores of 0.8662, 0.6798, 0.6600, 0.8569,
+and 0.6600 in the 1s_2, 1s_3, 1s_5, 5s_2, and 5s_5 tasks, respectively.
+Wav2Vec surpassed MFCCs only in the 5s_3 task, where it achieved
+a score of 0.6902. The results show that deep learning-based visual
+features outperform traditional handcrafted features in segment-
+level classification, while MFCCs outperform Wav2Vec features for
+audio-based detection.
+Table 2: Subject-Level Classification Score of Multi-Level Seg-
+ments Fusion on the Validation Set Across Different Tasks
+Task Score
+1s_2 1.0000
+1s_3 0.9038
+1s_5 0.7306
+5s_2 1.0000
+5s_3 0.9230
+5s_5 0.8509
+After obtaining the best model for each feature segment-level
+classification on the validation set, we aggregated the multi-level
+segments into subject-level classification. The results as shown in
+Table 2. For binary classification tasks, both the 1s_2 and 5s_2 tasks
+achieved perfect scores of 1.0000, demonstrating the model’s strong
+discriminative capability on simpler tasks. For the ternary classi-
+fication tasks, the 1s_3 and 5s_3 tasks scored 0.9038 and 0.9230,
+respectively, showing a significant improvement over all unimodal
+features. In the more complex quinary classification tasks, the 1s_5
+and 5s_5 tasks achieved scores of 0.7306 and 0.8509, with the 5s_5
+task showing an improvement of more than 7 percentage points
+compared to the best-performing unimodal feature. These results
+indicate that, compared to unimodal segment-level classification
+models, our fusion strategy more effectively leverages the classifi-
+cation results from multiple features as cues. By assigning different
+weights to each feature and subsequently aggregating segment-
+level classifications into subject-level classifications, this strategy
+not only fully leverages the advantages of multimodal information
+but also integrates the depression classification results from differ-
+ent segments for more accurate subject-level depression detection,
+thereby significantly improving the model’s performance across
+various classification tasks.
+13948
+MM ’25, October 27–31, 2025, Dublin, Ireland Yuyun Liu et al.
+Table 3: Optimal Fusion Weights and Score for Each Task on
+the Test Set
+Modality 1s_2 1s_3 1s_5 5s_2 5s_3 5s_5
+DenseNet 0.26 0.06 1.00 0.06 0.00 0.19
+MFCCs 0.24 0.19 0.00 0.30 0.00 0.00
+OpenFace 0.42 0.03 0.00 0.59 0.57 0.81
+ResNet 0.06 0.12 0.00 0.05 0.26 0.00
+Wav2Vec 0.02 0.60 0.00 0.00 0.17 0.00
+Score 0.9707 0.8102 0.7191 1.0000 0.7996 0.7627
+For each task, the top 10 configurations with the highest valida-
+tion scores were selected for test evaluation, and the configuration
+yielding the best test score was chosen as the final setting. Table 3
+presents the optimal fusion weights and score for each task on
+the test set. In contrast to its performance in segment-level classi-
+fication, OpenFace, which performs the worst in single-segment
+classification, achieves the highest fusion weight in subject-level
+classification. For example, the fusion weight for OpenFace exceeds
+0.5 in the 5s_2, 5s_3, and 5s_5 tasks. The results show that, com-
+pared to other features, OpenFace may help address the sparsity
+of depressive symptoms during interviews, making it a valuable
+feature for assessing a subject’s depressive state in tasks with longer
+time windows.
+Table 4: Impact of Time Window Selection on Classification
+Score in the Test Set
+Strategy Score
+1s 0.8333
+5s 0.8541
+MCV 0.8576
+Table 4 presents the score of fixed time windows such as 1s and
+5s, as well as the MCV-based adaptive time window selection with
+multiple time windows on the test set. The results show that MCV
+achieved the highest score of 0.8576, outperforming depression
+detection in both the 1s and 5s windows. This indicates that us-
+ing multiple time-window segments and a proper time window
+selection strategy helps enhance the effectiveness of the depression
+detection model.
+Table 5: Leaderboard Score Comparison on the Test Set
+Submission Score
+Baseline 0.6675
+1st Place 0.8623
+2nd Place 0.8580
+Ours (3rd) 0.8576
+Finally, we compared our method with official leaderboard sub-
+missions from the MPDD 2025 challenge. As shown in Table 5, ourmethod achieved the test score of 0.8576, ranking third and sig-
+nificantly surpassing the baseline [ 7] score of 0.6675. The top two
+teams scored 0.8623 and 0.8580, respectively, with only minimal dif-
+ferences from our result, further demonstrating the competitiveness
+of our model. These results highlight the effectiveness of MSF-ATS
+and its potential for real-world clinical depression detection.
+4 Conclusion
+In this paper, we propose the MSF-ATS method, applied to the
+MPDD-Elderly track of the MPDD 2025 challenge. To address the
+intermittent nature of depressive symptoms during clinical inter-
+views, our method first performs segment-level classification on
+audio and visual features and aggregates these segment-level classi-
+fication results into subject-level classifications to form multi-level
+segment fusion. This approach effectively utilizes multimodal in-
+formation while considering the intermittent nature of depressive
+symptoms at the segment level, generating more stable subject-level
+detection. Furthermore, we introduce an adaptive time-window
+selection based on mean class variance, allowing the model to dy-
+namically adjust the optimal temporal windows based on stability.
+Experimental results show that our method achieved an average
+score of 0.8576 on the MPDD 2025 official test set, significantly
+outperforming the baseline score, thus validating the effectiveness
+of our approach. In the future, we will consider integrating more
+features to enhance the model’s depression detection capability. Ad-
+ditionally, we will investigate the effect of slice duration on depres-
+sion detection and optimize the time-window selection mechanism
+to advance the development of multimodal depression diagnosis
+toward clinical deployment.
+Acknowledgments
+This work was supported in part by the NSFC under the Grant
+62476057, in part by the YESS Program by CAST under the Grant
+2023QNRC001, in part by the ASFC under the Grant 2023Z071069003,
+in part by the Zhishan Young Scholar Program of Southeast Uni-
+versity, in part by the YESS Program by JSAST under the Grant
+JSTJ-2023-XH033, in part by the China Postdoctoral Science Foun-
+dation under the Grant 2023M740600, and in part by the Jiangsu
+Province Excellent Postdoctoral Program.
+References
+[1]Tadas Baltrušaitis, Peter Robinson, and Louis-Philippe Morency. 2016. Openface:
+an open source facial behavior analysis toolkit. In 2016 IEEE winter conference on
+applications of computer vision (WACV). IEEE, 1–10.
+[2]Jian Chen, Yuzhu Hu, Qifeng Lai, Wei Wang, Junxin Chen, Han Liu, Gautam
+Srivastava, Ali Kashif Bashir, and Xiping Hu. 2024. IIFDD: Intra and inter-modal
+fusion for depression detection with multi-modal information from Internet of
+Medical Things. Information Fusion 102 (2024), 102017.
+[3]Tao Chen, Richang Hong, Yanrong Guo, Shijie Hao, and Bin Hu. 2022. MS2-GNN:
+Exploring GNN-based multimodal fusion network for depression detection. IEEE
+Transactions on Cybernetics 53, 12 (2022), 7749–7759.
+[4]Jeffrey F Cohn, Nicholas Cummins, Julien Epps, Roland Goecke, Jyoti Joshi, and
+Stefan Scherer. 2018. Multimodal assessment of depression from behavioral
+signals. The Handbook of Multimodal-Multisensor Interfaces: Signal Processing,
+Architectures, and Detection of Emotion and Cognition-Volume 2 (2018), 375–417.
+[5]Sri Harsha Dumpala, Sebastian Rodriguez, Sheri Rempel, Mehri Sajjadian, Rudolf
+Uher, and Sageev Oore. 2022. Detecting depression with a temporal context of
+speaker embeddings. Proc. AAAI SAS (2022).
+[6]Florian Eyben, Martin Wöllmer, and Björn Schuller. 2010. Opensmile: the munich
+versatile and fast open-source audio feature extractor. In Proceedings of the 18th
+ACM international conference on Multimedia. 1459–1462.
+13949
+Multi-Level Segment Fusion Based on Adaptive Time-Window
+Selection for Multimodal Personality-Aware Elderly Depression Detection MM ’25, October 27–31, 2025, Dublin, Ireland
+[7]Changzeng Fu, Zelin Fu, Qi Zhang, Xinhe Kuang, Jiacheng Dong, Kaifeng Su,
+Yikai Su, Wenbo Shi, Junfeng Yao, Yuliang Zhao, et al .2025. The First MPDD
+Challenge: Multimodal Personality-aware Depression Detection. arXiv preprint
+arXiv:2505.10034 (2025).
+[8]Zhuojin Han, Yuanyuan Shang, Zhuhong Shao, Jingyi Liu, Guodong Guo, Tie
+Liu, Hui Ding, and Qiang Hu. 2023. Spatial–temporal feature network for speech-
+based depression recognition. IEEE Transactions on Cognitive and Developmental
+Systems 16, 1 (2023), 308–318.
+[9]Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. 2016. Deep residual
+learning for image recognition. In Proceedings of the IEEE conference on computer
+vision and pattern recognition. 770–778.
+[10] Helen Herrman, Vikram Patel, Christian Kieling, Michael Berk, Claudia Buch-
+weitz, Pim Cuijpers, Toshiaki A Furukawa, Ronald C Kessler, Brandon A Kohrt,
+Mario Maj, et al .2022. Time for united action on depression: a Lancet–World
+Psychiatric Association Commission. The Lancet 399, 10328 (2022), 957–1022.
+[11] Gao Huang, Zhuang Liu, Laurens van der Maaten, and Kilian Q Weinberger. 2017.
+Densely connected convolutional networks. In Proceedings of the IEEE Conference
+on Computer Vision and Pattern Recognition.
+[12] Diederik P. Kingma and Jimmy Ba. 2015. Adam: A Method for Stochastic Op-
+timization. International Conference on Learning Representations (ICLR) (2015).
+https://arxiv.org/abs/1412.6980
+[13] Zhaoyang Li, Cheng Lu, Xiaolin Xu, Kaifei Zhang, Yujia Gu, Banghua Li, Yuan
+Zong, and Wenming Zheng. 2025. Enhancing Task-Specific Feature Learning with
+LLMs for Multimodal Emotion and Intent Joint Understanding. In ICASSP 2025
+- 2025 IEEE International Conference on Acoustics, Speech and Signal Processing
+(ICASSP). 1–2. doi:10.1109/ICASSP49660.2025.10890555
+[14] Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer
+Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov. 2019. Roberta: A
+robustly optimized bert pretraining approach. arXiv preprint arXiv:1907.11692
+(2019).[15] Danila Mamontov, Sebastian Zepf, Alexey Karpov, and Wolfgang Minker. 2024.
+Cross-Cultural Automatic Depression Detection Based on Audio Signals. In
+International Conference on Speech and Computer. Springer, 309–323.
+[16] Kaining Mao, Wei Zhang, Deborah Baofeng Wang, Ang Li, Rongqi Jiao, Yanhui
+Zhu, Bin Wu, Tiansheng Zheng, Lei Qian, Wei Lyu, et al .2022. Prediction of
+depression severity based on the prosodic and semantic features with bidirectional
+LSTM and time distributed CNN. IEEE transactions on affective computing 14, 3
+(2022), 2251–2265.
+[17] Brian McFee, Colin Raffel, Dawen Liang, Daniel PW Ellis, Matt McVicar, Eric
+Battenberg, and Oriol Nieto. 2015. librosa: Audio and music signal analysis in
+python. SciPy 2015 (2015), 18–24.
+[18] Koji Okabe, Takafumi Koshinaka, and Koichi Shinoda. 2018. Attentive statistics
+pooling for deep speaker embedding. arXiv preprint arXiv:1803.10963 (2018).
+[19] Steffen Schneider, Alexei Baevski, Ronan Collobert, and Michael Auli. 2019.
+wav2vec: Unsupervised pre-training for speech recognition. arXiv preprint
+arXiv:1904.05862 (2019).
+[20] Burak Taşcı. 2024. Multilevel hybrid handcrafted feature extraction based depres-
+sion recognition method using speech. Journal of Affective Disorders 364 (2024),
+9–19.
+[21] Jinhan Wang, Vijay Ravi, Jonathan Flint, and Abeer Alwan. 2024. Speechformer-
+ctc: Sequential modeling of depression detection with speech temporal classifica-
+tion. Speech communication 163 (2024), 103106.
+[22] Xiaolin Xu, Cheng Lu, Zhaoyang Li, Yuyun Liu, Yinghao Ma, Jiahao Luo, Yuan
+Zong, and Wenming Zheng. 2025. Reliable Learning From LLM Features for
+Multimodal Emotion and Intent Joint Understanding. In ICASSP 2025 - 2025 IEEE
+International Conference on Acoustics, Speech and Signal Processing (ICASSP). 1–2.
+doi:10.1109/ICASSP49660.2025.10888958
+[23] Wei Zhang, En Zhu, Juan Chen, and YunPeng Li. 2024. MDDR: Multi-modal
+Dual-Attention aggregation for Depression Recognition. In Proceedings of the
+32nd ACM International Conference on Multimedia. 321–329.
+13950

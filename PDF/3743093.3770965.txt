@@ -1,0 +1,486 @@
+Personality-Enhanced Multimodal Depression Detection in the
+Elderly
+Honghong Wang
+Research Center
+Beijing Fosafer Information Technology Co., Ltd.
+Beijing, Beijing, China
+wanghonghong@fosafer.com
+Abstract
+This paper presents our solution to the Multimodal Personality-
+aware Depression Detection (MPDD) challenge at ACM MM 2025.
+We propose a multimodal depression detection model in the El-
+derly that incorporates personality characteristics. We introduce a
+multi-feature fusion approach based on a co-attention mechanism
+to effectively integrate LLDs, MFCCs, and Wav2Vec features in the
+audio modality. For the video modality, we combine representa-
+tions extracted from OpenFace, ResNet, and DenseNet to construct
+a comprehensive visual feature set. Recognizing the critical role
+of personality in depression detection, we design an interaction
+module that captures the relationships between personality traits
+and multimodal features. Experimental results from the MPDD
+Elderly Depression Detection track demonstrate that our method
+significantly enhances performance, providing valuable insights for
+future research in multimodal depression detection among elderly
+populations.
+CCS Concepts
+•Computing methodologies →Artificial intelligence ;•Ap-
+plied computing →Health informatics ;•Information sys-
+tems→Multimedia information systems .
+Keywords
+Multimodal Depression Detection, Transformer Fusion, Multilevel
+Feature
+ACM Reference Format:
+Honghong Wang. 2025. Personality-Enhanced Multimodal Depression De-
+tection in the Elderly. In ACM Multimedia Asia (MMAsia ’25), December
+09–12, 2025, Kuala Lumpur, Malaysia. ACM, New York, NY, USA, 6 pages.
+https://doi.org/10.1145/3743093.3770965
+1 Introduction
+Depression is a widespread mental health disorder that signifi-
+cantly affects the well-being and quality of life of millions of people
+around the world [ 1]. According to the World Health Organization
+(WHO) , approximately 280 million people worldwide suffer from
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for components of this work owned by others than the
+author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or
+republish, to post on servers or to redistribute to lists, requires prior specific permission
+and/or a fee. Request permissions from permissions@acm.org.
+MMAsia ’25, Kuala Lumpur, Malaysia
+©2025 Copyright held by the owner/author(s). Publication rights licensed to ACM.
+ACM ISBN 979-8-4007-2005-5/25/12
+https://doi.org/10.1145/3743093.3770965depression. Data from The Lancet Global Burden of Disease (GBD)
+study show that between 2010 and 2021, depression became the
+second leading cause of disability-adjusted life years (DALY)lost,
+with its global burden continuing to increase [ 15].Traditional de-
+pression screening methods are commonly based on the Patient
+Health Questionnaire-9 (PHQ-9), which evaluates depressive symp-
+toms using a score ranging from 0 to 27. Scores above 4 suggest
+the presence of depression, with 5–9 indicating mild, 10–14 mod-
+erate, 15–19 moderately severe, and 20–27 severe depression [ 20].
+Traditional depression screening methods are dependent on self-
+reported responses, making them vulnerable to bias and limiting
+their effectiveness in capturing the complex and evolving nature
+of depression, particularly in detecting early or subtle changes in
+mental state.
+Deep learning has significantly improved the performance of
+depression detection. Deep learning-based depression detection
+technologies leverage physiological and behavioral data, including
+voice, text, video, and Electroencephalogram (EEG) signals, col-
+lected from test subjects. These data provide valuable indicators
+of depression. Depressed individuals often demonstrate reduced
+fundamental vocal frequency, exhibit facial expressions associated
+with sadness and fear, and exhibit thoughts and behaviors consis-
+tent with the PHQ-9 items. Consequently, researchers have focused
+on the detection of depression in various modalities, such as images
+[3,6,8],speech [ 9,14,19], and text [ 2,5,17]. Although each modal-
+ity offers valuable information, relying on a single source limits the
+depth of information captured. Compared to unimodal approaches,
+multimodal data provide more comprehensive and complementary
+signals, substantially improving detection performance [ 12,16,17].
+However, current depression detection algorithms face several
+critical challenges. First, most existing studies and publicly avail-
+able datasets focus primarily on adolescents, with relatively little
+attention given to the elderly population. This is a critical gap, as
+depressive symptoms often manifest differently in age groups. For
+example, studies indicate that older adults with depression typically
+exhibit lower levels of anger and guilt but higher levels of anxiety
+compared to younger individuals [4, 7].
+Second, in the audio modality, recent studies have primarily re-
+lied on single feature types independently, such as low-level descrip-
+tors (LLDs) extracted by OpenSMILE1, handcrafted features such
+as mel-spectrograms, or high-level embeddings from pretrained
+models. This limitation also applies to other modalities, such as
+video and text. However, using a single type of feature often fails
+to capture the full complexity of audio signals, limiting the model’s
+ability to detect depression-related cues effectively. This highlights
+1https://github.com/audeering/opensmile
+MMAsia ’25, December 09–12, 2025, Kuala Lumpur, Malaysia Honghong Wang
+Figure 1: Overview of our multimodal depression detection framework integrating personality traits.
+the need for richer and more integrated multi-level representations
+in multimodal depression detection.
+Third, existing depression detection research often overlooks
+the influence of personality traits. Studies have identified strong
+correlations between certain personality traits and the onset of
+depression [ 10,13]. Steunenberg et al. [ 18] conducted a 6-year
+longitudinal study involving 1,511 elderly individuals without de-
+pression at baseline. The study identified three personality traits
+significantly associated with the later development of depression:
+increased neuroticism, diminished coping ability, and lower self-
+efficacy. Individuals exhibiting these traits were found to be 3.6,
+2.0, and 1.7 times more likely, respectively, to develop depression
+compared to the general population.
+To address the challenges outlined above, this study proposes a
+multimodal depression detection framework tailored for the elderly.
+The method incorporates personality traits to enable adaptive mod-
+eling of individual depression characteristics, enhancing personal-
+ization and model relevance. Additionally, it integrates multi-level
+features from both audio and video modalities to capture a more
+comprehensive representation of depressive behavior. The primary
+contributions of this study are as follows.
+(1) We propose a multimodal depression detection network specif-
+ically designed for the elderly. In the audio modality, the model
+captures multi-level representations from both the time and fre-
+quency domains to enrich the characterization of depressive speech.
+A co-attention mechanism is introduced to effectively fuse these fea-
+tures. For the video modality, we enhance facial representation by
+concatenating features extracted from diverse tasks and pre-trained
+models.
+(2) We design a Personality Traits and Multimodal Feature Inter-
+action Module (PTMFIM) to model the deep correlation betweendepressive characteristics and individual personality traits. This en-
+ables the network to adapt more effectively to personalized patterns
+of depression expression.
+2 Proposed Model
+The proposed framework is illustrated in Figure 1. The model con-
+sists of two branches, with the audio branch extracting three levels
+of acoustic features to capture complementary aspects of speech.
+These features are encoded and integrated using a co-attention
+mechanism to enable multi-granularity fusion. In the video branch,
+an encoder processes and concatenates visual features obtained at
+different levels. The resulting audio and visual features are then
+aggregated into utterance level representations using an Atten-
+tive Static Pooling (ASP) module. To fusion cross-modal features,
+a Transformer Fusion module is employed to fuse the multimodal
+features. To capture the complex relationships between personality
+traits and multimodal features, we propose the Personality traits
+and Multimodal Feature Interaction Module (PTMFIM). PTMFIM is
+designed to learn the deep interactions between personality embed-
+dings and multimodal representations, enabling more personalized
+and context-aware depression detection. The PTMFIM output fea-
+tures are then passed to the depression classifier, which predicts
+the level of depression based on the enriched representation.
+2.1 Multi-level Feature Fusion of Audio and
+Visual
+In the audio branch, we first used the open-source tool OpenSMILE
+to extract LLDs from raw speech, capturing basic acoustic proper-
+ties such as short-term energy and zero-crossing rate. In addition,
+Mel-Frequency Cepstral Coefficients (MFCCs)2, widely adopted
+2https://github.com/librosa/librosa
+Personality-Enhanced Multimodal Depression Detection in the Elderly MMAsia ’25, December 09–12, 2025, Kuala Lumpur, Malaysia
+Figure 2: Multimodal feature and personality traits iteration module.
+in speech processing, were extracted to represent the short-term
+spectral characteristics of audio signals. To further enrich the rep-
+resentation, we utilized the pre-trained Wav2Vec model3to extract
+high-dimensional audio embeddings. Trained on a large corpus of
+unlabeled audio, Wav2Vec provides informative representations
+that encapsulate complex acoustic patterns. All three types of fea-
+tures—LLDs, MFCCs, and Wav2Vec embeddings—were encoded
+using an LSTM encoder to preserve temporal dependencies and pre-
+pare them for subsequent fusion. Building on the diverse auditory
+features that are known to contribute uniquely to depression detec-
+tion and guided by insights from [ 21], we propose a Co-Attention
+module to effectively integrate Wav2Vec, LLDs and MFCC features.
+The integration process begins with non-linear transformations
+of each feature type using linear layers combined with Dropout
+and ReLU activations. Next, the LLDs and MFCCs features are con-
+catenated along the feature dimension. Since Wav2Vec provides a
+high-level speech representation, these concatenated features are
+used to weight the Wav2Vec features through element-wise multi-
+plication. Finally, the weighted Wav2Vec features are concatenated
+with the LLD and MFCC features to form a comprehensive audio
+representation.
+For the video modality, facial features are first extracted from raw
+video frames using the OpenFace toolkit4. To further enrich the
+representation, we also extract complementary features using pre-
+trained DenseNet5and ResNet6architectures, both widely used in
+image classification tasks. Finally, the outputs from all three sources
+are concatenated to form a comprehensive visual representation.
+2.2 Personality and multimodal feature
+interaction module
+For the multimodal representations extracted in Section 2.1, we
+initially employed ASP to transform frame level features into utter-
+ance level features. Subsequently, the Transformer Fusion module
+was employed to fuse visual and audio features. Assuming that 𝑢𝑣𝑛
+and𝑢𝑎𝑛represent visual and acoustic features of the n-th sample,
+the multimodal representation 𝑓∗𝑠can be expressed as follows:
+𝑓∗
+𝑠=𝐹∗
+𝑠 Concat 𝐹𝑣
+𝑠 𝑢𝑣
+𝑛,𝐹𝑎
+𝑠 𝑢𝑎
+𝑛  
+3https://github.com/facebookresearch/fairseq/tree/main/examples/wav2vec
+4http://multicomp.cs.cmu.edu/resources/openface/
+5https://github.com/liuzhuang13/DenseNet
+6https://huggingface.co/microsoft/resnet-50Where𝐹𝑎𝑠is the Acoustic Encoder based on LSTM and ASP, 𝐹𝑣𝑠is
+the Visual Encoder that has the same structure as 𝐹𝑎𝑠.𝐹∗𝑠represent
+the Transformer fusion module, composed of multiple layers of
+Transformer encoder. The concatenated audio and visual sequence
+features are fed into the network, where self-attention is applied to
+capture long-range dependencies across modalities. The output is a
+unified depression representation enriched with global contextual
+information.
+To extract human personality traits, the initial step involves the
+construction of a patient prompt. This prompt is derived from the
+patient’s Big5 scores, age, gender, place of origin, and other relevant
+demographic information. The specific prompt is as follows:
+The patient is a 50 male from Beijing. The patient’s Extraversion
+score is extroversion. The Agreeableness score is agreeableness. The
+Openness score is openness. The Neuroticism score is neuroticism. The
+Conscientiousness score is conscientiousness. Please generate a concise,
+fluent English description summarizing the patient’s key personality
+traits, family environment, and other notable characteristics. Avoid
+mentioning depression or related terminology. Output the response as
+a single paragraph.
+Subsequently, the ChatGLM3 Chinese large language model7
+is employed to generate a personalized textual description based
+on the constructed prompt. This description is then encoded using
+the RoBERTa-large model to obtain a personalized depression text
+embedding.
+Inspired by [ 11], we propose the PTMFIM, which models the
+complex correlations between personality traits and multimodal
+features to learn deep personalized interaction patterns. As shown
+in Figure 2, the proposed module consists of three key components:
+Binary Correlation Attention, Triple Interaction Attention, and a
+Gating Regulator. The Binary Correlation Attention component
+uses a cross-attention mechanism to capture pairwise relation-
+ships between personality traits and multimodal representations.
+To enable this, a linear projection layer first maps both personal-
+ity traits and multimodal features to the corresponding query (Q),
+key (K) and value (V) vectors. The attention mechanism is then
+applied to capture the underlying correlations between personality
+traits and multimodal features. Building on this, the Triple Interac-
+tion Attention component further models higher-order interactions
+among personality traits and fused audio-visual features, enabling
+a deeper understanding of their joint influence on depression de-
+tection. The Cascade Interaction Representation is computed by
+7https://github.com/THUDM/ChatGLM3
+MMAsia ’25, December 09–12, 2025, Kuala Lumpur, Malaysia Honghong Wang
+using personality traits as query vectors, while the output from the
+Binary Correlation Attention serves as the key and value vectors.
+Finally, the Gate Regulator automates the learning of both binary
+and higher-order (ternary) interaction features by introducing a gat-
+ing mechanism that models the influence of relationships between
+personality traits and multimodal representations. This component
+allows the model to dynamically adjust the contribution of person-
+ality and multimodal features to depression detection. Specifically,
+a sigmoid function is used to compute a control gate value based
+on the output of the binary correlation attention and triple inter-
+action attention modules. This gate value is then applied to the
+output of the Triple Interaction Attention through element-wise
+multiplication. The gated output is subsequently combined with
+the personality feature embedding to produce the final output of
+the interaction module.
+3 EXPERIMENTS and RESULTS
+3.1 Datasets
+We conduct a series of experiments using data from the Multi-
+modal Personality-Aware Depression Detection (MPDD) challenge
+8held at the 2025 ACM Multimedia Conference. The dataset, pro-
+cessed with 1s and 5s sampling windows for feature extraction,
+yields 564 samples—337 for training and validation, and 227 for
+testing. Neither 1s nor 5s indicates the length of the sample. in-
+stead, they refer to the size of the hopping window used during the
+preprocessing stage. Due to the limited amount of training data, a
+resampling strategy is employed during training. To address sample
+variability, we randomly partition the training and validation sets to
+ensure a representative distribution of the data. The MPDD defines
+three classification tasks based on depression severity. These tasks
+correspond to binary, ternary, or quinary classification schemes,
+depending on the criteria used. The binary classification system
+distinguishes between healthy and depressed states. The ternary
+classification system involves the additional delineation of nor-
+mal, mild, and severe depression. The quinary classification system,
+on the other hand, incorporates an additional level of complexity
+by distinguishing between normal, mild depression, moderate de-
+pression, moderate severity, and severe depression. Performance is
+evaluated by averaging weighted and unweighted precision, as well
+as weighted and unweighted F1 scores, offering a comprehensive
+measure of the effectiveness of the model in multiclass depression
+detection. The final metric for each task is the average of weighted
+and unweighted values:
+Acctask=Accweighted+Accunweighted
+2
+𝐹task
+1=𝐹1,weighted+𝐹1,unweighted
+2
+Table 1 presents a comparative analysis of our proposed approach
+against the baseline model provided by MPDD on the test set. The
+baseline employs a single feature from each audio and video modal-
+ity, concatenate personality traits features directly with multimodal
+representations. The best-performing results from the audio and
+video feature permutation experiments are selected as the baseline
+result. Our method demonstrates significant improvements over
+8https://hacilab.github.io/MPDDChallenge.github.io/Table 1: Results of the proposed method compared to the
+baseline model, where baseline is above and proposed is be-
+low
+Length Task Accuracy F1-score
+1sBinary 85.01 82.42
+89.18 88.53
+Ternary 55.95 56.06
+59.16 58.53
+Quinary 57.51 47.53
+61.33 60.67
+5sBinary 78.09 77.06
+79.81 78.67
+Ternary 58.66 58.80
+63.99 62.62
+Quinary 67.96 67.01
+72.17 72.48
+the baseline across all three multi-class classification tasks, for both
+1s and 5s sampling window lengths. In the three classification tasks
+using 1s sampling window, our model outperformed the baseline
+with average accuracy improvements of 4.17%, 3.21%, and 3.82%,
+and F1-score gains of 6.11%, 2.47%, and 13.14%, respectively. With
+5s sampling window, the model achieved accuracy improvements
+of 4.41%, 5.9%, and 4.21%, along with F1-score increases of 7.9%,
+13.8%, and 0.47%. These results demonstrate the effectiveness of
+our proposed method.
+3.2 Ablation Study on Highlighted Modules
+This section validates each proposed component through abla-
+tion experiments. Table 2 compares four variants:(1)Without audio
+multi-feature fusion. (2)Without Co-Attention in audio feature fu-
+sion. (3)Without visual multi-feature concatenation. (4)Without
+PTMFIM. Table 2 presents the results of the ablation experiments
+using a 1s sampling window. The quantitative analysis shows that
+all proposed modules contribute positively to performance. Among
+the proposed modules, PTMFIM has the greatest impact, increas-
+ing average accuracy by 2.89%, 2.23%, and 3.27%, and average F1
+scores by 2.60%, 3.18%, and 5.69% across the three classification
+tasks, respectively. These results underscore the effectiveness of
+integrating personality features with multimodal representations
+to enhance depression detection. Additionally, employing multiple
+audio and video features, along with the co-attention mechanism
+for audio feature fusion, yielded consistent performance gains over
+single-feature baselines.
+Furthermore, ablation experiments using a 5s sampling win-
+dow, as shown in Table 3, confirm that each proposed component
+contributes to performance gains to varying degrees. Similar to
+the 1s sampling window, the Co-Attention mechanism for audio
+feature fusion and the PTMFIM module played a significant role
+in improving depression detection performance. Furthermore, the
+Multi-Audio/Visual approach improved the final results, indicat-
+ing that multi-scale features provide complementary information
+Personality-Enhanced Multimodal Depression Detection in the Elderly MMAsia ’25, December 09–12, 2025, Kuala Lumpur, Malaysia
+Table 2: Results of ablation experiments with 1s sampling
+window
+Method Task Accuracy F1-score
+BaselineBinary 85.01 82.42
+Ternary 55.95 56.06
+Quinary 57.51 47.53
+w/o Multi-AudioBinary 87.90 86.77
+Ternary 59.08 58.22
+Quinary 60.00 59.77
+w/o co-attBinary 88.89 87.74
+Ternary 58.98 58.33
+Quinary 57.73 54.24
+w/o Multi-VisualBinary 88.63 87.01
+Ternary 58.88 56.00
+Quinary 56.09 56.88
+w/o PTMFIMBinary 86.29 85.93
+Ternary 56.93 55.35
+Quinary 58.06 54.98
+ProposedBinary 89.18 88.53
+Ternary 59.16 58.53
+Quinary 61.33 60.67
+Table 3: Results of ablation experiments with 5s sampling
+window
+Method Task Accuracy F1-score
+BaselineBinary 78.09 77.06
+Ternary 58.66 58.80
+Quinary 67.96 67.01
+w/o Multi-AudioBinary 79.30 78.34
+Ternary 61.38 59.85
+Quinary 70.14 69.51
+w/o co-attBinary 77.30 77.53
+Ternary 60.35 59.52
+Quinary 68.74 68.36
+w/o Multi-VisualBinary 78.78 77.75
+Ternary 59.90 59.91
+Quinary 70.25 69.29
+w/o PTMFIMBinary 78.66 77.91
+Ternary 59.08 58.78
+Quinary 68.30 66.82
+ProposedBinary 79.81 78.67
+Ternary 63.99 62.62
+Quinary 72.17 72.48
+that is beneficial for depression detection. These results further
+demonstrate the robustness and effectiveness of our method across
+different sampling scales.4 Conclusion
+This study presents a multimodal depression detection model for
+the elderly that integrates personality traits. For the audio modality,
+we introduce a multi-feature fusion module based on a co-attention
+mechanism that combines three features. For the video modality,
+three distinct features are concatenated. Additionally, we propose
+an encoder to model interactions between personality traits and
+multimodal features. Evaluation on the Multimodal Personality-
+aware Depression Detection (MPDD) challenge demonstrates that
+our approach significantly enhances depression detection perfor-
+mance in the elderly population.
+References
+[1]Nasrin Abdoli, Nader Salari, Niloofar Darvishi, Sima Jafarpour, Mina Solaymani,
+Masoud Mohammadi, and Shamarina Shohaimi. 2022. The global prevalence of
+major depressive disorder (MDD) among the elderly: A systematic review and
+meta-analysis. Neuroscience & Biobehavioral Reviews 132 (2022), 1067–1073.
+[2]Sergio G Burdisso, Marcelo Errecalde, and Manuel Montes-y Gómez. 2019. A
+text classification framework for simple and effective early depression detection
+over social media streams. Expert Systems with Applications 133 (2019), 182–197.
+[3]Constantino Álvarez Casado, Manuel Lage Cañellas, and Miguel Bordallo López.
+2023. Depression recognition using remote photoplethysmography from facial
+videos. IEEE Transactions on Affective Computing 14, 4 (2023), 3305–3316.
+[4]Amy Fiske, Julie Loebach Wetherell, and Margaret Gatz. 2009. Depression in
+older adults. Annual review of clinical psychology 5, 1 (2009), 363–389.
+[5]Changzeng Fu, Zhenghan Chen, Jiaqi Shi, Bowen Wu, Chaoran Liu, Carlos Toshi-
+nori Ishi, and Hiroshi Ishiguro. 2023. Hag: Hierarchical attention with graph
+network for dialogue act classification in conversation. In ICASSP 2023-2023 IEEE
+International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE,
+1–5.
+[6]Lang He, Chenguang Guo, Prayag Tiwari, Hari Mohan Pandey, and Wei Dang.
+2022. Intelligent system for depression scale estimation with facial expressions
+and case study in industrial intelligence. International Journal of Intelligent
+Systems 37, 12 (2022), 10140–10156.
+[7]JM Hegeman, RM Kok, RC Van Der Mast, and EJ Giltay. 2012. Phenomenology
+of depression in older compared with younger adults: meta-analysis. The British
+Journal of Psychiatry 200, 4 (2012), 275–281.
+[8]Bin Hu, Yongfeng Tao, and Minqiang Yang. 2023. Detecting depression based
+on facial cues elicited by emotional stimuli in video. Computers in Biology and
+Medicine 165 (2023), 107457.
+[9]Baljeet Kaur, Swati Rathi, and RK Agrawal. 2022. Enhanced depression detection
+from speech using quantum whale optimization algorithm for feature selection.
+Computers in Biology and Medicine 150 (2022), 106122.
+[10] AML Koorevaar, HC Comijs, ADF Dhondt, HWJ Van Marwijk, RC Van Der Mast,
+P Naarding, RC Oude Voshaar, and ML Stek. 2013. Big Five personality and
+depression diagnosis, severity and age of onset in older adults. Journal of affective
+disorders 151, 1 (2013), 178–185.
+[11] Rui Liu, Haolin Zuo, Zheng Lian, Xiaofen Xing, Björn W Schuller, and Haizhou
+Li. 2024. Emotion and intent joint understanding in multimodal conversation: A
+benchmarking dataset. arXiv preprint arXiv:2407.02751 (2024).
+[12] Anupama Ray, Siddharth Kumar, Rutvik Reddy, Prerana Mukherjee, and Ritu Garg.
+2019. Multi-level attention network using text, audio and video for depression
+prediction. In Proceedings of the 9th international on audio/visual emotion challenge
+and workshop . 81–88.
+[13] Nasreen A Sadeq and Victor Molinari. 2018. Personality and its relationship
+to depression and cognition in older adults: implications for practice. Clinical
+Gerontologist 41, 5 (2018), 385–398.
+[14] Sara Sardari, Bahareh Nakisa, Mohammed Naim Rastgoo, and Peter Eklund.
+2022. Audio based depression detection using convolutional autoencoder. Expert
+Systems with Applications 189 (2022), 116076.
+[15] Austin E Schumacher, Hmwe Hmwe Kyu, Amirali Aali, Cristiana Abbafati, Jaffar
+Abbas, Rouzbeh Abbasgholizadeh, Madineh Akram Abbasi, Mohammadreza
+Abbasian, Samar Abd ElHafeez, Michael Abdelmasseh, et al .2024. Global age-
+sex-specific mortality, life expectancy, and population estimates in 204 countries
+and territories and 811 subnational locations, 1950–2021, and the impact of the
+COVID-19 pandemic: a comprehensive demographic analysis for the Global
+Burden of Disease Study 2021. The Lancet 403, 10440 (2024), 1989–2056.
+[16] Nadee Seneviratne and Carol Espy-Wilson. 2022. Multimodal depression classifi-
+cation using articulatory coordination features and hierarchical attention based
+text embeddings. In ICASSP 2022-2022 IEEE International Conference on Acoustics,
+Speech and Signal Processing (ICASSP) . IEEE, 6252–6256.
+MMAsia ’25, December 09–12, 2025, Kuala Lumpur, Malaysia Honghong Wang
+[17] Ying Shen, Huiyu Yang, and Lin Lin. 2022. Automatic depression detection:
+An emotional audio-textual corpus and a gru/bilstm-based model. In ICASSP
+2022-2022 IEEE International Conference on Acoustics, Speech and Signal Processing
+(ICASSP) . IEEE, 6247–6251.
+[18] Bas Steunenberg, Aartjan TF Beekman, Dorly JH Deeg, and Ad JFM Kerkhof.
+2006. Personality and the onset of depression in late life. Journal of affective
+disorders 92, 2-3 (2006), 243–251.
+[19] Chenjian Sun, Min Jiang, Linlin Gao, Yu Xin, and Yihong Dong. 2024. A novel
+study for depression detecting using audio signals based on graph neural network.Biomedical Signal Processing and Control 88 (2024), 105675.
+[20] Lan Zhang, Kurt Fritzsche, Yang Liu, Jian Wang, Mingjin Huang, Yu Wang, Liang
+Chen, Shanxia Luo, Jianying Yu, Zaiquan Dong, et al .2016. Validation of the
+Chinese version of the PHQ-15 in a tertiary hospital. BMC psychiatry 16, 1 (2016),
+89.
+[21] Heqing Zou, Yuke Si, Chen Chen, Deepu Rajan, and Eng Siong Chng. 2022. Speech
+emotion recognition with co-attention based multi-level acoustic information. In
+ICASSP 2022-2022 IEEE International Conference on Acoustics, Speech and Signal
+Processing (ICASSP) . IEEE, 7367–7371.
