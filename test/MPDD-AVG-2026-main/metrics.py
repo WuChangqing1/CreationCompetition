@@ -96,7 +96,8 @@ def evaluate_model(
                 pair_mask=batch["pair_mask"].to(device) if "pair_mask" in batch else None,
             )
             if is_joint_regression:
-                criterion_cls, criterion_reg = criterion
+                criterion_cls = criterion[0]
+                criterion_reg = criterion[-1]  # last element is MSELoss
                 phq9 = batch["phq9"].to(device)
                 logits, reg_out = outputs
                 loss_cls = criterion_cls(logits, labels)

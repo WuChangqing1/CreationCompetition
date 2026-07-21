@@ -53,6 +53,7 @@ from dataset import (  # noqa: E402
 )
 from metrics import evaluate_model  # noqa: E402
 from models import TorchcatBaseline  # noqa: E402
+from train import FocalLoss  # noqa: E402
 from train_val_split import create_kfold_splits  # noqa: E402
 
 CV_LOG_ROOT = PROJECT_ROOT / "experiments" / "cv_logs"
@@ -62,45 +63,47 @@ CV_CHECKPOINT_ROOT = PROJECT_ROOT / "experiments" / "cv_checkpoints"
 # ══════════════════════════ 训练配置 ══════════════════════════
 
 TRAIN_CFG = {
+    # ---- Track1 Elder (DepFormer) ----
     ("Track1", "G+P", "binary"): {
         "epochs": 320, "batch_size": 2, "lr": 8e-5, "weight_decay": 1e-5,
-        "hidden_dim": 128, "dropout": 0.3, "patience": 90,
-        "encoder_type": "bilstm_mean",
+        "hidden_dim": 64, "dropout": 0.5, "patience": 90,
+        "encoder_type": "depformer",
     },
     ("Track1", "G+P", "ternary"): {
         "epochs": 300, "batch_size": 2, "lr": 5e-5, "weight_decay": 1e-5,
-        "hidden_dim": 128, "dropout": 0.4, "patience": 70,
+        "hidden_dim": 64, "dropout": 0.4, "patience": 70,
         "encoder_type": "bilstm_mean",
     },
     ("Track1", "A-V+P", "binary"): {
-        "epochs": 60, "batch_size": 8, "lr": 3e-5, "weight_decay": 1e-5,
-        "hidden_dim": 64, "dropout": 0.4, "patience": 20,
-        "encoder_type": "bilstm_mean", "audio_feature": "opensmile", "video_feature": "resnet",
+        "epochs": 320, "batch_size": 2, "lr": 8e-5, "weight_decay": 1e-5,
+        "hidden_dim": 64, "dropout": 0.5, "patience": 90,
+        "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
     },
     ("Track1", "A-V+P", "ternary"): {
-        "epochs": 140, "batch_size": 4, "lr": 2e-4, "weight_decay": 5e-5,
-        "hidden_dim": 160, "dropout": 0.5, "patience": 30,
-        "encoder_type": "bilstm_mean", "audio_feature": "mfcc", "video_feature": "resnet",
+        "epochs": 200, "batch_size": 4, "lr": 4e-5, "weight_decay": 1e-5,
+        "hidden_dim": 64, "dropout": 0.35, "patience": 40,
+        "encoder_type": "bilstm_mean", "audio_feature": "mfcc", "video_feature": "densenet",
     },
     ("Track1", "A-V-G+P", "binary"): {
-        "epochs": 140, "batch_size": 4, "lr": 8e-5, "weight_decay": 1e-5,
-        "hidden_dim": 128, "dropout": 0.45, "patience": 35,
-        "encoder_type": "bilstm_mean", "audio_feature": "mfcc", "video_feature": "resnet",
+        "epochs": 320, "batch_size": 2, "lr": 8e-5, "weight_decay": 1e-5,
+        "hidden_dim": 64, "dropout": 0.5, "patience": 90,
+        "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
     },
+    # ---- Track2 Young ----
     ("Track2", "G+P", "binary"): {
-        "epochs": 100, "batch_size": 8, "lr": 3e-4, "weight_decay": 1e-4,
-        "hidden_dim": 64, "dropout": 0.5, "patience": 20,
-        "encoder_type": "bilstm_mean",
+        "epochs": 320, "batch_size": 2, "lr": 8e-5, "weight_decay": 1e-5,
+        "hidden_dim": 64, "dropout": 0.5, "patience": 90,
+        "encoder_type": "depformer",
     },
     ("Track2", "G+P", "ternary"): {
-        "epochs": 100, "batch_size": 8, "lr": 3e-4, "weight_decay": 1e-4,
-        "hidden_dim": 64, "dropout": 0.5, "patience": 20,
+        "epochs": 200, "batch_size": 4, "lr": 5e-5, "weight_decay": 1e-5,
+        "hidden_dim": 64, "dropout": 0.4, "patience": 40,
         "encoder_type": "bilstm_mean",
     },
     ("Track2", "A-V+P", "binary"): {
-        "epochs": 80, "batch_size": 8, "lr": 5e-4, "weight_decay": 1e-4,
-        "hidden_dim": 64, "dropout": 0.4, "patience": 15,
-        "encoder_type": "bilstm_mean", "audio_feature": "mfcc", "video_feature": "densenet",
+        "epochs": 320, "batch_size": 2, "lr": 8e-5, "weight_decay": 1e-5,
+        "hidden_dim": 64, "dropout": 0.5, "patience": 90,
+        "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
     },
 }
 
@@ -278,11 +281,21 @@ def train_one_fold(
         audio_dim=input_dims["audio_dim"], video_dim=input_dims["video_dim"],
         gait_dim=input_dims["gait_dim"], hidden_dim=cfg["hidden_dim"],
         dropout=cfg["dropout"], encoder_type=cfg["encoder_type"],
+        use_asp=args.use_asp, use_cross_fusion=args.use_cross_fusion,
     ).to(device)
+
+    if device.type == "cuda":
+        gpu_mem = torch.cuda.memory_allocated() / 1024**2
+        print(f"  [GPU] 模型已加载到 {torch.cuda.get_device_name(0)}, 显存占用: {gpu_mem:.1f} MB")
 
     all_labels = [int(s["label"]) for s in train_dataset.samples]
     class_weights = build_class_weights(all_labels, num_classes, device)
-    criterion = (nn.CrossEntropyLoss(weight=class_weights), nn.MSELoss())
+    focal_criterion = FocalLoss(alpha=class_weights, gamma=2.0) if args.use_focal else None
+    criterion = (
+        nn.CrossEntropyLoss(weight=class_weights),
+        focal_criterion,
+        nn.MSELoss(),
+    )
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"],
                                   weight_decay=cfg["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -307,9 +320,11 @@ def train_one_fold(
                 personality=batch["personality"].to(device),
                 pair_mask=batch["pair_mask"].to(device) if "pair_mask" in batch else None,
             )
-            cls_loss, reg_loss = criterion
+            criterion_cls, criterion_focal, criterion_reg = criterion
             logits, reg_out = outputs
-            loss = cls_loss(logits, labels) + reg_loss(reg_out, batch["phq9"].to(device))
+            cls_loss = criterion_cls(logits, labels)
+            focal_loss = criterion_focal(logits, labels) if criterion_focal is not None else 0.0
+            loss = cls_loss + 0.5 * focal_loss + criterion_reg(reg_out, batch["phq9"].to(device))
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
@@ -439,6 +454,13 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--joint", action="store_true", help="Elder+Young 联合训练")
     p.add_argument("--quick", action="store_true", help="快速模式 (epochs=3)")
     p.add_argument("--device", default="cuda")
+    # Champion method toggles
+    p.add_argument("--encoder_type", default=None,
+                   choices=["bilstm_mean", "hybrid_attn", "depformer"],
+                   help="覆盖 TRAIN_CFG 中的 encoder_type")
+    p.add_argument("--use_asp", type=lambda x: x.lower() != "false", default=True)
+    p.add_argument("--use_cross_fusion", type=lambda x: x.lower() != "false", default=True)
+    p.add_argument("--use_focal", type=lambda x: x.lower() != "false", default=True)
     return p.parse_args()
 
 
@@ -446,9 +468,15 @@ def main() -> None:
     args = parse_args()
     setup_seed(args.seed)  # ★ seed 在 split 之前，修复原始 bug
 
-    device = torch.device(
-        args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu")
-    print(f"Device: {device} | Seed: {args.seed}")
+    if args.device == "cuda" and torch.cuda.is_available():
+        torch.cuda.set_device(0)
+        torch.cuda.empty_cache()
+        device = torch.device("cuda")
+        print(f"Device: cuda (GPU: {torch.cuda.get_device_name(0)}, "
+              f"Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB) | Seed: {args.seed}")
+    else:
+        device = torch.device("cpu")
+        print(f"Device: cpu | Seed: {args.seed}")
 
     # ── 配置 ──
     track_name = "Joint" if args.joint else args.track
@@ -461,6 +489,8 @@ def main() -> None:
         print(f"错误: 未找到配置 {cfg_key}，请在 TRAIN_CFG 中添加")
         sys.exit(1)
     cfg = dict(cfg)
+    if args.encoder_type is not None:
+        cfg["encoder_type"] = args.encoder_type
     if args.quick:
         cfg["epochs"] = 3
         cfg["patience"] = 1

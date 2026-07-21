@@ -6,16 +6,137 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .bct import BimodalCollaborativeTransformer
+from .depformer_temporal_encoder import DepFormerTemporalEncoder
 from .hybrid_temporal_encoder import HybridTemporalEncoder
+from .temporal_transformer import TemporalTransformerEncoder
 
 
+# ===========================================================================
+# Attention Statistics Pooling (from MSF-ATS paper, ACM MM 2025)
+# ===========================================================================
+class AttentionStatisticsPooling(nn.Module):
+    """Learned attention pooling over time steps, producing mean + std.
+
+    Replaces naive mean(dim=1). The attention mechanism lets the model
+    focus on depression-relevant segments while std captures variability.
+    """
+
+    def __init__(self, dim: int) -> None:
+        super().__init__()
+        self.proj = nn.Linear(dim, dim // 2)
+        self.attn_score = nn.Linear(dim // 2, 1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: [B, T, D] -> [B, 2D]
+        scores = self.attn_score(torch.tanh(self.proj(x)))  # [B, T, 1]
+        weights = torch.softmax(scores, dim=1)  # [B, T, 1]
+        weighted_mean = (weights * x).sum(dim=1)  # [B, D]
+        diff = x - weighted_mean.unsqueeze(1)
+        weighted_var = (weights * diff ** 2).sum(dim=1)
+        weighted_std = torch.sqrt(weighted_var + 1e-8)
+        return torch.cat([weighted_mean, weighted_std], dim=-1)  # [B, 2D]
+
+
+# ===========================================================================
+# Cross-Modal Fusion (from DepFormer + Paper1, ACM MM 2025)
+# ===========================================================================
+class CrossModalFusion(nn.Module):
+    """Gated cross-modal fusion replacing simple torch.cat.
+
+    - Audio <-> Video: bidirectional gated interaction (DepFormer BCT adapted)
+    - Personality -> Multimodal: gated interaction (Paper1 PTMFIM adapted)
+
+    Uses lightweight gates instead of full multi-head attention for
+    flat vectors, keeping parameter count low for small datasets.
+    """
+
+    def __init__(
+        self,
+        hidden_dim: int,
+        modalities: list[str],
+        dropout: float = 0.3,
+    ) -> None:
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.modalities = modalities
+        n_mod = len(modalities)
+
+        # Audio-Video bidirectional gate
+        if "audio" in modalities and "video" in modalities:
+            self.av_gate_a = nn.Sequential(
+                nn.Linear(hidden_dim * 2, hidden_dim),
+                nn.Sigmoid(),
+            )
+            self.av_gate_v = nn.Sequential(
+                nn.Linear(hidden_dim * 2, hidden_dim),
+                nn.Sigmoid(),
+            )
+            self.av_proj_a = nn.Linear(hidden_dim, hidden_dim)
+            self.av_proj_v = nn.Linear(hidden_dim, hidden_dim)
+
+        # Personality-multimodal gate
+        non_pers = [m for m in modalities if m != "personality"]
+        if "personality" in modalities and len(non_pers) > 0:
+            self.pers_gate = nn.Sequential(
+                nn.Linear(hidden_dim * 2, hidden_dim),
+                nn.Sigmoid(),
+            )
+            self.pers_proj = nn.Linear(hidden_dim, hidden_dim)
+
+        # Residual fusion MLP (applied to concatenated features)
+        concat_dim = hidden_dim * n_mod
+        self.fusion_mlp = nn.Sequential(
+            nn.Linear(concat_dim, concat_dim * 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(concat_dim * 2, concat_dim),
+        )
+        self.fusion_norm = nn.LayerNorm(concat_dim)
+
+    def forward(self, features: dict[str, torch.Tensor]) -> torch.Tensor:
+        # features: {"audio": [B,D], "video": [B,D], "gait": [B,D], "personality": [B,D]}
+        enhanced = dict(features)
+
+        # --- Audio <-> Video cross-modal gating ---
+        if "audio" in features and "video" in features:
+            a = features["audio"]
+            v = features["video"]
+            joint_av = torch.cat([a, v], dim=-1)
+            enhanced["audio"] = a + self.av_gate_a(joint_av) * self.av_proj_v(v)
+            enhanced["video"] = v + self.av_gate_v(joint_av) * self.av_proj_a(a)
+
+        # --- Personality <-> Multimodal gating ---
+        if "personality" in features:
+            other_mods = [k for k in self.modalities if k != "personality"]
+            if other_mods:
+                multimodal = torch.stack(
+                    [enhanced[k] for k in other_mods], dim=1
+                ).mean(dim=1)  # [B, D]
+                pers = features["personality"]
+                gate = self.pers_gate(
+                    torch.cat([pers, multimodal], dim=-1)
+                )
+                enhanced["personality"] = pers + gate * self.pers_proj(multimodal)
+
+        # --- Concatenate + residual MLP ---
+        concat = torch.cat([enhanced[m] for m in self.modalities], dim=-1)
+        return self.fusion_norm(concat + self.fusion_mlp(concat))
+
+
+# ===========================================================================
+# Modality Encoders
+# ===========================================================================
 class ModalityEncoder(nn.Module):
+    """BiLSTM temporal encoder, optionally with ASP pooling."""
+
     def __init__(
         self,
         input_dim: int,
         hidden_dim: int,
         dropout: float = 0.5,
         pre_dim: int | None = None,
+        use_asp: bool = True,
     ) -> None:
         super().__init__()
         if pre_dim is not None and input_dim > pre_dim:
@@ -24,6 +145,7 @@ class ModalityEncoder(nn.Module):
         else:
             self.pre_proj = None
             lstm_in = input_dim
+
         self.proj = nn.Linear(lstm_in, hidden_dim)
         self.lstm = nn.LSTM(
             hidden_dim,
@@ -33,6 +155,11 @@ class ModalityEncoder(nn.Module):
             bidirectional=True,
         )
         self.dropout = nn.Dropout(dropout)
+        self.use_asp = use_asp
+        if use_asp:
+            self.asp = AttentionStatisticsPooling(hidden_dim)
+            # Project 2D (mean+std) back to D
+            self.asp_proj = nn.Linear(hidden_dim * 2, hidden_dim)
         self.norm = nn.LayerNorm(hidden_dim)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -41,11 +168,20 @@ class ModalityEncoder(nn.Module):
         x = F.relu(self.proj(x))
         x = self.dropout(x)
         x, _ = self.lstm(x)
-        return self.norm(x.mean(dim=1))
+        if self.use_asp:
+            x = self.asp(x)
+            x = self.asp_proj(x)
+        else:
+            x = x.mean(dim=1)
+        return self.norm(x)
 
 
 class PersonalityEncoder(nn.Module):
-    def __init__(self, input_dim: int = 1024, hidden_dim: int = 64, dropout: float = 0.3) -> None:
+    """2-layer MLP encoding 1024-dim RoBERTa personality embeddings."""
+
+    def __init__(
+        self, input_dim: int = 1024, hidden_dim: int = 64, dropout: float = 0.3
+    ) -> None:
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(input_dim, 256),
@@ -59,13 +195,16 @@ class PersonalityEncoder(nn.Module):
         return self.net(x)
 
 
+# ===========================================================================
+# Main Model
+# ===========================================================================
 class TorchcatBaseline(nn.Module):
     SUBTRACKS = {
         "A-V+P": ["audio", "video", "personality"],
         "A-V-G+P": ["audio", "video", "gait", "personality"],
         "G+P": ["gait", "personality"],
     }
-    ENCODER_TYPES = {"bilstm_mean", "hybrid_attn"}
+    ENCODER_TYPES = {"bilstm_mean", "hybrid_attn", "depformer"}
 
     def __init__(
         self,
@@ -79,6 +218,8 @@ class TorchcatBaseline(nn.Module):
         hidden_dim: int = 64,
         dropout: float = 0.3,
         encoder_type: str = "bilstm_mean",
+        use_asp: bool = True,
+        use_cross_fusion: bool = True,
     ) -> None:
         super().__init__()
         if subtrack not in self.SUBTRACKS:
@@ -91,25 +232,67 @@ class TorchcatBaseline(nn.Module):
         self.encoder_type = encoder_type
         self.is_regression = is_regression
         self.use_regression_head = use_regression_head
+        self.use_cross_fusion = use_cross_fusion
 
-        if "audio" in self.modalities:
-            pre_audio = 128 if audio_dim > 128 else None
-            self.audio_enc = (
-                HybridTemporalEncoder(audio_dim, hidden_dim, dropout, pre_dim=pre_audio)
-                if encoder_type == "hybrid_attn"
-                else ModalityEncoder(audio_dim, hidden_dim, dropout, pre_dim=pre_audio)
-            )
-        if "video" in self.modalities:
-            pre_video = 128 if video_dim > 128 else None
-            self.video_enc = (
-                HybridTemporalEncoder(video_dim, hidden_dim, dropout, pre_dim=pre_video)
-                if encoder_type == "hybrid_attn"
-                else ModalityEncoder(video_dim, hidden_dim, dropout, pre_dim=pre_video)
-            )
-        if "gait" in self.modalities:
-            self.gait_enc = ModalityEncoder(gait_dim, hidden_dim, dropout)
+        # ASP is only for bilstm_mean (hybrid_attn / depformer have their own pooling)
+        encoder_use_asp = use_asp and encoder_type == "bilstm_mean"
+        self.is_depformer = encoder_type == "depformer"
+
+        if self.is_depformer:
+            # ── DepFormer path: BiLSTM keeps temporal dim → BCT/TemporalTransformer → pool ──
+            if "audio" in self.modalities:
+                pre_audio = 128 if audio_dim > 128 else None
+                self.audio_enc = DepFormerTemporalEncoder(
+                    audio_dim, hidden_dim, dropout, pre_dim=pre_audio,
+                )
+            if "video" in self.modalities:
+                pre_video = 128 if video_dim > 128 else None
+                self.video_enc = DepFormerTemporalEncoder(
+                    video_dim, hidden_dim, dropout, pre_dim=pre_video,
+                )
+            if "audio" in self.modalities and "video" in self.modalities:
+                self.bct = BimodalCollaborativeTransformer(
+                    hidden_dim, num_heads=2, dropout=dropout,
+                )
+            if "gait" in self.modalities:
+                self.gait_enc = DepFormerTemporalEncoder(
+                    gait_dim, hidden_dim, dropout,
+                )
+                self.gait_transformer = TemporalTransformerEncoder(
+                    hidden_dim, num_heads=2, dropout=dropout,
+                )
+        else:
+            # ── Existing paths: bilstm_mean / hybrid_attn ──
+            if "audio" in self.modalities:
+                pre_audio = 128 if audio_dim > 128 else None
+                self.audio_enc = (
+                    HybridTemporalEncoder(audio_dim, hidden_dim, dropout, pre_dim=pre_audio)
+                    if encoder_type == "hybrid_attn"
+                    else ModalityEncoder(
+                        audio_dim, hidden_dim, dropout, pre_dim=pre_audio, use_asp=encoder_use_asp
+                    )
+                )
+            if "video" in self.modalities:
+                pre_video = 128 if video_dim > 128 else None
+                self.video_enc = (
+                    HybridTemporalEncoder(video_dim, hidden_dim, dropout, pre_dim=pre_video)
+                    if encoder_type == "hybrid_attn"
+                    else ModalityEncoder(
+                        video_dim, hidden_dim, dropout, pre_dim=pre_video, use_asp=encoder_use_asp
+                    )
+                )
+            if "gait" in self.modalities:
+                self.gait_enc = ModalityEncoder(
+                    gait_dim, hidden_dim, dropout, use_asp=encoder_use_asp
+                )
+
         if "personality" in self.modalities:
             self.pers_enc = PersonalityEncoder(1024, hidden_dim, dropout)
+
+        if use_cross_fusion:
+            self.cross_fusion = CrossModalFusion(
+                hidden_dim, self.modalities, dropout
+            )
 
         fused_dim = hidden_dim * len(self.modalities)
         self.classifier = nn.Sequential(
@@ -127,7 +310,9 @@ class TorchcatBaseline(nn.Module):
             )
 
     @staticmethod
-    def _masked_average_sequences(x: torch.Tensor, pair_mask: Optional[torch.Tensor]) -> torch.Tensor:
+    def _masked_average_sequences(
+        x: torch.Tensor, pair_mask: Optional[torch.Tensor]
+    ) -> torch.Tensor:
         if pair_mask is None:
             return x.mean(dim=1)
         weights = pair_mask.unsqueeze(-1).unsqueeze(-1)
@@ -135,12 +320,25 @@ class TorchcatBaseline(nn.Module):
         return (x * weights).sum(dim=1) / denom
 
     @staticmethod
-    def _masked_average_features(x: torch.Tensor, pair_mask: Optional[torch.Tensor]) -> torch.Tensor:
+    def _masked_average_features(
+        x: torch.Tensor, pair_mask: Optional[torch.Tensor]
+    ) -> torch.Tensor:
         if pair_mask is None:
             return x.mean(dim=1)
         weights = pair_mask.unsqueeze(-1)
         denom = weights.sum(dim=1).clamp_min(1.0)
         return (x * weights).sum(dim=1) / denom
+
+    @staticmethod
+    def _temporal_masked_pool(x: torch.Tensor) -> torch.Tensor:
+        """Masked average pooling over time dim.
+
+        Ignores all-zero timesteps (padding) during averaging.
+        x: [B, T, D] -> [B, D]
+        """
+        mask = (x.abs().sum(dim=-1) > 1e-8).float()  # [B, T]
+        denom = mask.sum(dim=1).clamp_min(1.0)        # [B]
+        return (x * mask.unsqueeze(-1)).sum(dim=1) / denom.unsqueeze(-1)
 
     def _encode_pairwise_sequences(
         self,
@@ -161,27 +359,65 @@ class TorchcatBaseline(nn.Module):
         personality: torch.Tensor | None = None,
         pair_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
-        features = []
+        features: dict[str, torch.Tensor] = {}
 
-        if "audio" in self.modalities:
-            if self.encoder_type == "hybrid_attn":
-                features.append(self._encode_pairwise_sequences(audio, self.audio_enc, pair_mask))
-            else:
-                features.append(self.audio_enc(self._masked_average_sequences(audio, pair_mask)))
+        if self.is_depformer:
+            # ── DepFormer path: encode per-pair → BCT → pool → aggregate pairs ──
+            if "audio" in self.modalities and "video" in self.modalities:
+                B, P, T, Da = audio.shape
+                _, _, _, Dv = video.shape
+                a_seq = self.audio_enc(audio.reshape(B * P, T, Da))   # [B*P, T, H]
+                v_seq = self.video_enc(video.reshape(B * P, T, Dv))   # [B*P, T, H]
+                a_seq, v_seq = self.bct(a_seq, v_seq)                  # [B*P, T, H]
+                a_pooled = self._temporal_masked_pool(a_seq)           # [B*P, H]
+                v_pooled = self._temporal_masked_pool(v_seq)           # [B*P, H]
+                features["audio"] = self._masked_average_features(
+                    a_pooled.reshape(B, P, -1), pair_mask,
+                )
+                features["video"] = self._masked_average_features(
+                    v_pooled.reshape(B, P, -1), pair_mask,
+                )
 
-        if "video" in self.modalities:
-            if self.encoder_type == "hybrid_attn":
-                features.append(self._encode_pairwise_sequences(video, self.video_enc, pair_mask))
-            else:
-                features.append(self.video_enc(self._masked_average_sequences(video, pair_mask)))
+            if "gait" in self.modalities:
+                g_seq = self.gait_enc(gait)                      # [B, T, H]
+                g_seq = self.gait_transformer(g_seq)             # [B, T, H]
+                features["gait"] = self._temporal_masked_pool(g_seq)  # [B, H]
 
-        if "gait" in self.modalities:
-            features.append(self.gait_enc(gait))
+            if "personality" in self.modalities:
+                features["personality"] = self.pers_enc(personality)
+        else:
+            # ── Existing paths: bilstm_mean / hybrid_attn ──
+            if "audio" in self.modalities:
+                if self.encoder_type == "hybrid_attn":
+                    features["audio"] = self._encode_pairwise_sequences(
+                        audio, self.audio_enc, pair_mask
+                    )
+                else:
+                    features["audio"] = self.audio_enc(
+                        self._masked_average_sequences(audio, pair_mask)
+                    )
 
-        if "personality" in self.modalities:
-            features.append(self.pers_enc(personality))
+            if "video" in self.modalities:
+                if self.encoder_type == "hybrid_attn":
+                    features["video"] = self._encode_pairwise_sequences(
+                        video, self.video_enc, pair_mask
+                    )
+                else:
+                    features["video"] = self.video_enc(
+                        self._masked_average_sequences(video, pair_mask)
+                    )
 
-        fused = torch.cat(features, dim=-1)
+            if "gait" in self.modalities:
+                features["gait"] = self.gait_enc(gait)
+
+            if "personality" in self.modalities:
+                features["personality"] = self.pers_enc(personality)
+
+        if self.use_cross_fusion:
+            fused = self.cross_fusion(features)
+        else:
+            fused = torch.cat(list(features.values()), dim=-1)
+
         logits = self.classifier(fused)
         if self.use_regression_head:
             return logits, self.regressor(fused).squeeze(-1)

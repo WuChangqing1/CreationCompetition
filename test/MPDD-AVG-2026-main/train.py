@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from dataset import REGRESSION_TASK, MPDDElderDataset, collate_batch, infer_input_dims, resolve_project_path
@@ -44,7 +45,7 @@ def build_parser(defaults: dict[str, Any]) -> argparse.ArgumentParser:
     parser.add_argument("--task", default=defaults["task"], choices=["binary", "ternary", REGRESSION_TASK])
     parser.add_argument("--regression_label", default=defaults.get("regression_label", "label2"), choices=["label2", "label3"])
     parser.add_argument("--subtrack", default=defaults["subtrack"], choices=["A-V+P", "A-V-G+P", "G+P"])
-    parser.add_argument("--encoder_type", default=defaults["encoder_type"], choices=["bilstm_mean", "hybrid_attn"])
+    parser.add_argument("--encoder_type", default=defaults["encoder_type"], choices=["bilstm_mean", "hybrid_attn", "depformer"])
     parser.add_argument("--audio_feature", default=defaults["audio_feature"])
     parser.add_argument("--video_feature", default=defaults["video_feature"])
     parser.add_argument("--data_root", default=defaults["data_root"])
@@ -66,6 +67,15 @@ def build_parser(defaults: dict[str, Any]) -> argparse.ArgumentParser:
     parser.add_argument("--checkpoints_dir", default=defaults["checkpoints_dir"])
     parser.add_argument("--logs_dir", default=defaults["logs_dir"])
     parser.add_argument("--experiment_name", default="")
+    # Champion method toggles
+    parser.add_argument("--use_asp", type=lambda x: x.lower() != "false", default=True,
+                        help="Use Attention Statistics Pooling (MSF-ATS)")
+    parser.add_argument("--use_cross_fusion", type=lambda x: x.lower() != "false", default=True,
+                        help="Use Cross-Modal Fusion (DepFormer BCT + PTMFIM)")
+    parser.add_argument("--use_focal", type=lambda x: x.lower() != "false", default=True,
+                        help="Use Focal Loss alongside CE (DepFormer)")
+    parser.add_argument("--focal_gamma", type=float, default=2.0,
+                        help="Focal Loss gamma parameter")
     return parser
 
 
@@ -146,6 +156,31 @@ def build_class_weights(labels: list[int], num_classes: int, device: torch.devic
     weights = 1.0 / (counts + 1e-6)
     weights = weights / weights.sum() * num_classes
     return torch.tensor(weights, dtype=torch.float32, device=device)
+
+
+# ===========================================================================
+# Focal Loss (from DepFormer paper, ACM MM 2025)
+# ===========================================================================
+class FocalLoss(nn.Module):
+    """Focal Loss for handling class imbalance.
+
+    FL(p_t) = -alpha_t * (1 - p_t)^gamma * log(p_t)
+
+    Hard-to-classify samples get higher loss weight, preventing the model
+    from being dominated by easy majority-class samples.
+    """
+
+    def __init__(self, alpha: torch.Tensor | None = None, gamma: float = 2.0):
+        super().__init__()
+        self.alpha = alpha  # [num_classes] class weights
+        self.gamma = gamma
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        ce_loss = F.cross_entropy(logits, targets, weight=self.alpha, reduction="none")
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1 - pt) ** self.gamma) * ce_loss
+        return focal_loss.mean()
+
 
 
 def append_summary_row(csv_path: Path, row: dict[str, Any]) -> None:
@@ -244,6 +279,8 @@ def main() -> None:
         "hidden_dim": args.hidden_dim,
         "dropout": args.dropout,
         "encoder_type": args.encoder_type,
+        "use_asp": getattr(args, "use_asp", True),
+        "use_cross_fusion": getattr(args, "use_cross_fusion", True),
     }
     model = TorchcatBaseline(**model_kwargs).to(device)
 
@@ -252,7 +289,15 @@ def main() -> None:
         num_classes=num_classes,
         device=device,
     )
-    criterion = (nn.CrossEntropyLoss(weight=class_weights), nn.MSELoss())
+    # Dual-head classification: CE (inference) + Focal (training only)
+    # DepFormer paper: CE+FL joint training improves minority-class recall
+    use_focal = getattr(args, "use_focal", True)
+    focal_gamma = getattr(args, "focal_gamma", 2.0)
+    criterion = (
+        nn.CrossEntropyLoss(weight=class_weights),
+        FocalLoss(alpha=class_weights, gamma=focal_gamma) if use_focal else None,
+        nn.MSELoss(),
+    )
     selection_metric_name = get_selection_metric_name(args.task)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -282,10 +327,12 @@ def main() -> None:
                 personality=batch["personality"].to(device),
                 pair_mask=batch["pair_mask"].to(device) if "pair_mask" in batch else None,
             )
-            criterion_cls, criterion_reg = criterion
+            criterion_cls, criterion_focal, criterion_reg = criterion
             phq9 = batch["phq9"].to(device)
             logits, reg_out = outputs
-            loss = criterion_cls(logits, labels) + criterion_reg(reg_out, phq9)
+            cls_loss = criterion_cls(logits, labels)
+            focal_loss = criterion_focal(logits, labels) if criterion_focal is not None else 0.0
+            loss = cls_loss + 0.5 * focal_loss + criterion_reg(reg_out, phq9)
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
