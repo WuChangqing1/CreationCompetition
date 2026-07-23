@@ -110,7 +110,8 @@ def evaluate_model(
                 total_cls_loss += float(loss_cls.item()) * len(batch_labels)
                 total_reg_loss += float(loss_reg.item()) * len(batch_labels)
             else:
-                logits = outputs
+                # Handle (logits, None) from non-regression models
+                logits = outputs[0] if isinstance(outputs, (tuple, list)) else outputs
                 loss = criterion(logits, labels)
                 batch_preds = logits.argmax(dim=-1).cpu().numpy().tolist()
                 batch_labels = labels.cpu().numpy().tolist()

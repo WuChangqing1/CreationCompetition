@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .bct import BimodalCollaborativeTransformer
+from .cvae_synthesizer import CVAESynthesizer, kl_divergence
 from .depformer_temporal_encoder import DepFormerTemporalEncoder
 from .hybrid_temporal_encoder import HybridTemporalEncoder
 from .temporal_transformer import TemporalTransformerEncoder
@@ -220,6 +221,11 @@ class TorchcatBaseline(nn.Module):
         encoder_type: str = "bilstm_mean",
         use_asp: bool = True,
         use_cross_fusion: bool = True,
+        # CVAE data augmentation (CMG-VS style)
+        use_cvae: bool = False,
+        cvae_d_z: int = 16,
+        cvae_num_layers: int = 1,
+        cvae_num_heads: int = 2,
     ) -> None:
         super().__init__()
         if subtrack not in self.SUBTRACKS:
@@ -253,6 +259,21 @@ class TorchcatBaseline(nn.Module):
             if "audio" in self.modalities and "video" in self.modalities:
                 self.bct = BimodalCollaborativeTransformer(
                     hidden_dim, num_heads=2, dropout=dropout,
+                )
+            # CVAE data augmentation (CMG-VS): audio+personality → synthetic video
+            self.cvae = None
+            if (use_cvae and "audio" in self.modalities
+                    and "video" in self.modalities
+                    and "personality" in self.modalities):
+                cond_dim = hidden_dim * 2  # concat(audio_seq, pers_seq)
+                self.cvae = CVAESynthesizer(
+                    target_dim=hidden_dim,
+                    cond_dim=cond_dim,
+                    hidden_dim=hidden_dim,
+                    d_z=cvae_d_z,
+                    num_layers=cvae_num_layers,
+                    num_heads=cvae_num_heads,
+                    dropout=dropout,
                 )
             if "gait" in self.modalities:
                 self.gait_enc = DepFormerTemporalEncoder(
@@ -358,24 +379,46 @@ class TorchcatBaseline(nn.Module):
         gait: torch.Tensor | None = None,
         personality: torch.Tensor | None = None,
         pair_mask: torch.Tensor | None = None,
-    ) -> torch.Tensor:
+        return_cvae_outputs: bool = False,
+    ) -> torch.Tensor | dict[str, torch.Tensor]:
         features: dict[str, torch.Tensor] = {}
+        v_pooled_synth = None  # only set when CVAE is active
 
         if self.is_depformer:
-            # ── DepFormer path: encode per-pair → BCT → pool → aggregate pairs ──
+            # ── DepFormer path: encode per-pair → BCT → [CVAE] → pool → aggregate pairs ──
+            # Encode personality early (needed early if CVAE uses it as condition)
+            pers_enc = None
+            if "personality" in self.modalities:
+                pers_enc = self.pers_enc(personality)  # [B, H]
+
             if "audio" in self.modalities and "video" in self.modalities:
                 B, P, T, Da = audio.shape
                 _, _, _, Dv = video.shape
                 a_seq = self.audio_enc(audio.reshape(B * P, T, Da))   # [B*P, T, H]
                 v_seq = self.video_enc(video.reshape(B * P, T, Dv))   # [B*P, T, H]
                 a_seq, v_seq = self.bct(a_seq, v_seq)                  # [B*P, T, H]
+
+                # ── CVAE data augmentation (CMG-VS style) ──
+                if return_cvae_outputs and self.cvae is not None:
+                    pers_per_pair = pers_enc.unsqueeze(1).expand(B, P, -1).reshape(B * P, -1)  # [B*P, H]
+                    pers_seq = pers_per_pair.unsqueeze(1).expand(-1, T, -1)  # [B*P, T, H]
+                    cond_seq = torch.cat([a_seq, pers_seq], dim=-1)  # [B*P, T, 2H]
+
+                    f_v_synth_seq, mu, logvar, z = self.cvae(v_seq, cond_seq)  # [B*P, T, H]
+
+                    # Pool synthetic and real video separately
+                    v_pooled_real = self._temporal_masked_pool(v_seq)
+                    v_pooled_synth = self._temporal_masked_pool(f_v_synth_seq)
+                else:
+                    v_pooled_real = self._temporal_masked_pool(v_seq)
+                    v_pooled_synth = None
+
                 a_pooled = self._temporal_masked_pool(a_seq)           # [B*P, H]
-                v_pooled = self._temporal_masked_pool(v_seq)           # [B*P, H]
                 features["audio"] = self._masked_average_features(
                     a_pooled.reshape(B, P, -1), pair_mask,
                 )
                 features["video"] = self._masked_average_features(
-                    v_pooled.reshape(B, P, -1), pair_mask,
+                    v_pooled_real.reshape(B, P, -1), pair_mask,
                 )
 
             if "gait" in self.modalities:
@@ -384,7 +427,7 @@ class TorchcatBaseline(nn.Module):
                 features["gait"] = self._temporal_masked_pool(g_seq)  # [B, H]
 
             if "personality" in self.modalities:
-                features["personality"] = self.pers_enc(personality)
+                features["personality"] = pers_enc
         else:
             # ── Existing paths: bilstm_mean / hybrid_attn ──
             if "audio" in self.modalities:
@@ -413,6 +456,37 @@ class TorchcatBaseline(nn.Module):
             if "personality" in self.modalities:
                 features["personality"] = self.pers_enc(personality)
 
+        # ── CVAE dual-stream fusion + classify (batched) ──
+        if return_cvae_outputs and v_pooled_synth is not None:
+            # Build augmented features and stack with real → single forward pass
+            features_aug = dict(features)
+            if "audio" in self.modalities and "video" in self.modalities:
+                B, P = audio.shape[0], audio.shape[1]
+                features_aug["video"] = self._masked_average_features(
+                    v_pooled_synth.reshape(B, P, -1), pair_mask,
+                )
+
+            # Stack real + aug along batch dim → [2*B, ...]
+            keys = list(features.keys())
+            stacked = {k: torch.cat([features[k], features_aug[k]], dim=0) for k in keys}
+
+            if self.use_cross_fusion:
+                fused_both = self.cross_fusion(stacked)       # [2*B, fused_dim]
+            else:
+                fused_both = torch.cat(list(stacked.values()), dim=-1)
+            logits_both = self.classifier(fused_both)          # [2*B, num_classes]
+            logits_real, logits_aug = logits_both.chunk(2, dim=0)
+
+            return {
+                "logits_real": logits_real,
+                "logits_aug": logits_aug,
+                "v_pooled_real": v_pooled_real,
+                "v_pooled_synth": v_pooled_synth,
+                "mu": mu,
+                "logvar": logvar,
+            }
+
+        # ── Normal forward (no CVAE or inference mode) ──
         if self.use_cross_fusion:
             fused = self.cross_fusion(features)
         else:
@@ -421,4 +495,4 @@ class TorchcatBaseline(nn.Module):
         logits = self.classifier(fused)
         if self.use_regression_head:
             return logits, self.regressor(fused).squeeze(-1)
-        return logits
+        return logits, None  # None for reg_out to keep tuple unpacking compatible

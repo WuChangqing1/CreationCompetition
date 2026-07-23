@@ -52,7 +52,7 @@ from dataset import (  # noqa: E402
     get_phq9_target, get_task_label, infer_input_dims,
 )
 from metrics import evaluate_model  # noqa: E402
-from models import TorchcatBaseline  # noqa: E402
+from models import TorchcatBaseline, kl_divergence  # noqa: E402
 from train import FocalLoss  # noqa: E402
 from train_val_split import create_kfold_splits  # noqa: E402
 
@@ -75,9 +75,34 @@ TRAIN_CFG = {
         "encoder_type": "bilstm_mean",
     },
     ("Track1", "A-V+P", "binary"): {
-        "epochs": 320, "batch_size": 2, "lr": 8e-5, "weight_decay": 1e-5,
-        "hidden_dim": 64, "dropout": 0.5, "patience": 90,
+        "epochs": 200, "batch_size": 8, "lr": 1e-4, "weight_decay": 1e-5,
+        "hidden_dim": 128, "dropout": 0.55, "patience": 60,
         "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
+    },
+    # ---- CVAE data augmentation (CMG-VS) ----
+    ("Track1", "A-V+P", "binary", "cvae"): {
+        "epochs": 200, "batch_size": 8, "lr": 1e-4, "weight_decay": 1e-5,
+        "hidden_dim": 128, "dropout": 0.55, "patience": 60,
+        "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
+        "use_cvae": True, "cvae_d_z": 16, "cvae_num_layers": 1, "cvae_num_heads": 2,
+        "lambda_aug": 0.5, "lambda_cvae": 0.1, "beta_kl": 0.01,
+        "gradient_clip": 0.5,
+    },
+    ("Track1", "A-V-G+P", "binary", "cvae"): {
+        "epochs": 200, "batch_size": 8, "lr": 1e-4, "weight_decay": 1e-5,
+        "hidden_dim": 128, "dropout": 0.55, "patience": 60,
+        "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
+        "use_cvae": True, "cvae_d_z": 16, "cvae_num_layers": 1, "cvae_num_heads": 2,
+        "lambda_aug": 0.5, "lambda_cvae": 0.1, "beta_kl": 0.01,
+        "gradient_clip": 0.5,
+    },
+    ("Track2", "A-V+P", "binary", "cvae"): {
+        "epochs": 200, "batch_size": 8, "lr": 1e-4, "weight_decay": 1e-5,
+        "hidden_dim": 128, "dropout": 0.55, "patience": 60,
+        "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
+        "use_cvae": True, "cvae_d_z": 16, "cvae_num_layers": 1, "cvae_num_heads": 2,
+        "lambda_aug": 0.5, "lambda_cvae": 0.1, "beta_kl": 0.01,
+        "gradient_clip": 0.5,
     },
     ("Track1", "A-V+P", "ternary"): {
         "epochs": 200, "batch_size": 4, "lr": 4e-5, "weight_decay": 1e-5,
@@ -268,20 +293,27 @@ def train_one_fold(
         track_name = args.track
 
     train_loader = DataLoader(train_dataset, batch_size=cfg["batch_size"],
-                              shuffle=True, collate_fn=collate_batch, num_workers=0)
-    val_loader = DataLoader(val_dataset, batch_size=cfg["batch_size"],
-                            shuffle=False, collate_fn=collate_batch, num_workers=0)
+                              shuffle=True, collate_fn=collate_batch,
+                              num_workers=2, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=cfg.get("val_batch_size", cfg["batch_size"]),
+                            shuffle=False, collate_fn=collate_batch,
+                            num_workers=2, pin_memory=True)
 
     # ── 构建模型 ──
     input_dims = infer_input_dims(train_dataset)
     num_classes = get_num_classes(args.task, args.regression_label)
     model = TorchcatBaseline(
         subtrack=args.subtrack, num_classes=num_classes,
-        is_regression=False, use_regression_head=True,
+        is_regression=False,
+        use_regression_head=False if cfg.get("use_cvae") else True,
         audio_dim=input_dims["audio_dim"], video_dim=input_dims["video_dim"],
         gait_dim=input_dims["gait_dim"], hidden_dim=cfg["hidden_dim"],
         dropout=cfg["dropout"], encoder_type=cfg["encoder_type"],
         use_asp=args.use_asp, use_cross_fusion=args.use_cross_fusion,
+        use_cvae=cfg.get("use_cvae", False),
+        cvae_d_z=cfg.get("cvae_d_z", 16),
+        cvae_num_layers=cfg.get("cvae_num_layers", 1),
+        cvae_num_heads=cfg.get("cvae_num_heads", 2),
     ).to(device)
 
     if device.type == "cuda":
@@ -291,17 +323,24 @@ def train_one_fold(
     all_labels = [int(s["label"]) for s in train_dataset.samples]
     class_weights = build_class_weights(all_labels, num_classes, device)
     focal_criterion = FocalLoss(alpha=class_weights, gamma=2.0) if args.use_focal else None
-    criterion = (
-        nn.CrossEntropyLoss(weight=class_weights),
-        focal_criterion,
-        nn.MSELoss(),
-    )
+    use_cvae = cfg.get("use_cvae", False)
+    if use_cvae:
+        # Single criterion (evaluate_model uses non-joint path → compatible with no reg head)
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
+    else:
+        criterion = (
+            nn.CrossEntropyLoss(weight=class_weights),
+            focal_criterion,
+            nn.MSELoss(),
+        )
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["lr"],
                                   weight_decay=cfg["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=max(1, cfg["epochs"]))
 
     # ── 训练循环 ──
+    use_amp = device.type == "cuda"
+    scaler = torch.amp.GradScaler("cuda") if use_amp else None
     best_score = -1.0
     best_epoch = 0
     best_val_metrics = None
@@ -312,22 +351,65 @@ def train_one_fold(
         running_loss = 0.0
         for batch in train_loader:
             optimizer.zero_grad()
-            labels = batch["label"].to(device)
-            outputs = model(
-                audio=batch["audio"].to(device) if "audio" in batch else None,
-                video=batch["video"].to(device) if "video" in batch else None,
-                gait=batch["gait"].to(device) if "gait" in batch else None,
-                personality=batch["personality"].to(device),
-                pair_mask=batch["pair_mask"].to(device) if "pair_mask" in batch else None,
-            )
-            criterion_cls, criterion_focal, criterion_reg = criterion
-            logits, reg_out = outputs
-            cls_loss = criterion_cls(logits, labels)
-            focal_loss = criterion_focal(logits, labels) if criterion_focal is not None else 0.0
-            loss = cls_loss + 0.5 * focal_loss + criterion_reg(reg_out, batch["phq9"].to(device))
-            loss.backward()
-            nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            optimizer.step()
+            labels = batch["label"].to(device, non_blocking=True)
+
+            with torch.amp.autocast("cuda"):
+                if cfg.get("use_cvae"):
+                    # ── CVAE dual-stream mode ──
+                    outputs = model(
+                        audio=batch["audio"].to(device, non_blocking=True) if "audio" in batch else None,
+                        video=batch["video"].to(device, non_blocking=True) if "video" in batch else None,
+                        gait=batch["gait"].to(device, non_blocking=True) if "gait" in batch else None,
+                        personality=batch["personality"].to(device, non_blocking=True),
+                        pair_mask=batch["pair_mask"].to(device, non_blocking=True) if "pair_mask" in batch else None,
+                        return_cvae_outputs=True,
+                    )
+                    cls_criterion = criterion
+
+                    L_real = cls_criterion(outputs["logits_real"], labels)
+                    if focal_criterion is not None:
+                        L_real = L_real + 0.5 * focal_criterion(outputs["logits_real"], labels)
+
+                    L_aug = cls_criterion(outputs["logits_aug"], labels)
+                    if focal_criterion is not None:
+                        L_aug = L_aug + 0.5 * focal_criterion(outputs["logits_aug"], labels)
+
+                    L_consis = torch.nn.functional.l1_loss(
+                        outputs["v_pooled_real"], outputs["v_pooled_synth"])
+                    L_kl = kl_divergence(outputs["mu"], outputs["logvar"])
+
+                    lmd_aug = cfg.get("lambda_aug", 0.5)
+                    lmd_cvae = cfg.get("lambda_cvae", 0.1)
+                    beta_kl = cfg.get("beta_kl", 0.01)
+
+                    loss = L_real + lmd_aug * L_aug + lmd_cvae * (L_consis + beta_kl * L_kl)
+                else:
+                    # ── Normal mode ──
+                    outputs = model(
+                        audio=batch["audio"].to(device, non_blocking=True) if "audio" in batch else None,
+                        video=batch["video"].to(device, non_blocking=True) if "video" in batch else None,
+                        gait=batch["gait"].to(device, non_blocking=True) if "gait" in batch else None,
+                        personality=batch["personality"].to(device, non_blocking=True),
+                        pair_mask=batch["pair_mask"].to(device, non_blocking=True) if "pair_mask" in batch else None,
+                    )
+                    criterion_cls, criterion_focal, criterion_reg = criterion
+                    logits, reg_out = outputs
+                    cls_loss = criterion_cls(logits, labels)
+                    focal_loss = criterion_focal(logits, labels) if criterion_focal is not None else 0.0
+                    loss = cls_loss + 0.5 * focal_loss + criterion_reg(reg_out, batch["phq9"].to(device, non_blocking=True))
+
+            # backward with AMP scaler
+            clip_val = cfg.get("gradient_clip", 1.0)
+            if scaler is not None:
+                scaler.scale(loss).backward()
+                scaler.unscale_(optimizer)
+                nn.utils.clip_grad_norm_(model.parameters(), clip_val)
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                loss.backward()
+                nn.utils.clip_grad_norm_(model.parameters(), clip_val)
+                optimizer.step()
             running_loss += float(loss.item()) * len(labels)
 
         scheduler.step()
@@ -461,6 +543,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--use_asp", type=lambda x: x.lower() != "false", default=True)
     p.add_argument("--use_cross_fusion", type=lambda x: x.lower() != "false", default=True)
     p.add_argument("--use_focal", type=lambda x: x.lower() != "false", default=True)
+    p.add_argument("--use_cvae", action="store_true", help="启用 CVAE 数据增强 (CMG-VS)")
     return p.parse_args()
 
 
@@ -484,6 +567,11 @@ def main() -> None:
         cfg_key = ("Track1", args.subtrack, args.task)
     else:
         cfg_key = (args.track, args.subtrack, args.task)
+    # Try CVAE variant first if requested
+    if args.use_cvae:
+        cvae_key = cfg_key + ("cvae",)
+        if cvae_key in TRAIN_CFG:
+            cfg_key = cvae_key
     cfg = TRAIN_CFG.get(cfg_key)
     if cfg is None:
         print(f"错误: 未找到配置 {cfg_key}，请在 TRAIN_CFG 中添加")
