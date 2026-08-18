@@ -79,13 +79,20 @@ TRAIN_CFG = {
         "hidden_dim": 128, "dropout": 0.55, "patience": 60,
         "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
     },
+    # ---- 公平对照：无 CVAE + 无回归头（与 CVAE 组同口径）----
+    ("Track1", "A-V+P", "binary", "cls_only"): {
+        "epochs": 200, "batch_size": 8, "lr": 1e-4, "weight_decay": 1e-5,
+        "hidden_dim": 128, "dropout": 0.55, "patience": 60,
+        "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
+        "use_cvae": False, "use_regression_head": False,
+    },
     # ---- CVAE data augmentation (CMG-VS) ----
     ("Track1", "A-V+P", "binary", "cvae"): {
         "epochs": 200, "batch_size": 8, "lr": 1e-4, "weight_decay": 1e-5,
         "hidden_dim": 128, "dropout": 0.55, "patience": 60,
         "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
         "use_cvae": True, "cvae_d_z": 16, "cvae_num_layers": 1, "cvae_num_heads": 2,
-        "lambda_aug": 0.5, "lambda_cvae": 0.1, "beta_kl": 0.01,
+        "lambda_aug": 1.0, "lambda_cvae": 0.1, "beta_kl": 0.01,
         "gradient_clip": 0.5,
     },
     ("Track1", "A-V-G+P", "binary", "cvae"): {
@@ -93,7 +100,7 @@ TRAIN_CFG = {
         "hidden_dim": 128, "dropout": 0.55, "patience": 60,
         "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
         "use_cvae": True, "cvae_d_z": 16, "cvae_num_layers": 1, "cvae_num_heads": 2,
-        "lambda_aug": 0.5, "lambda_cvae": 0.1, "beta_kl": 0.01,
+        "lambda_aug": 1.0, "lambda_cvae": 0.1, "beta_kl": 0.01,
         "gradient_clip": 0.5,
     },
     ("Track2", "A-V+P", "binary", "cvae"): {
@@ -101,7 +108,7 @@ TRAIN_CFG = {
         "hidden_dim": 128, "dropout": 0.55, "patience": 60,
         "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
         "use_cvae": True, "cvae_d_z": 16, "cvae_num_layers": 1, "cvae_num_heads": 2,
-        "lambda_aug": 0.5, "lambda_cvae": 0.1, "beta_kl": 0.01,
+        "lambda_aug": 1.0, "lambda_cvae": 0.1, "beta_kl": 0.01,
         "gradient_clip": 0.5,
     },
     ("Track1", "A-V+P", "ternary"): {
@@ -294,10 +301,10 @@ def train_one_fold(
 
     train_loader = DataLoader(train_dataset, batch_size=cfg["batch_size"],
                               shuffle=True, collate_fn=collate_batch,
-                              num_workers=2, pin_memory=True)
+                              num_workers=args.num_workers, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=cfg.get("val_batch_size", cfg["batch_size"]),
                             shuffle=False, collate_fn=collate_batch,
-                            num_workers=2, pin_memory=True)
+                            num_workers=args.num_workers, pin_memory=True)
 
     # ── 构建模型 ──
     input_dims = infer_input_dims(train_dataset)
@@ -305,7 +312,8 @@ def train_one_fold(
     model = TorchcatBaseline(
         subtrack=args.subtrack, num_classes=num_classes,
         is_regression=False,
-        use_regression_head=False if cfg.get("use_cvae") else True,
+        use_regression_head=cfg.get(
+            "use_regression_head", False if cfg.get("use_cvae") else True),
         audio_dim=input_dims["audio_dim"], video_dim=input_dims["video_dim"],
         gait_dim=input_dims["gait_dim"], hidden_dim=cfg["hidden_dim"],
         dropout=cfg["dropout"], encoder_type=cfg["encoder_type"],
@@ -324,8 +332,12 @@ def train_one_fold(
     class_weights = build_class_weights(all_labels, num_classes, device)
     focal_criterion = FocalLoss(alpha=class_weights, gamma=2.0) if args.use_focal else None
     use_cvae = cfg.get("use_cvae", False)
-    if use_cvae:
-        # Single criterion (evaluate_model uses non-joint path → compatible with no reg head)
+    use_regression_head = cfg.get(
+        "use_regression_head", False if use_cvae else True)
+    # variant label distinguishes checkpoint dirs across ablations
+    variant = "cvae" if use_cvae else ("cls_only" if not use_regression_head else "base")
+    if use_cvae or not use_regression_head:
+        # classification-only single criterion (non-joint path in evaluate_model)
         criterion = nn.CrossEntropyLoss(weight=class_weights)
     else:
         criterion = (
@@ -374,8 +386,10 @@ def train_one_fold(
                     if focal_criterion is not None:
                         L_aug = L_aug + 0.5 * focal_criterion(outputs["logits_aug"], labels)
 
+                    # CMG-VS eq.(10): sequence-level L1 reconstruction,
+                    # target detached so L_consis only trains the CVAE.
                     L_consis = torch.nn.functional.l1_loss(
-                        outputs["v_pooled_real"], outputs["v_pooled_synth"])
+                        outputs["v_seq_real"].detach(), outputs["v_synth_seq"])
                     L_kl = kl_divergence(outputs["mu"], outputs["logvar"])
 
                     lmd_aug = cfg.get("lambda_aug", 0.5)
@@ -384,7 +398,7 @@ def train_one_fold(
 
                     loss = L_real + lmd_aug * L_aug + lmd_cvae * (L_consis + beta_kl * L_kl)
                 else:
-                    # ── Normal mode ──
+                    # ── Normal mode (no CVAE) ──
                     outputs = model(
                         audio=batch["audio"].to(device, non_blocking=True) if "audio" in batch else None,
                         video=batch["video"].to(device, non_blocking=True) if "video" in batch else None,
@@ -392,11 +406,17 @@ def train_one_fold(
                         personality=batch["personality"].to(device, non_blocking=True),
                         pair_mask=batch["pair_mask"].to(device, non_blocking=True) if "pair_mask" in batch else None,
                     )
-                    criterion_cls, criterion_focal, criterion_reg = criterion
                     logits, reg_out = outputs
-                    cls_loss = criterion_cls(logits, labels)
-                    focal_loss = criterion_focal(logits, labels) if criterion_focal is not None else 0.0
-                    loss = cls_loss + 0.5 * focal_loss + criterion_reg(reg_out, batch["phq9"].to(device, non_blocking=True))
+                    if use_regression_head:
+                        criterion_cls, criterion_focal, criterion_reg = criterion
+                        cls_loss = criterion_cls(logits, labels)
+                        focal_loss = criterion_focal(logits, labels) if criterion_focal is not None else 0.0
+                        loss = cls_loss + 0.5 * focal_loss + criterion_reg(reg_out, batch["phq9"].to(device, non_blocking=True))
+                    else:
+                        cls_criterion = criterion
+                        cls_loss = cls_criterion(logits, labels)
+                        focal_loss = focal_criterion(logits, labels) if focal_criterion is not None else 0.0
+                        loss = cls_loss + 0.5 * focal_loss
 
             # backward with AMP scaler
             clip_val = cfg.get("gradient_clip", 1.0)
@@ -421,12 +441,14 @@ def train_one_fold(
             best_epoch = epoch
             best_val_metrics = val_metrics
             epochs_without_improve = 0
-            ckpt_dir = CV_CHECKPOINT_ROOT / track_name / args.subtrack / args.task
+            ckpt_dir = (CV_CHECKPOINT_ROOT / track_name / args.subtrack
+                        / args.task / variant)
             ckpt_dir.mkdir(parents=True, exist_ok=True)
             torch.save({
                 "model_state": model.state_dict(),
                 "subtrack": args.subtrack, "task": args.task,
                 "encoder_type": cfg["encoder_type"],
+                "variant": variant,
                 "best_epoch": epoch, "fold": fold_idx,
                 "best_val_metrics": summarize_metrics(val_metrics),
             }, ckpt_dir / f"fold{fold_idx}_best.pth")
@@ -535,6 +557,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--joint", action="store_true", help="Elder+Young 联合训练")
     p.add_argument("--quick", action="store_true", help="快速模式 (epochs=3)")
+    p.add_argument("--num_workers", type=int, default=2,
+                   help="DataLoader 进程数（沙箱/受限环境用 0）")
     p.add_argument("--device", default="cuda")
     # Champion method toggles
     p.add_argument("--encoder_type", default=None,
@@ -544,6 +568,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--use_cross_fusion", type=lambda x: x.lower() != "false", default=True)
     p.add_argument("--use_focal", type=lambda x: x.lower() != "false", default=True)
     p.add_argument("--use_cvae", action="store_true", help="启用 CVAE 数据增强 (CMG-VS)")
+    p.add_argument("--cls_only", action="store_true",
+                   help="公平对照：无 CVAE 且无回归头（与 CVAE 组同口径）")
     return p.parse_args()
 
 
@@ -572,6 +598,10 @@ def main() -> None:
         cvae_key = cfg_key + ("cvae",)
         if cvae_key in TRAIN_CFG:
             cfg_key = cvae_key
+    elif args.cls_only:
+        cls_key = cfg_key + ("cls_only",)
+        if cls_key in TRAIN_CFG:
+            cfg_key = cls_key
     cfg = TRAIN_CFG.get(cfg_key)
     if cfg is None:
         print(f"错误: 未找到配置 {cfg_key}，请在 TRAIN_CFG 中添加")
@@ -618,6 +648,10 @@ def main() -> None:
     summary: dict[str, Any] = {
         "track": track_name, "subtrack": args.subtrack, "task": args.task,
         "folds": n_folds, "seed": args.seed, "joint": args.joint,
+        "variant": ("cvae" if cfg.get("use_cvae")
+                    else ("cls_only" if not cfg.get(
+                        "use_regression_head", False if cfg.get("use_cvae") else True)
+                        else "base")),
         "config": cfg, "elapsed_sec": round(elapsed, 1),
     }
     print(f"\n{'=' * 60}")

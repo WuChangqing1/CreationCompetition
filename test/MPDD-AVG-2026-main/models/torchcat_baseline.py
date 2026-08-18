@@ -404,7 +404,12 @@ class TorchcatBaseline(nn.Module):
                     pers_seq = pers_per_pair.unsqueeze(1).expand(-1, T, -1)  # [B*P, T, H]
                     cond_seq = torch.cat([a_seq, pers_seq], dim=-1)  # [B*P, T, 2H]
 
-                    f_v_synth_seq, mu, logvar, z = self.cvae(v_seq, cond_seq)  # [B*P, T, H]
+                    # detach: CMG-VS paper treats f_v / f_a as FIXED features, so
+                    # L_consis / L_KL must only update the CVAE (not the main
+                    # encoders/BCT). Task-guided feedback still reaches the CVAE
+                    # through L_aug -> f_v_synth_seq -> decoder/encoder params.
+                    f_v_synth_seq, mu, logvar, z = self.cvae(
+                        v_seq.detach(), cond_seq.detach())  # [B*P, T, H]
 
                     # Pool synthetic and real video separately
                     v_pooled_real = self._temporal_masked_pool(v_seq)
@@ -482,6 +487,8 @@ class TorchcatBaseline(nn.Module):
                 "logits_aug": logits_aug,
                 "v_pooled_real": v_pooled_real,
                 "v_pooled_synth": v_pooled_synth,
+                "v_seq_real": v_seq,          # [B*P, T, H] real video seq (BCT out)
+                "v_synth_seq": f_v_synth_seq, # [B*P, T, H] synthesized video seq
                 "mu": mu,
                 "logvar": logvar,
             }
