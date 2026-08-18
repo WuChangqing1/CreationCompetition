@@ -27,8 +27,8 @@
 
 | 方法 | Track1 A-V+P | Track1 A-V-G+P | Track1 G+P | Track2 A-V+P | Track2 A-V-G+P | Track2 G+P |
 |---|---|---|---|---|---|---|
-| baseline (`cross_fusion`) | 0.6480±0.0832 | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
-| CMG-VS (`cvae`) | 0.6258±0.0632 | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| baseline (`cross_fusion`) | 0.6480±0.0832 | 0.5297±0.0832 | 0.4041±0.0083 | 0.5462±0.1512 | 0.5526±0.1494 | 0.6809±0.0736 |
+| CMG-VS (`cvae`) | 0.6258±0.0632 | ⏳ | N/A | ⏳ | ⏳ | N/A |
 | Personality-Enhanced (`ptmfim`) | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 | HOPE (`hope`) | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 | MSF-ATS (`reliability`) | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
@@ -40,6 +40,11 @@
 
 ### baseline (`cross_fusion`) — DepFormer/BCT
 - Track1 A-V+P：F1 0.6480±0.0832 / Acc 0.7013±0.0956 / Kappa 0.3271±0.1622
+- Track1 A-V-G+P：F1 0.5297±0.0832 / Acc 0.6902 / Kappa 0.1438
+- Track1 G+P：F1 0.4041±0.0083 / Acc 0.6784 / Kappa 0.0000
+- Track2 A-V+P：F1 0.5462±0.1512 / Acc 0.6124 / Kappa 0.2113
+- Track2 A-V-G+P：F1 0.5526±0.1494 / Acc 0.6118 / Kappa 0.2137
+- Track2 G+P：F1 0.6809±0.0736 / Acc 0.6824 / Kappa 0.3652
 
 ### CMG-VS (`cvae`)
 - Track1 A-V+P：F1 0.6258±0.0632 / Acc 0.6895±0.0596 / Kappa 0.2786±0.0999
