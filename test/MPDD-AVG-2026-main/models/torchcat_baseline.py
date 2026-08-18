@@ -9,6 +9,9 @@ import torch.nn.functional as F
 from .bct import BimodalCollaborativeTransformer
 from .cvae_synthesizer import CVAESynthesizer, kl_divergence
 from .depformer_temporal_encoder import DepFormerTemporalEncoder
+from .fusion_methods import (
+    HOPEFusion, HypergraphFusion, PTMFIMFusion, ReliabilityFusion,
+)
 from .hybrid_temporal_encoder import HybridTemporalEncoder
 from .temporal_transformer import TemporalTransformerEncoder
 
@@ -221,6 +224,7 @@ class TorchcatBaseline(nn.Module):
         encoder_type: str = "bilstm_mean",
         use_asp: bool = True,
         use_cross_fusion: bool = True,
+        fusion_type: str = "cross_fusion",
         # CVAE data augmentation (CMG-VS style)
         use_cvae: bool = False,
         cvae_d_z: int = 16,
@@ -310,10 +314,7 @@ class TorchcatBaseline(nn.Module):
         if "personality" in self.modalities:
             self.pers_enc = PersonalityEncoder(1024, hidden_dim, dropout)
 
-        if use_cross_fusion:
-            self.cross_fusion = CrossModalFusion(
-                hidden_dim, self.modalities, dropout
-            )
+        self.fusion = self._build_fusion(fusion_type, use_cross_fusion, hidden_dim, dropout)
 
         fused_dim = hidden_dim * len(self.modalities)
         self.classifier = nn.Sequential(
@@ -329,6 +330,22 @@ class TorchcatBaseline(nn.Module):
                 nn.Dropout(dropout),
                 nn.Linear(hidden_dim, 1),
             )
+
+    def _build_fusion(self, fusion_type, use_cross_fusion, hidden_dim, dropout):
+        """Build the vector-level fusion module by name (paper comparison)."""
+        if not use_cross_fusion or fusion_type == "none":
+            return None
+        if fusion_type == "cross_fusion":
+            return CrossModalFusion(hidden_dim, self.modalities, dropout)
+        if fusion_type == "ptmfim":
+            return PTMFIMFusion(hidden_dim, self.modalities, dropout)
+        if fusion_type == "hope":
+            return HOPEFusion(hidden_dim, self.modalities, dropout)
+        if fusion_type == "reliability":
+            return ReliabilityFusion(hidden_dim, self.modalities, dropout)
+        if fusion_type == "hypergraph":
+            return HypergraphFusion(hidden_dim, self.modalities, dropout)
+        raise ValueError(f"Unknown fusion_type: {fusion_type}")
 
     @staticmethod
     def _masked_average_sequences(
@@ -475,8 +492,8 @@ class TorchcatBaseline(nn.Module):
             keys = list(features.keys())
             stacked = {k: torch.cat([features[k], features_aug[k]], dim=0) for k in keys}
 
-            if self.use_cross_fusion:
-                fused_both = self.cross_fusion(stacked)       # [2*B, fused_dim]
+            if self.fusion is not None:
+                fused_both = self.fusion(stacked)             # [2*B, fused_dim]
             else:
                 fused_both = torch.cat(list(stacked.values()), dim=-1)
             logits_both = self.classifier(fused_both)          # [2*B, num_classes]
@@ -494,8 +511,8 @@ class TorchcatBaseline(nn.Module):
             }
 
         # ── Normal forward (no CVAE or inference mode) ──
-        if self.use_cross_fusion:
-            fused = self.cross_fusion(features)
+        if self.fusion is not None:
+            fused = self.fusion(features)
         else:
             fused = torch.cat(list(features.values()), dim=-1)
 

@@ -137,6 +137,11 @@ TRAIN_CFG = {
         "hidden_dim": 64, "dropout": 0.5, "patience": 90,
         "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
     },
+    ("Track2", "A-V-G+P", "binary"): {
+        "epochs": 320, "batch_size": 2, "lr": 8e-5, "weight_decay": 1e-5,
+        "hidden_dim": 64, "dropout": 0.5, "patience": 90,
+        "encoder_type": "depformer", "audio_feature": "mfcc", "video_feature": "densenet",
+    },
 }
 
 DATA_PATHS = {
@@ -318,6 +323,7 @@ def train_one_fold(
         gait_dim=input_dims["gait_dim"], hidden_dim=cfg["hidden_dim"],
         dropout=cfg["dropout"], encoder_type=cfg["encoder_type"],
         use_asp=args.use_asp, use_cross_fusion=args.use_cross_fusion,
+        fusion_type=cfg.get("fusion_type", "cross_fusion"),
         use_cvae=cfg.get("use_cvae", False),
         cvae_d_z=cfg.get("cvae_d_z", 16),
         cvae_num_layers=cfg.get("cvae_num_layers", 1),
@@ -334,8 +340,8 @@ def train_one_fold(
     use_cvae = cfg.get("use_cvae", False)
     use_regression_head = cfg.get(
         "use_regression_head", False if use_cvae else True)
-    # variant label distinguishes checkpoint dirs across ablations
-    variant = "cvae" if use_cvae else ("cls_only" if not use_regression_head else "base")
+    # variant label distinguishes checkpoint dirs across ablations/fusion methods
+    variant = "cvae" if use_cvae else cfg.get("fusion_type", "cross_fusion")
     if use_cvae or not use_regression_head:
         # classification-only single criterion (non-joint path in evaluate_model)
         criterion = nn.CrossEntropyLoss(weight=class_weights)
@@ -570,6 +576,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--use_cvae", action="store_true", help="启用 CVAE 数据增强 (CMG-VS)")
     p.add_argument("--cls_only", action="store_true",
                    help="公平对照：无 CVAE 且无回归头（与 CVAE 组同口径）")
+    p.add_argument("--fusion_type", default=None,
+                   choices=["cross_fusion", "ptmfim", "hope", "reliability", "hypergraph", "none"],
+                   help="向量级融合模块（论文对比实验）")
     return p.parse_args()
 
 
@@ -593,20 +602,23 @@ def main() -> None:
         cfg_key = ("Track1", args.subtrack, args.task)
     else:
         cfg_key = (args.track, args.subtrack, args.task)
-    # Try CVAE variant first if requested
+    base = TRAIN_CFG.get(cfg_key)
+    if base is None:
+        print(f"错误: 未找到配置 {cfg_key}，请在 TRAIN_CFG 中添加")
+        sys.exit(1)
+    cfg = dict(base)
+    # variant overrides
     if args.use_cvae:
         cvae_key = cfg_key + ("cvae",)
         if cvae_key in TRAIN_CFG:
-            cfg_key = cvae_key
-    elif args.cls_only:
-        cls_key = cfg_key + ("cls_only",)
-        if cls_key in TRAIN_CFG:
-            cfg_key = cls_key
-    cfg = TRAIN_CFG.get(cfg_key)
-    if cfg is None:
-        print(f"错误: 未找到配置 {cfg_key}，请在 TRAIN_CFG 中添加")
-        sys.exit(1)
-    cfg = dict(cfg)
+            cfg.update(TRAIN_CFG[cvae_key])
+        else:
+            cfg["use_cvae"] = True
+    if args.cls_only:
+        cfg["use_cvae"] = False
+        cfg["use_regression_head"] = False
+    if args.fusion_type is not None:
+        cfg["fusion_type"] = args.fusion_type
     if args.encoder_type is not None:
         cfg["encoder_type"] = args.encoder_type
     if args.quick:
@@ -649,9 +661,7 @@ def main() -> None:
         "track": track_name, "subtrack": args.subtrack, "task": args.task,
         "folds": n_folds, "seed": args.seed, "joint": args.joint,
         "variant": ("cvae" if cfg.get("use_cvae")
-                    else ("cls_only" if not cfg.get(
-                        "use_regression_head", False if cfg.get("use_cvae") else True)
-                        else "base")),
+                    else cfg.get("fusion_type", "cross_fusion")),
         "config": cfg, "elapsed_sec": round(elapsed, 1),
     }
     print(f"\n{'=' * 60}")
