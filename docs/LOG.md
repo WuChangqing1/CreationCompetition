@@ -21,7 +21,7 @@
 - 修正分类-only 日志中 `ccc/rmse/mae` 的命名，避免误读为 PHQ-9 指标。
 - 跑 Track2 Young 与 A-V-G+P；处理三分类 class collapse。
 
-**提交**：待提交（推送到 feature/champion-methods）
+**提交**：`d57e2ed`（feat: CMG-VS 忠实化 + 公平消融）、`79338a9`（docs: 同步项目记忆）— 已推送到 `origin/feature/champion-methods`
 
 ## 2026-07-30 会话 (第7次)
 
