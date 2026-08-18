@@ -13,9 +13,11 @@ MPDD-AVG 2026 (Multimodal Personality-aware Depression Detection — Audio, Vide
 | 赛道 (Track) | Track1 (Elder 老年) · Track2 (Young 青年) |
 | 任务 (Task) | 二分类 (binary, label2) · 三分类 (ternary, label3) · PHQ-9 回归 |
 | 子赛道 (Subtrack) | A-V+P · A-V-G+P · G+P |
-| 编码器 (Encoder) | bilstm_mean · hybrid_attn |
+| 编码器 (Encoder) | bilstm_mean · hybrid_attn · depformer |
 
-二分类和三分类任务**联合训练** PHQ-9 回归头，所以每个实验同时输出分类指标和回归指标。
+二分类和三分类任务默认**联合训练** PHQ-9 回归头，所以每个实验同时输出分类指标和回归指标。
+
+当前实验分支补充了 DepFormer、BCT 和 CVAE 数据增强。CVAE 模式下会关闭 PHQ 回归头，因此这类结果主要看 Macro-F1、Acc、Kappa，不应把日志中的分类派生 CCC/RMSE/MAE 当成 PHQ-9 回归指标。
 
 ## 模态与特征
 

@@ -26,8 +26,8 @@
 ## D004 — conda 环境命名
 
 - **日期**: 2026-06-02
-- **决策**: 使用 `creationcompetition` 作为 conda 环境名（不使用官方 README 中的 `mpddavg`）
-- **为什么**: 与项目名 CreationCompetition 保持一致，方便识别和管理；不影响基线代码运行（代码中无环境名硬编码）
+- **决策**: 实际使用 `dachuangxiangmu` 作为当前 Conda 环境名（旧记录中的 `creationcompetition` 已不作为当前环境）
+- **为什么**: 用户确认当前可用环境是 `dachuangxiangmu`；2026-07-30 已验证该环境可运行 Python 3.10.20、PyTorch 2.14.0.dev20260717+cu130，并能识别 RTX 5070 CUDA。后续训练、验证和复现实验统一使用 `conda run -n dachuangxiangmu ...`。
 
 ## D005 — 批量训练脚本语言
 
@@ -66,6 +66,45 @@
   - 三分类 kappa 全程 0.0（全猜 class 0）
   - 12 维步态特征信息量本就有限，核心信号来自 1024 维人格特征
 - **后果**: 要突破天花板需要：① 换更强模型架构（如 HOPE 论文的分层融合）② 引入音频/视频特征并解决维度灾难 ③ 专注二分类放弃三分类和回归
+
+## D010 — 当前冠军方法：DepFormer + BCT 优先服务 A-V+P
+
+- **日期**: 2026-07-30
+- **决策**: 在 `experiments/train_cv.py` 中以 Track1 A-V+P binary 为主要突破口，使用 DepFormerTemporalEncoder 保留时序序列，再接 BCT 做音视频跨模态交互。
+- **为什么**: 早期 G+P 的 F1 天花板约 0.64-0.66；A-V+P 虽有维度灾难，但音频/视频含有额外抑郁信号。DepFormer/BCT 保留并利用时序结构，比简单 BiLSTM mean pooling 更适合多模态对齐。
+- **后果**: 当前主实验代码已经偏离官方 baseline，架构文档和实验记录必须同步；Track2、A-V-G+P、ternary 仍需单独验证。
+
+## D011 — CVAE 作为数据增强候选，但需要严格消融
+
+- **日期**: 2026-07-30
+- **决策**: 保留 CVAE 数据增强路径，但暂不把 F1 提升完全归因于 CVAE。
+- **为什么**: 最新 Track1 A-V+P binary 结果显示 CVAE 配置 F1=0.6360±0.0965，高于非 CVAE 新配置 F1=0.6097±0.0558；但 CVAE 模式同时关闭了 PHQ 回归头，而非 CVAE 对照仍启用回归头，这是关键混淆因素。
+- **后果**: 下一步必须跑 `No-CVAE + no-regression-head` 对照，并考虑 `L_consis` detach 实验，才能判断 CVAE 是否真的贡献了主要增益。
+
+## D012 — 分类实验的主指标以 F1/Acc/Kappa 为准
+
+- **日期**: 2026-07-30
+- **决策**: 在关闭 PHQ 回归头的分类实验中，报告和选模重点看 Macro-F1、Accuracy、Kappa，不把日志中的 `ccc/rmse/mae` 当作 PHQ-9 回归指标。
+- **为什么**: 当前 `metrics.py` 在分类-only 路径会基于整数类别标签计算 CCC/RMSE/MAE，这些值可作分类标签一致性的辅助信息，但不是 PHQ 分数预测质量。
+- **后果**: 后续应修正指标命名或日志字段，避免论文/汇报时误用。
+
+## D013 — 当前未跟踪资料暂不纳入 Git
+
+- **日期**: 2026-07-30
+- **决策**: `.agents/`、`StudyVault/`、PPT、PDF、`docs/CVAE_INTEGRATION.md`、`skills-lock.json` 等当前未跟踪文件暂不加入 Git。
+- **为什么**: 用户明确确认这些未跟踪文件不需要纳入 Git；其中部分是个人学习资料、插件/技能缓存或大体积研究材料，不应在没有筛选前进入代码仓库。
+- **后果**: 后续提交文档或代码时只 stage 明确需要的文件；不要因为 `git status` 显示这些路径就自动 `git add -A`。
+
+## D014 — 按 CMG-VS 论文忠实化 CVAE 任务引导机制
+
+- **日期**: 2026-08-18
+- **决策**: 依据本地论文 `PDF/paper02`（CMG-VS, CVPR 2026）把现有 CVAE 数据增强路径改造成论文忠实的「任务引导视觉合成」：
+  1. `L_consis` 改为**序列级** L1 重建 `‖v_seq − v_synth_seq‖₁`（论文 eq.10），不再用池化向量。
+  2. CVAE 输入 `v_seq` / `cond_seq` 全部 `.detach()`，使 `L_consis`/`L_KL` 只更新 CVAE（论文中 `f_v`/`f_a` 是固定特征），任务引导梯度仅通过 `L_aug → f_v_synth_seq → decoder/encoder` 回传。
+  3. `λ_aug` 由 0.5 提到论文默认 1.0。
+  4. 新增 `--cls_only` 公平对照（无 CVAE 且无回归头），把「数据增强效应」和「去回归头效应」解耦。
+- **为什么**: 旧实现 `L_consis` 只对池化向量做 L1 且不 detach，会反向扰动 DepFormer/BCT 主编码器（K012 的根源）；且 CVAE 组关闭回归头造成归因混淆，无法证明增益来自 CVAE。
+- **后果**: `torchcat_baseline.py` 的 CVAE 分支与 `experiments/train_cv.py` 损失/配置已更新；checkpoint 目录新增 variant 区分（`cvae`/`cls_only`/`base`），避免不同消融互相覆盖。
 
 ---
 

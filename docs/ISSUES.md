@@ -42,9 +42,10 @@
 ### K006 — 无 2026 test 集
 - **发现日期**: 2026-06-02
 - **来源**: 本地文件盘点
-- **详情**: `test/MPDD-AVG-2026-main/MPDD-AVG2026/MPDD-AVG2026-test/` 目录为空，仅存在空壳
-- **影响**: 当前无法运行 test.py 做测试集评估，只能训练+验证
-- **处理**: 需从 HuggingFace 下载 test 集数据
+- **详情**: 用户确认当前没有 MPDD-AVG 2026 official test 数据集；`test/MPDD-AVG-2026-main/MPDD-AVG2026/MPDD-AVG2026-test/` 目录为空，仅存在空壳。`test/MPDD-Test/` 属于 MPDD 2025 参考测试数据，不等同于 2026 official test。
+- **影响**: 不影响当前训练、CV 和 smoke test 跑通；只影响 official test 评估和 CodaBench 提交。
+- **处理**: 若后续要提交 CodaBench，再下载或放入 official test 集数据。
+- **状态**: 已确认缺口，非当前训练阻塞项。
 
 ### K007 — 标签全为 train
 - **发现日期**: 2026-06-02
@@ -72,3 +73,58 @@
 - **详情**: G+P ternary val_kappa=0.0 best_epoch=1，A-V+P ternary val_kappa=0.08 best_epoch=10。两者模型均将所有样本预测为单一类别（全猜 class 0），完全无区分能力。78 训练样本 / 3 类别 / 仅 9 验证样本
 - **影响**: 三元分类在当前数据规模（Elder 87 人）和特征组合下不可行。可能需要：① 更大的训练集（Elder+Young 联合？）② 更强的特征组合（A-V-G+P）③ 数据增强
 - **状态**: 待解决
+
+### K011 — 旧文档环境名错误
+- **发现日期**: 2026-07-30
+- **来源**: 用户确认 + 环境验证
+- **详情**: 旧记忆文件记录 Conda 环境为 `creationcompetition`，但当前实际可用环境为 `dachuangxiangmu`。
+- **影响**: 后续 Agent 或人工复现实验时如果使用旧环境名，会误判依赖缺失或无法运行 PyTorch。
+- **处理**: 已更新 `CLAUDE.md`、`docs/GETTING_STARTED.md`、`docs/PROGRESS.md`、`docs/DECISIONS.md`。当前验证结果：Python 3.10.20 / PyTorch 2.14.0.dev20260717+cu130 / CUDA True / RTX 5070。
+- **状态**: 已处理，后续命令统一使用 `conda run -n dachuangxiangmu ...`。
+
+### K012 — CVAE 实验存在公平对照混淆
+- **发现日期**: 2026-07-30
+- **来源**: `experiments/train_cv.py` 和 `docs/CVAE_INTEGRATION.md`
+- **详情**: CVAE 模式会关闭 PHQ 回归头，非 CVAE 对照仍使用分类+回归联合训练。因此 CVAE 的 +2.6pp F1 提升混合了“数据增强效应”和“去除回归噪声效应”。
+- **影响**: 不能直接把当前最好 F1 全部归功于 CVAE；论文/汇报中需要避免过度结论。
+- **处理**: 2026-08-18 已按 D014 修复：新增 `--cls_only` 公平对照（无 CVAE + 无回归头），并将 `L_consis` 改为序列级且 detach。
+- **状态**: 修复已实现，等 5-fold 消融结果验证。
+
+### K013 — 分类-only 日志中的 CCC/RMSE/MAE 容易误读
+- **发现日期**: 2026-07-30
+- **来源**: `metrics.py`
+- **详情**: 在无 PHQ 回归头时，`classification_metrics()` 会基于整数类别标签计算 CCC/RMSE/MAE；这些不是 PHQ-9 回归指标。
+- **影响**: CVAE JSON 里的 `cv_ccc/cv_rmse/cv_mae` 可能被误认为 PHQ 分数预测表现。
+- **处理**: 后续应改字段名或只在有回归输出时记录 PHQ 指标。
+- **状态**: 待修复。
+
+### K014 — Windows 下 opensmile/audresample 依赖平台名识别异常
+- **发现日期**: 2026-07-30
+- **来源**: `smoke_test.py`
+- **详情**: 直接运行 smoke test 时，`opensmile -> audresample` 会尝试加载 `audresample\core\bin\win_\audresample.dll`，但实际 DLL 位于 `win_amd64`。原因是当前进程中 `platform.machine()` 返回空字符串。
+- **影响**: 不设置环境变量时，完整依赖检查会失败；已预提取特征的训练核心依赖仍正常。
+- **处理**: 在当前 PowerShell 会话设置 `$env:PROCESSOR_ARCHITECTURE = 'AMD64'` 后，`opensmile` 导入正常，完整 `smoke_test.py` 已通过。
+- **状态**: 有 workaround；后续可考虑在启动脚本或文档中固定该环境变量。
+
+### K015 — Conda run 在当前 PowerShell 输出编码下可能崩溃
+- **发现日期**: 2026-07-30
+- **来源**: `conda run -n dachuangxiangmu python smoke_test.py`
+- **详情**: `conda run` 在打印子进程输出时触发 `UnicodeEncodeError: 'gbk' codec can't encode character`。
+- **影响**: 可能误判为项目测试失败；实际直接调用环境内 `python.exe` 可正常运行。
+- **处理**: 当前优先使用 `D:\App\Business\Coding\Python\Miniconda\envs\dachuangxiangmu\python.exe` 直接执行项目命令。
+- **状态**: 有 workaround。
+
+### K016 — Windows 受限环境 DataLoader 多进程无法创建管道
+- **发现日期**: 2026-08-18
+- **来源**: `experiments/train_cv.py` 在沙箱/受限 shell 下运行
+- **详情**: `DataLoader(num_workers=2)` 在 Windows 沙箱下抛 `PermissionError: [WinError 5] 拒绝访问`（`multiprocessing` 需要创建命名管道，受限环境禁止）。
+- **影响**: 在受限环境里训练脚本无法启动；普通用户本机（非沙箱）不受影响。
+- **处理**: 新增 `--num_workers` CLI 参数（默认 2），受限环境用 `--num_workers 0` 单进程加载。本数据集很小（87 样本），单进程加载对速度影响可忽略。
+- **状态**: 已修复。
+
+### K017 — 关闭回归头但未启用 CVAE 时训练崩溃
+- **发现日期**: 2026-08-18
+- **来源**: `experiments/train_cv.py` 新增 `--cls_only` 后暴露
+- **详情**: 当 `use_cvae=False` 且 `use_regression_head=False` 时，模型返回 `(logits, None)`，但旧训练循环仍按「有回归头」解包并计算 `MSELoss(reg_out, phq9)`，对 `None` 调用 `.size()` 报 `AttributeError`。这正是 K012 混淆变量的代码根源。
+- **处理**: 重构 `train_one_fold` 的 criterion 选择与训练循环，按 `use_regression_head` 分支：分类-only 用单一 CrossEntropy(+focal)，联合用 (CE, focal, MSE)。
+- **状态**: 已修复，`--cls_only` 冒烟通过。

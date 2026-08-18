@@ -175,6 +175,7 @@
 - 技术栈：PyTorch, scikit-learn, numpy（特征提取：wav2vec, OpenSmile, ResNet, DenseNet, OpenFace）
 - 开发语言：Python 3.10
 - 包管理器：pip + conda
+- 当前 Conda 环境：`dachuangxiangmu`（Python 3.10.20 / PyTorch 2.14.0.dev20260717+cu130 / RTX 5070 CUDA 可用）
 - 远程仓库：https://github.com/WuChangqing1/CreationCompetition
 
 ## 代码规范

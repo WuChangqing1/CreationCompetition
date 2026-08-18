@@ -4,6 +4,46 @@
 
 ---
 
+## 2026-08-18 会话 (第8次)
+
+**做了什么**：
+- 精读本地论文 `PDF/paper02`（CMG-VS: Cross-Modal Guided Visual Synthesis, CVPR 2026），对照现有 CVAE 实现找出 4 处与论文不符的差距。
+- 按论文忠实化 CVAE：`torchcat_baseline.py` 中 CVAE 输入 `v_seq`/`cond_seq` 全部 `.detach()`（使 `L_consis`/`L_KL` 只更新 CVAE），并返回 `v_seq_real`/`v_synth_seq`；`train_cv.py` 中 `L_consis` 改为序列级 L1、`λ_aug` 提到 1.0。
+- 新增公平对照：`--cls_only`（无 CVAE 且无回归头）+ `use_regression_head` 配置化 + `--num_workers` 参数 + checkpoint variant 分目录。
+- 修复两个 bug：K016（沙箱下 DataLoader 多进程管道被拒）、K017（关回归头但未开 CVAE 时 `reg_out=None` 崩溃）。
+- 跑 5-fold 消融（Track1 A-V+P binary，seed=42）：cls_only F1=0.6480±0.0832，CMG-VS 忠实版 CVAE F1=0.6258±0.0632。
+- 更新记忆文件：PROGRESS/DECISIONS(D014)/ISSUES(K012,K016,K017)/CHANGELOG/ARCHITECTURE/GETTING_STARTED。
+
+**结论**：真正提升精度的是去掉 PHQ 回归头（F1 0.610→0.648，+3.8pp）；CVAE 数据增强在 MPDD-AVG 87 样本上没有增益，旧记录的“CVAE +2.6pp”是回归头混淆的假象。
+
+**下次继续**：
+- 多 seed 复跑 cls_only vs CVAE，确认方差与结论稳定性。
+- 修正分类-only 日志中 `ccc/rmse/mae` 的命名，避免误读为 PHQ-9 指标。
+- 跑 Track2 Young 与 A-V-G+P；处理三分类 class collapse。
+
+**提交**：待提交（推送到 feature/champion-methods）
+
+## 2026-07-30 会话 (第7次)
+
+**做了什么**：
+- 扫描并整理项目当前状态：分支为 `feature/champion-methods`，核心进展是 DepFormer/BCT/CVAE 实验。
+- 根据用户确认，将当前 Conda 环境记录为 `dachuangxiangmu`。
+- 验证环境：Python 3.10.20 / PyTorch 2.14.0.dev20260717+cu130 / CUDA True / NVIDIA GeForce RTX 5070 Laptop GPU。
+- 确认 `test/` 目录状态：`test/Elder` 和 `test/Young` 是 2026 trainval 特征；官方 `MPDD-AVG2026-test` 当前为空；`test/MPDD-Test` 是 MPDD 2025 参考测试数据。
+- 用户补充确认：当前确实没有 2026 official test 数据集，但现有代码可以跑通；test 缺口只影响最终 official test/CodaBench。
+- 用户确认当前未跟踪文件不需要纳入 Git。
+- 完成 smoke test：设置 `PROCESSOR_ARCHITECTURE=AMD64` 后，环境、数据、划分、G+P 3 epoch 训练流程全部通过。
+- 更新记忆文件：`CLAUDE.md`、`docs/GETTING_STARTED.md`、`docs/PROGRESS.md`、`docs/DECISIONS.md`、`docs/ISSUES.md`、`docs/CHANGELOG.md`、`docs/ARCHITECTURE.md`、`docs/README.md`。
+- 记录当前最好结果：Track1 A-V+P binary，CVAE F1=0.6360±0.0965，Acc=0.7261±0.0850，Kappa=0.3016±0.1813。
+- 明确关键风险：CVAE 模式关闭 PHQ 回归头，非 CVAE 对照启用回归头，因此需要严格消融。
+
+**下次继续**：
+- 跑 `No-CVAE + no-regression-head` 对照实验。
+- 修正分类-only 指标命名，避免把类别派生 CCC/RMSE/MAE 误读为 PHQ-9 指标。
+- 继续当前训练/CV/消融工作；只有准备 official test 评估或 CodaBench 时才需要补齐 test 集。
+
+**提交**：尚未提交
+
 ## 2026-07-18 会话 (第6次)
 
 **做了什么**：

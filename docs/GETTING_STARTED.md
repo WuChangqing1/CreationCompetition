@@ -4,15 +4,15 @@
 
 ### 环境名称
 
-`creationcompetition`（conda 环境）
+`dachuangxiangmu`（conda 环境）
 
 ```bash
-conda create -n creationcompetition python=3.10 -y
-conda activate creationcompetition
+conda create -n dachuangxiangmu python=3.10 -y
+conda activate dachuangxiangmu
 pip install --upgrade pip
 ```
 
-### 安装 PyTorch（CUDA 12.9）
+### 安装 PyTorch（CUDA 13 / RTX 5070）
 
 ```bash
 pip install torch torchvision torchaudio
@@ -30,19 +30,19 @@ pip install opencv-python Pillow
 
 | 包名 | 用途 | 环境验证 |
 |------|------|----------|
-| torch | 深度学习框架 | 待安装 |
-| torchvision | CNN 模型 (ResNet, DenseNet) | 待安装 |
-| numpy | 数值计算 | 待安装 |
-| scikit-learn | 评估指标、数据划分 | 待安装 |
-| pandas | 数据处理 | 待安装 |
-| tqdm | 进度条 | 待安装 |
-| transformers | Wav2Vec2, RoBERTa 特征提取 | 待安装 |
-| soundfile | 音频文件读取 | 待安装 |
-| resampy | 音频重采样 | 待安装 |
-| librosa | MFCC 特征提取 | 待安装 |
-| opensmile | OpenSmile 特征提取 | 待安装 |
-| opencv-python | 视频帧读取 | 待安装 |
-| Pillow | 图像处理 | 待安装 |
+| torch | 深度学习框架 | 已验证：2.14.0.dev20260717+cu130 |
+| torchvision | CNN 模型 (ResNet, DenseNet) | 待复核 |
+| numpy | 数值计算 | 待复核 |
+| scikit-learn | 评估指标、数据划分 | 待复核 |
+| pandas | 数据处理 | 待复核 |
+| tqdm | 进度条 | 待复核 |
+| transformers | Wav2Vec2, RoBERTa 特征提取 | 待复核 |
+| soundfile | 音频文件读取 | 待复核 |
+| resampy | 音频重采样 | 待复核 |
+| librosa | MFCC 特征提取 | 待复核 |
+| opensmile | OpenSmile 特征提取 | 待复核 |
+| opencv-python | 视频帧读取 | 待复核 |
+| Pillow | 图像处理 | 待复核 |
 
 ### 验证安装
 
@@ -50,6 +50,31 @@ pip install opencv-python Pillow
 python -c "import torch; print('PyTorch', torch.__version__, 'CUDA', torch.cuda.is_available())"
 python -c "import numpy, sklearn, pandas, tqdm, transformers, soundfile, resampy, librosa, opensmile, cv2, PIL; print('All OK')"
 ```
+
+当前机器可直接用：
+
+```powershell
+& 'D:\App\Business\Coding\Python\Miniconda\envs\dachuangxiangmu\python.exe' -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+```
+
+已验证输出：PyTorch 2.14.0.dev20260717+cu130，CUDA=True，GPU=NVIDIA GeForce RTX 5070 Laptop GPU。
+
+### Windows 注意事项
+
+当前 PowerShell 里 `conda run` 可能因为 GBK 编码崩溃；优先直接调用环境解释器：
+
+```powershell
+& 'D:\App\Business\Coding\Python\Miniconda\envs\dachuangxiangmu\python.exe' .\smoke_test.py
+```
+
+如果 `opensmile/audresample` 报找不到 `bin\win_\audresample.dll`，先在当前 PowerShell 会话设置：
+
+```powershell
+$env:PROCESSOR_ARCHITECTURE = 'AMD64'
+& 'D:\App\Business\Coding\Python\Miniconda\envs\dachuangxiangmu\python.exe' .\smoke_test.py
+```
+
+2026-07-30 已用该方式通过完整 smoke test。
 
 ## 2. 数据集
 
@@ -63,7 +88,7 @@ python -c "import numpy, sklearn, pandas, tqdm, transformers, soundfile, resampy
 | split | 全部 train | 全部 train |
 | 特征目录 | mfcc, opensmile, wav2vec2, densenet, resnet, openface, IMU | mfcc64, opensmile, wav2vec2, densenet, resnet, openface, IMU |
 
-> 2026 test 集尚未下载，`test/MPDD-AVG-2026-main/MPDD-AVG2026/MPDD-AVG2026-test/` 为空。
+> 当前没有 2026 official test 集，`test/MPDD-AVG-2026-main/MPDD-AVG2026/MPDD-AVG2026-test/` 为空。`test/MPDD-Test/` 是 MPDD 2025 参考测试数据，不等同于 MPDD-AVG 2026 official test。这个缺口不影响训练/CV 跑通，只影响最终 official test 评估和 CodaBench 提交。
 
 若需补充下载完整数据集（含 test）：
 - [HuggingFace](https://huggingface.co/datasets/chasonfff/MPDD-AVG-2026/tree/main)
@@ -111,9 +136,28 @@ bash scripts/Track1/A-V-G+P/run_ternary.sh   # Elder 三分类
 bash scripts/Track2/G-P/run_binary.sh        # Young Gait-only
 ```
 
+### 5-fold CV + CMG-VS 消融（当前主线）
+
+主实验入口是 `experiments/train_cv.py`。CMG-VS 论文忠实化后的两组对照：
+
+```powershell
+$env:PROCESSOR_ARCHITECTURE = 'AMD64'
+$py = 'D:\App\Business\Coding\Python\Miniconda\envs\dachuangxiangmu\python.exe'
+
+# 公平基线：无 CVAE 且无 PHQ 回归头（与 CVAE 组同口径）
+& $py experiments/train_cv.py --track Track1 --task binary --subtrack A-V+P --folds 5 --cls_only --num_workers 0
+
+# CMG-VS：任务引导视觉合成（序列级 L_consis + detach + λ_aug=1.0）
+& $py experiments/train_cv.py --track Track1 --task binary --subtrack A-V+P --folds 5 --use_cvae --num_workers 0
+```
+
+- `--num_workers 0`：受限/沙箱环境下必须单进程加载（避免 Windows 命名管道被拦截）；普通本机可省略（默认 2）。
+- `--cls_only` / `--use_cvae` 会自动选择对应 `TRAIN_CFG` 变体，并把 checkpoint 写入 `experiments/cv_checkpoints/.../{variant}/`，互不覆盖。
+- 分类-only 实验只看 Macro-F1 / Acc / Kappa；日志里的 `ccc/rmse/mae` 是对类别标签派生的，不是 PHQ-9 回归指标。
+
 ## 4. 测试/评估
 
-> test 集数据未下载，以下为预期用法。
+> 当前没有 2026 official test 集，以下为拿到 official test 后的预期用法。
 
 ```bash
 python test.py \

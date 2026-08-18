@@ -1,5 +1,47 @@
 # 代码架构
 
+> 最后更新：2026-07-30
+
+## 当前实验主线
+
+当前分支的主线已经从官方 baseline 发展为 Track1 A-V+P binary 的冠军方法实验：
+
+```
+Audio/Video 序列特征 ──→ DepFormerTemporalEncoder ──→ BCT 跨模态交互
+                                                │
+Personality 向量 ──→ PersonalityEncoder ────────┤
+                                                ▼
+                  CVAE 合成视觉序列（可选）──→ 双流分类训练 ──→ Macro-F1/Acc/Kappa
+```
+
+核心实现位置：
+- `experiments/train_cv.py`：5-fold CV、实验配置、CVAE 四项损失训练循环。
+- `test/MPDD-AVG-2026-main/models/torchcat_baseline.py`：主模型、模态编码、BCT、融合、CVAE 双流 forward。
+- `test/MPDD-AVG-2026-main/models/depformer_temporal_encoder.py`：DepFormer 时序编码器。
+- `test/MPDD-AVG-2026-main/models/bct.py`：Bimodal Collaborative Transformer。
+- `test/MPDD-AVG-2026-main/models/cvae_synthesizer.py`：CVAE Encoder/Decoder/Synthesizer。
+
+注意：CVAE 模式当前关闭 PHQ 回归头，因此分类-only 实验报告以 Macro-F1、Acc、Kappa 为主。
+
+### CMG-VS 任务引导机制（2026-08-18 更新）
+
+按论文 `PDF/paper02`（Cross-Modal Guided Visual Synthesis, CVPR 2026）忠实化后的 CVAE 训练：
+
+```
+条件 cond = concat(a_seq, pers_seq)   [B*P, T, 2H]
+z = CVAE_Encoder(v_seq.detach(), cond.detach())  → μ, logσ²  →  reparam
+f_v_synth_seq = CVAE_Decoder(z, cond.detach())   [B*P, T, H]
+
+L_real   = CE(logits_real, y)                    # 真实流
+L_aug    = CE(logits_aug, y)                     # 增强流（视觉被合成序列替换）
+L_consis = ‖v_seq.detach() − f_v_synth_seq‖₁     # 序列级重建（论文 eq.10）
+L_KL     = KL(q(z|·) ‖ N(0,I))
+
+L_total = L_real + λ_aug·L_aug + λ_cvae·(L_consis + β·L_KL)
+```
+
+关键点：`v_seq`/`cond` 在进入 CVAE 前 detach，使 `L_consis`/`L_KL` 只更新 CVAE；任务引导梯度只通过 `L_aug → f_v_synth_seq → decoder/encoder` 回传（论文中 `f_v`/`f_a` 为固定特征）。
+
 ## 核心数据流
 
 ```
@@ -34,7 +76,7 @@ CSV 标签文件 ──→ train_val_split.py ──→ {train_map, val_map, phq
 - Young: 文件命名模式 `E{idx}.npy` / `event_{idx}.npy` 或 `event_{idx}/event_{idx}_all.npy`
 - 自动处理 `trainval/test` 目录配对、大小写差异
 
-### 2. models/torchcat_baseline.py — 模型 (189 行)
+### 2. models/torchcat_baseline.py — 模型
 
 `TorchcatBaseline` 是多模态融合模型，支持三个子赛道：
 
@@ -48,12 +90,15 @@ CSV 标签文件 ──→ train_val_split.py ──→ {train_map, val_map, phq
 
 - **bilstm_mean**: `ModalityEncoder` — BiLSTM 后取时序平均
 - **hybrid_attn**: `HybridTemporalEncoder` — Conv1d + BiLSTM + TemporalAttentionPool
+- **depformer**: `DepFormerTemporalEncoder` — 保留 `[B, T, H]` 时序输出，用于 BCT 和 CVAE
 
 **融合策略:**
 1. 各模态独立编码到 `hidden_dim` 维
 2. 多 pair 音频/视频通过 `pair_mask` 加权平均
-3. 所有模态特征 concat
-4. 分类头 + 回归头双输出
+3. DepFormer 模式下，音频/视频序列先进入 BCT 做跨模态交互
+4. CVAE 模式下，用音频+人格条件生成合成视觉序列，形成真实流和增强流双分类损失
+5. 所有模态特征 concat
+6. 分类头输出；非 CVAE 分类对照可同时启用 PHQ 回归头
 
 **PersonalityEncoder**: 1024 → 256 → hidden_dim 的 MLP (专门的人格特征编码器)
 
@@ -64,6 +109,13 @@ CSV 标签文件 ──→ train_val_split.py ──→ {train_map, val_map, phq
 ```
 
 `TemporalAttentionPool` 使用自注意力机制做时序池化，自动学习重要时间步。
+
+### 3b. models/depformer_temporal_encoder.py / bct.py / cvae_synthesizer.py — 当前冠军方法模块
+
+- `DepFormerTemporalEncoder`：替代早期 mean pooling，保留时间维，输出序列特征。
+- `BimodalCollaborativeTransformer`：让音频序列和视频序列互相做 cross-attention，得到跨模态增强后的序列。
+- `CVAESynthesizer`：以音频序列和人格条件为输入，合成视觉序列，用于小样本数据增强。
+- 当前最好 Track1 A-V+P binary：CVAE F1=0.636038±0.096527，但仍需无回归头对照实验确认增益来源。
 
 ### 4. metrics.py — 评估指标 (152 行)
 
