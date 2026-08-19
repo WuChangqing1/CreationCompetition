@@ -1,7 +1,17 @@
 # 论文对比实验
 
 > 本文档对比 `PDF/` 目录下 6 篇论文的方法在 MPDD-AVG 2026 上的表现。
-> 持续更新：每完成一个方法（6 个配置）即更新本表并提交推送。
+> 状态：✅ 6 方法 × 6 配置全部跑完。
+
+## 核心结论（TL;DR）
+
+1. **现有 baseline（DepFormer/BCT + cross_fusion）整体最优**，在 Track1 A-V+P（F1 0.6480）与 Track2 G+P（F1 0.6809）两个关键配置上均为全局最好。
+2. **新增的 4 个融合模块（ptmfim / hope / reliability / hypergraph）都没能稳定超越 baseline**——多为下降；只有 reliability 在 4/6 配置有小幅正增益（+0.5~+6.9pp）。
+3. **CMG-VS（CVAE 视觉合成）只在 Track1 A-V-G+P 上显著提升（+11.8pp）**，其余配置下降。
+4. **G+P 在 `--cls_only`（无 PHQ 回归头）口径下普遍 class collapse**（Kappa=0），说明回归头对 G+P 有防塌缩作用，但却是 A-V+P 的噪声——两个结论并存。
+5. **局限**：仅 seed=42 单次 5-fold，样本少（Elder 87 / Young 88），std 常达 0.1，结论需多 seed 确认；论文多为 MPDD 2025（1s/5s 窗口）方法，本次只迁移核心融合思想。
+
+**一句话结论**：这些外部论文的融合模块没有在 MPDD-AVG 2026 上复现出论文宣称的提升，当前项目最好的干净结果仍是 baseline 的 **Track1 A-V+P F1=0.6480**；要进一步提升精度，方向应转向模型结构/训练策略/多 seed 集成，而非继续替换融合模块。
 
 ## 实验协议
 
@@ -94,3 +104,21 @@
 3. **CMG-VS（cvae）只在 Track1 A-V-G+P 上显著提升（+11.8pp）**，其余 A-V 配置下降；与上一轮「CVAE 无增益」的结论一致，且增益高度依赖配置。
 4. **G+P 在 cls_only 口径下普遍 class collapse**（Track1 G+P 的 baseline/各融合模块 Kappa=0），只有 reliability 略微打破（Kappa 0.048）。
 5. **局限**：仅 seed=42 单次 5-fold，Elder/Young 各约 87/88 人，方差较大（std 常达 0.1）；结论需多 seed 复跑确认。这些论文多为 MPDD 2025（1s/5s 窗口）冠军方法，其完整贡献（HOPE 的 LSP 需 MER2025、MSF-ATS 的自适应时间窗、P3HF 的超图+域解耦）在 2026 数据上无法逐字复现，这里只迁移了各自的核心融合思想。
+
+## 逐方法小结
+
+| 方法 | 相对 baseline 表现 | 判断 |
+|---|---|---|
+| baseline (DepFormer/BCT) | 基准 | ✅ 保留为当前主力，Track1 A-V+P 0.6480 / Track2 G+P 0.6809 最优 |
+| CMG-VS (cvae) | 仅 Track1 A-V-G+P +11.8pp，其余 -2~-5pp | ⚠️ 仅特定配置有效，不作通用增强 |
+| Personality-Enhanced (ptmfim) | 几乎全线 -1~-12pp | ❌ 不采用 |
+| HOPE (hope) | 全线 -2~-6pp | ❌ 不采用 |
+| MSF-ATS (reliability) | 4/6 配置 +0.5~+6.9pp，Track1 A-V+P -12.4pp | ⚠️ 部分配置有效，但主力配置掉点，不采用 |
+| P3HF (hypergraph) | 全线 -2~-7pp | ❌ 不采用 |
+
+## 最终建议（下一步）
+
+1. **保留 baseline 作为主力模型**（DepFormer/BCT + cross_fusion + cls_only），当前最佳干净结果 Track1 A-V+P F1=0.6480。
+2. **多 seed 复跑**（当前仅 seed=42）确认结论稳定性，再决定是否对 baseline 做微调。
+3. **要提升精度，优先转向**：模型结构（低秩 Adapter/不确定性门控）、训练策略（类别权重/采样解决 G+P 塌缩）、或多 seed 集成；而不是继续叠加融合模块或生成增强。
+4. **补齐竞赛闭环**：Track2 与三分类、official test 集、CodaBench 提交。
