@@ -106,6 +106,14 @@
 - **为什么**: 旧实现 `L_consis` 只对池化向量做 L1 且不 detach，会反向扰动 DepFormer/BCT 主编码器（K012 的根源）；且 CVAE 组关闭回归头造成归因混淆，无法证明增益来自 CVAE。
 - **后果**: `torchcat_baseline.py` 的 CVAE 分支与 `experiments/train_cv.py` 损失/配置已更新；checkpoint 目录新增 variant 区分（`cvae`/`cls_only`/`base`），避免不同消融互相覆盖。
 
+## D015 — 论文对比实验协议（6 篇论文 × 6 配置）
+
+- **日期**: 2026-08-19
+- **决策**: 把 `PDF/` 下 6 篇论文作为对比实验：以 DepFormer/BCT 为固定骨干，只替换向量级融合模块（`fusion_type`），在 Track1+Track2 × A-V+P/A-V-G+P/G+P 的 binary 任务上跑完整 5-fold CV（seed=42，`--cls_only` 口径），结果写入 `docs/PAPER_COMPARISON.md`。
+- **为什么**: 用户要求“把文件夹下论文都跑出来作为对比实验”；统一骨干+统一配置能隔离出“融合模块”这一变量的贡献；`--cls_only` 消除 PHQ 回归头的归因混淆（D014）。
+- **结果**: 新增 `ptmfim`/`hope`/`reliability`/`hypergraph` 四个融合模块均无法稳定超越 baseline（cross_fusion）；baseline 在 Track1 A-V+P（0.6480）与 Track2 G+P（0.6809）仍最优；CMG-VS 仅 Track1 A-V-G+P +11.8pp。完整数字见 `docs/PAPER_COMPARISON.md`。
+- **后果**: 这些论文为 MPDD 2025（1s/5s 窗口）方法，其完整贡献依赖外部数据/窗口结构，本次只迁移核心融合思想；结论需多 seed 确认。
+
 ---
 
 （后续决策在开发过程中自动追加）

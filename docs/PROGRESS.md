@@ -39,7 +39,13 @@
 - CMG-VS 的 CVAE 数据增强在 MPDD-AVG（87 样本）上没有带来增益（0.6258 vs 0.6480，落在噪声范围内，且方差更小）。
 - 因此旧记录里“CVAE +2.6pp F1”是回归头混淆造成的假象，实际归因应改为“去掉回归头”。
 
+### 论文对比结论（2026-08-19，见 `docs/PAPER_COMPARISON.md`）
+- 6 篇论文方法（baseline/CMG-VS/PTMFIM/HOPE/MSF-ATS/P3HF）× 6 配置（Track1+Track2 × A-V+P/A-V-G+P/G+P）5-fold 全部跑完。
+- baseline（DepFormer/BCT 的 cross_fusion）整体最优；新增 ptmfim/hope/reliability/hypergraph 融合模块均无法稳定超越 baseline；CMG-VS 仅 Track1 A-V-G+P +11.8pp。
+
 ## 已完成
+- [x] [2026-08-19] 完成 6 篇论文对比实验（4 个新融合模块 + 全部 6 配置 5-fold），结果与结论写入 `docs/PAPER_COMPARISON.md` 并逐方法提交推送。
+- [x] [2026-08-19] 实现 `models/fusion_methods.py`（PTMFIM/HOPE/Reliability/Hypergraph）+ `--fusion_type` 参数，冒烟通过。
 - [x] [2026-08-18] 完成 cls_only vs CMG-VS 忠实版 CVAE 的 5-fold 消融（seed=42）：cls_only F1=0.6480 为当前最好干净结果；CVAE 无增益。
 - [x] [2026-08-18] 按 CMG-VS 论文忠实化 CVAE：`torchcat_baseline.py` CVAE 输入 detach + 返回序列张量；`train_cv.py` 序列级 `L_consis`、`λ_aug=1.0`、`use_regression_head` 配置化、`--cls_only` 公平对照、`--num_workers` 参数、checkpoint variant 分目录。修复 K016/K017 两个 bug，两条路径冒烟通过。
 - [x] [2026-07-30] 确认实际 Conda 环境为 `dachuangxiangmu`，并验证 PyTorch cu130 + RTX 5070 可用。

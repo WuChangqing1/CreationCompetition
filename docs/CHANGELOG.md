@@ -9,6 +9,9 @@
 ## [Unreleased]
 
 ### Added
+- [2026-08-19] EXP: 完成 6 篇论文对比实验（6 方法 × Track1+Track2 × A-V+P/A-V-G+P/G+P，5-fold，seed=42），结果见 `docs/PAPER_COMPARISON.md`；baseline(cross_fusion) 整体最优，新增 ptmfim/hope/reliability/hypergraph 融合模块均无法稳定超越 baseline。
+- [2026-08-19] FEAT: 新增 `fusion_methods.py`（PTMFIM/HOPE/Reliability/Hypergraph 四个融合模块）+ `--fusion_type` 参数 + `docs/PAPER_COMPARISON.md`
+- [2026-08-19] DOCS: 新增 D015 决策、K018 问题
 - [2026-08-18] EXP: 5-fold 消融结果（seed=42）— cls_only（无回归头）F1=0.6480±0.0832 为当前最好干净结果；CMG-VS 忠实版 CVAE F1=0.6258±0.0632 无增益。结论：增益来自去掉回归头（0.610→0.648，+3.8pp），非 CVAE。
 - [2026-08-18] FEAT: 按 CMG-VS 论文忠实化 CVAE 任务引导机制（序列级 L_consis + CVAE 输入 detach + λ_aug=1.0），新增 `--cls_only` 公平对照与 `--num_workers` 参数
 - [2026-08-18] DOCS: 新增 D014 决策、K016-K017 问题，更新 K012（公平对照混淆）

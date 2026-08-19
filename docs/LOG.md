@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-08-19 会话 (第9次)
+
+**做了什么**：
+- 精读 `PDF/` 下 6 篇论文并识别方法：DepFormer(3762062)、CMG-VS(paper02)、Personality-Enhanced(3770965)、HOPE(3762063)、MSF-ATS(3762064)、P3HF(paper01)。
+- 新增 `models/fusion_methods.py`：PTMFIMFusion、HOPEFusion、ReliabilityFusion、HypergraphFusion 四个融合模块，接入 `TorchcatBaseline` 的 `fusion_type` 参数 + `train_cv.py` 的 `--fusion_type`/`--cls_only` 扩展 + `Track2 A-V-G+P` 配置。
+- 以 DepFormer/BCT 为固定骨干，在 Track1+Track2 × A-V+P/A-V-G+P/G+P 的 binary 任务上跑完整 5-fold（seed=42，`--cls_only`），6 方法 × 6 配置全部完成。
+- 结果写入 `docs/PAPER_COMPARISON.md`，每个方法完成后即 commit + push 到 `origin/feature/champion-methods`。
+- 更新记忆文件：PROGRESS/DECISIONS(D015)/ISSUES(K018)/CHANGELOG。
+
+**结论**：baseline(cross_fusion) 整体最优（Track1 A-V+P 0.6480、Track2 G+P 0.6809）；ptmfim/hope/hypergraph 均低于 baseline；reliability 在 4/6 配置小幅度正增益；CMG-VS 仅 Track1 A-V-G+P +11.8pp。G+P 在 cls_only 下普遍 class collapse（K018）。
+
+**下次继续**：
+- 多 seed 复跑确认结论稳定性（当前仅 seed=42）。
+- 若求精度，方向应转向模型结构/训练策略优化，而非继续堆融合模块或生成增强。
+- 处理 Track1 G+P class collapse；准备 Track2/A-V-G+P 与 CodaBench 提交。
+
+**提交**：`4ac34c2`/`d10b860`/`ae3c4a2`/`0c45f5e`/`48f0674`/`99b6f60`/`6c64070`/`a32f75a` — 已推送到 `origin/feature/champion-methods`
+
 ## 2026-08-18 会话 (第8次)
 
 **做了什么**：

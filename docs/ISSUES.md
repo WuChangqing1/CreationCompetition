@@ -128,3 +128,10 @@
 - **详情**: 当 `use_cvae=False` 且 `use_regression_head=False` 时，模型返回 `(logits, None)`，但旧训练循环仍按「有回归头」解包并计算 `MSELoss(reg_out, phq9)`，对 `None` 调用 `.size()` 报 `AttributeError`。这正是 K012 混淆变量的代码根源。
 - **处理**: 重构 `train_one_fold` 的 criterion 选择与训练循环，按 `use_regression_head` 分支：分类-only 用单一 CrossEntropy(+focal)，联合用 (CE, focal, MSE)。
 - **状态**: 已修复，`--cls_only` 冒烟通过。
+
+### K018 — G+P 在 cls_only 口径下 class collapse
+- **发现日期**: 2026-08-19
+- **来源**: 论文对比实验（`docs/PAPER_COMPARISON.md`）
+- **详情**: Track1 G+P binary 在 `--cls_only`（无 PHQ 回归头）下，baseline 与 ptmfim/hope/hypergraph 融合模块的 Kappa 均为 0（F1≈0.404 全猜一类）；只有 reliability 融合略微打破（Kappa 0.048）。而去掉回归头在 A-V+P 上反而是增益（K012/D014 结论）。
+- **影响**: 说明 PHQ 回归头作为多任务正则化对 G+P 有防塌缩作用，但对 A-V+P 是噪声；「去回归头」的效果依赖 subtrack。
+- **状态**: 待处理（G+P 可能需要类别权重/采样/回归头正则化单独处理）。
