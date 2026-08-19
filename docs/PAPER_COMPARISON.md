@@ -32,9 +32,9 @@
 | Personality-Enhanced (`ptmfim`) | 0.5749±0.0774 | 0.5216±0.0535 | 0.4041±0.0083 | 0.5662±0.1383 | 0.5461±0.0812 | 0.6211±0.0603 |
 | HOPE (`hope`) | 0.5818±0.0854 | 0.4679±0.0697 | 0.4041±0.0083 | 0.5035±0.1351 | 0.5361±0.1236 | 0.6254±0.0578 |
 | MSF-ATS (`reliability`) | 0.5239±0.0961 | 0.5991±0.1144 | 0.4441±0.0851 | 0.5634±0.1079 | 0.5572±0.1156 | 0.6659±0.0692 |
-| P3HF (`hypergraph`) | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| P3HF (`hypergraph`) | 0.5717±0.0539 | 0.5108±0.0994 | 0.4041±0.0083 | 0.5092±0.1195 | 0.5156±0.1348 | 0.6203±0.0968 |
 
-> ⏳ = 待跑；✅ 表示已完成。数值为 5-fold Macro-F1 均值±标准差。
+> ✅ 全部 6 个方法 × 6 个配置（Track1+Track2 × A-V+P/A-V-G+P/G+P）已跑完；数值为 5-fold Macro-F1 均值±标准差。
 
 ## 详细结果（F1 / Acc / Kappa）
 
@@ -79,4 +79,18 @@
 - Track2 A-V-G+P：F1 0.5572±0.1156 / Acc 0.6007 / Kappa 0.1915
 - Track2 G+P：F1 0.6659±0.0692 / Acc 0.6824 / Kappa 0.3588
 
-（其余方法结果在实验完成后追加）
+### P3HF (`hypergraph`)
+- Track1 A-V+P：F1 0.5717±0.0539 / Acc 0.6784 / Kappa 0.1678
+- Track1 A-V-G+P：F1 0.5108±0.0994 / Acc 0.6784 / Kappa 0.1170
+- Track1 G+P：F1 0.4041±0.0083 / Acc 0.6784 / Kappa 0.0000
+- Track2 A-V+P：F1 0.5092±0.1195 / Acc 0.5556 / Kappa 0.1001
+- Track2 A-V-G+P：F1 0.5156±0.1348 / Acc 0.5673 / Kappa 0.1168
+- Track2 G+P：F1 0.6203±0.0968 / Acc 0.6242 / Kappa 0.2466
+
+## 结论与观察
+
+1. **baseline（DepFormer/BCT 的 cross_fusion）在大多数配置上是最好或接近最好的**：Track1 A-V+P（0.6480）与 Track2 G+P（0.6809）均为全局最优。
+2. **没有任何一个新增融合模块能稳定超越 baseline**：ptmfim / hope / hypergraph 在几乎全部 6 个配置上都低于 baseline（多为 -2~-12pp）；reliability 在 4/6 配置有正增益但幅度小（+0.5~+6.9pp），且 Track1 A-V+P 上大幅下降（-12.4pp）。
+3. **CMG-VS（cvae）只在 Track1 A-V-G+P 上显著提升（+11.8pp）**，其余 A-V 配置下降；与上一轮「CVAE 无增益」的结论一致，且增益高度依赖配置。
+4. **G+P 在 cls_only 口径下普遍 class collapse**（Track1 G+P 的 baseline/各融合模块 Kappa=0），只有 reliability 略微打破（Kappa 0.048）。
+5. **局限**：仅 seed=42 单次 5-fold，Elder/Young 各约 87/88 人，方差较大（std 常达 0.1）；结论需多 seed 复跑确认。这些论文多为 MPDD 2025（1s/5s 窗口）冠军方法，其完整贡献（HOPE 的 LSP 需 MER2025、MSF-ATS 的自适应时间窗、P3HF 的超图+域解耦）在 2026 数据上无法逐字复现，这里只迁移了各自的核心融合思想。
