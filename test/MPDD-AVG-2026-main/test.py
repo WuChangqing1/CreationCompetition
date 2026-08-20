@@ -143,7 +143,10 @@ def main() -> None:
     log_dir = resolve_track_task_dir(logs_root, track, subtrack, task, experiment_name)
     log_dir.mkdir(parents=True, exist_ok=True)
     logger = setup_logger()
-    device = torch.device(args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu")
+    if args.device.startswith("cuda") and not torch.cuda.is_available():
+        raise RuntimeError(
+            "--device cuda 但 CUDA 不可用（请检查 PyTorch 是否为 cu 版本、显卡驱动）")
+    device = torch.device(args.device)
 
     task_maps = load_task_maps(split_csv, task, regression_label or "label2")
     test_dataset = MPDDElderDataset(

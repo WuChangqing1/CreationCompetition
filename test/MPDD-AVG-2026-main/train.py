@@ -215,7 +215,10 @@ def main() -> None:
     log_dir.mkdir(parents=True, exist_ok=True)
 
     logger = setup_logger(log_dir / f"result_{timestamp}.log")
-    device = torch.device(args.device if args.device != "cuda" or torch.cuda.is_available() else "cpu")
+    if args.device.startswith("cuda") and not torch.cuda.is_available():
+        raise RuntimeError(
+            "--device cuda 但 CUDA 不可用（请检查 PyTorch 是否为 cu 版本、显卡驱动）")
+    device = torch.device(args.device)
 
     split_payload = create_train_val_split(
         split_csv=args.split_csv,
