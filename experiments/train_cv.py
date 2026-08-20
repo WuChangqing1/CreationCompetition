@@ -586,7 +586,10 @@ def main() -> None:
     args = parse_args()
     setup_seed(args.seed)  # ★ seed 在 split 之前，修复原始 bug
 
-    if args.device == "cuda" and torch.cuda.is_available():
+    if args.device == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError(
+                "--device cuda 但 CUDA 不可用（请检查 PyTorch 是否为 cu 版本、显卡驱动）")
         torch.cuda.set_device(0)
         torch.cuda.empty_cache()
         device = torch.device("cuda")

@@ -325,6 +325,28 @@ def _load_feature_array(path: Path, fallback_dim: int, max_dim: int | None = Non
     return np.zeros((1, effective_dim), dtype=np.float32)
 
 
+# ── 特征预缓存：每个文件只做一次「读盘→归一化→插值」，跨 epoch 复用 ──
+_FEATURE_CACHE: dict[Path, torch.Tensor] = {}
+
+
+def _cached_resize(
+    path: Path,
+    fallback_dim: int,
+    target_len: int,
+    max_dim: int | None = None,
+) -> torch.Tensor:
+    """Load + normalize + resize once per file, then reuse the cached tensor.
+
+    之前每次取样本都会 np.load + z-score + F.interpolate（CPU 重灾区），
+    导致每个 epoch 都重复相同的预处理，CPU 满负荷而 GPU 空等数据。
+    这里按文件路径缓存最终 [T, D] 张量，跨 epoch / 跨 fold 复用。
+    """
+    if path not in _FEATURE_CACHE:
+        array = _load_feature_array(path, fallback_dim, max_dim)
+        _FEATURE_CACHE[path] = _resize(array, target_len)
+    return _FEATURE_CACHE[path]
+
+
 class MPDDElderDataset(Dataset):
     def __init__(
         self,
@@ -453,8 +475,8 @@ class MPDDElderDataset(Dataset):
             video_map: dict[int, Path] = sample["video_map"]
             pair_indices: list[int] = sample["pair_indices"]
             for pair_idx in pair_indices:
-                audio_pairs.append(_resize(_load_feature_array(audio_map[pair_idx], self.audio_dim_hint), self.target_t))
-                video_pairs.append(_resize(_load_feature_array(video_map[pair_idx], self.video_dim_hint), self.target_t))
+                audio_pairs.append(_cached_resize(audio_map[pair_idx], self.audio_dim_hint, self.target_t))
+                video_pairs.append(_cached_resize(video_map[pair_idx], self.video_dim_hint, self.target_t))
                 pair_mask.append(1.0)
 
             audio_dim = int(audio_pairs[0].shape[-1])
@@ -469,8 +491,10 @@ class MPDDElderDataset(Dataset):
             result["pair_mask"] = torch.tensor(pair_mask, dtype=torch.float32)
 
         if self.need_gait:
-            gait_arr = _load_feature_array(sample["gait_file"], self.gait_dim_hint, max_dim=GAIT_KEEP_DIM)
-            result["gait"] = _resize(gait_arr, self.target_t)
+            result["gait"] = _cached_resize(
+                sample["gait_file"], self.gait_dim_hint, self.target_t,
+                max_dim=GAIT_KEEP_DIM,
+            )
 
         personality = self.personality_map.get(person_id, np.zeros(1024, dtype=np.float32))
         result["personality"] = torch.from_numpy(personality.astype(np.float32))
