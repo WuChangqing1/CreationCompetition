@@ -9,6 +9,7 @@
 ## [Unreleased]
 
 ### Added
+- [2026-08-20] PERF: 特征预缓存（`_FEATURE_CACHE`/`_cached_resize`）消除每 epoch 重复 CPU 预处理 + CUDA 不可用硬报错；quick 冒烟 24-30s→6s。新增 K019。
 - [2026-08-19] EXP: 完成 6 篇论文对比实验（6 方法 × Track1+Track2 × A-V+P/A-V-G+P/G+P，5-fold，seed=42），结果见 `docs/PAPER_COMPARISON.md`；baseline(cross_fusion) 整体最优，新增 ptmfim/hope/reliability/hypergraph 融合模块均无法稳定超越 baseline。
 - [2026-08-19] FEAT: 新增 `fusion_methods.py`（PTMFIM/HOPE/Reliability/Hypergraph 四个融合模块）+ `--fusion_type` 参数 + `docs/PAPER_COMPARISON.md`
 - [2026-08-19] DOCS: 新增 D015 决策、K018 问题
