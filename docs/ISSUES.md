@@ -141,4 +141,5 @@
 - **来源**: 用户反馈 + 代码排查
 - **详情**: 模型其实一直在 GPU 上跑（日志 `Device: cuda (RTX 5070)`、`torch.cuda.is_available()=True`），但用户观察到 CPU 满负荷。根因是 `dataset.py` 每次取样本都重复 `np.load`+z-score 归一化（`_load_feature_array`）+ CPU 插值（`_resize`），且 `num_workers=0` 串行；每个 epoch 对数百个文件重复相同预处理，CPU 成为瓶颈、GPU 空等数据，体感像「CPU 训练」。
 - **处理**: 在 `dataset.py` 新增模块级 `_FEATURE_CACHE` + `_cached_resize()`，每个文件只做一次「读盘→归一化→插值」并缓存，跨 epoch/fold 复用；`train_cv.py` 增加 CUDA 不可用时硬报错（不再静默回退 CPU）。quick 冒烟耗时从 ~24-30s 降到 6s，且 F1 与改前一致（缓存不改变数值）。
+- **实测**: Track1 A-V+P 完整 5-fold（cls_only）从 1888s（约 31 分钟）降到 **87s，约 22 倍加速**，F1=0.6480±0.0832 与改前逐位一致；GPU 利用率 30-43%、显存 1.8-2.2GB。
 - **状态**: 已修复。用户本机建议用 `--num_workers 2`（默认）而非 0；A-V-G+P 的 `batch_size=2` 可提到 8 以进一步喂饱 GPU。
