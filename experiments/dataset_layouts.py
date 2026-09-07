@@ -43,6 +43,14 @@ def _subject_from_feature_path(path):
     return Path(path).name.split("_", 1)[0]
 
 
+def _canonical_2025_event_id(path):
+    stem = Path(path).stem
+    canonical, replacements = re.subn(r"_([AV])(?=_)", "_{modality}", stem, count=1, flags=re.IGNORECASE)
+    if replacements != 1:
+        raise ValueError(f"Cannot infer 2025 test event identity from {path}")
+    return canonical
+
+
 def _load_unique_2025_test_labels(label_path):
     rows = json.loads(Path(label_path).read_text(encoding="utf-8"))
     labels = {}
@@ -61,13 +69,14 @@ def build_2025_test_entries(manifest_path, label_path):
     for row in manifest:
         audio_subject = _subject_from_feature_path(row["audio_feature_path"])
         video_subject = _subject_from_feature_path(row["video_feature_path"])
-        if audio_subject != video_subject:
+        if _canonical_2025_event_id(row["audio_feature_path"]) != _canonical_2025_event_id(row["video_feature_path"]):
             raise ValueError(
-                f"2025 test A/V subject mismatch: {row['audio_feature_path']} vs {row['video_feature_path']}"
+                f"2025 test A/V event mismatch: {row['audio_feature_path']} vs {row['video_feature_path']}"
             )
-        if audio_subject not in labels:
-            raise KeyError(f"Missing 2025 test label for subject {audio_subject}")
-        entries.append({**row, "subject_id": audio_subject, "bin_category": labels[audio_subject]})
+        feature_id = Path(row["audio_feature_path"]).stem
+        if feature_id not in labels:
+            raise KeyError(f"Missing 2025 test label for feature {feature_id}")
+        entries.append({**row, "subject_id": audio_subject, "bin_category": labels[feature_id]})
     return entries
 
 
@@ -82,16 +91,36 @@ def _event_paths_by_number(feature_root, strict=False):
     return events
 
 
+def _subject_directories(feature_root):
+    return {path.name for path in Path(feature_root).iterdir() if path.is_dir()}
+
+
 def build_2026_entries(track_root, audio_root, video_root, label_csv, strict=False):
     with Path(label_csv).open(encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.DictReader(handle))
     labels = {}
     for row in rows:
         subject = str(row.get("ID") or row.get("id"))
-        labels[subject] = {
+        subject_labels = {
             "bin_category": _label(row, "label2", "binary_gt"),
             "tri_category": _label(row, "label3", "ternary_gt"),
         }
+        if strict and subject in labels:
+            raise ValueError(f"Duplicate 2026 test label for subject {subject}")
+        labels[subject] = subject_labels
+
+    if strict:
+        label_subjects = set(labels)
+        audio_subjects = _subject_directories(audio_root)
+        video_subjects = _subject_directories(video_root)
+        if label_subjects != audio_subjects or label_subjects != video_subjects:
+            raise ValueError(
+                "2026 test subject mismatch: "
+                f"missing audio subjects {sorted(label_subjects - audio_subjects)}; "
+                f"missing video subjects {sorted(label_subjects - video_subjects)}; "
+                f"unexpected audio subjects {sorted(audio_subjects - label_subjects)}; "
+                f"unexpected video subjects {sorted(video_subjects - label_subjects)}"
+            )
 
     entries = []
     for subject, subject_labels in sorted(labels.items(), key=lambda item: int(item[0])):
@@ -120,8 +149,6 @@ def build_2026_entries(track_root, audio_root, video_root, label_csv, strict=Fal
 
 
 def _validate_entry_files(entries, audio_root, video_root, year):
-    audio_paths = []
-    video_paths = []
     for entry in entries:
         audio_path = Path(audio_root) / entry["audio_feature_path"]
         video_path = Path(video_root) / entry["video_feature_path"]
@@ -129,10 +156,6 @@ def _validate_entry_files(entries, audio_root, video_root, year):
             raise FileNotFoundError(f"Missing {year} test audio feature {audio_path}")
         if not video_path.is_file():
             raise FileNotFoundError(f"Missing {year} test video feature {video_path}")
-        audio_paths.append(entry["audio_feature_path"])
-        video_paths.append(entry["video_feature_path"])
-    if len(audio_paths) != len(video_paths):
-        raise ValueError(f"{year} test audio/video entry counts differ")
 
 
 def resolve_independent_test(data_root, dataset_year, cohort, split_window, audio_feature, video_feature):

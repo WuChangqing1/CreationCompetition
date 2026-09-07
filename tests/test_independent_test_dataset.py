@@ -25,7 +25,7 @@ class IndependentTestDatasetTest(unittest.TestCase):
             json.dumps(rows), encoding="utf-8",
         )
         (root / "MPDD-Test" / "MM2025_Track1_Elderly.json").write_text(
-            json.dumps(labels if labels is not None else [{"test_id": "1178", "label_bin": 1}]),
+            json.dumps(labels if labels is not None else [{"test_id": "1178_A_1", "label_bin": 1}]),
             encoding="utf-8",
         )
         return track, audio, video
@@ -52,7 +52,7 @@ class IndependentTestDatasetTest(unittest.TestCase):
             root = Path(directory)
             self._write_2025_layout(root, labels=[])
 
-            with self.assertRaisesRegex(KeyError, "1178"):
+            with self.assertRaisesRegex(KeyError, "1178_A_1"):
                 resolve_independent_test(root, "2025", "Elder", "1s", "mfccs", "densenet")
 
     def test_2025_rejects_duplicate_ground_truth_subject(self):
@@ -61,11 +61,11 @@ class IndependentTestDatasetTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self._write_2025_layout(root, labels=[
-                {"test_id": "1178", "label_bin": 1},
-                {"test_id": "1178", "label_bin": 0},
+                {"test_id": "1178_A_1", "label_bin": 1},
+                {"test_id": "1178_A_1", "label_bin": 0},
             ])
 
-            with self.assertRaisesRegex(ValueError, "1178"):
+            with self.assertRaisesRegex(ValueError, "1178_A_1"):
                 resolve_independent_test(root, "2025", "Elder", "1s", "mfccs", "densenet")
 
     def test_2025_rejects_manifest_av_subject_mismatch(self):
@@ -81,7 +81,21 @@ class IndependentTestDatasetTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "1178_A_1.npy.*9999_V_1.npy"):
                 resolve_independent_test(root, "2025", "Elder", "1s", "mfccs", "densenet")
 
-    def _write_2026_layout(self, root, audio_events=(1, 2), video_events=(1, 2)):
+    def test_2025_rejects_same_subject_with_different_event_numbers(self):
+        from experiments.dataset_layouts import resolve_independent_test
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, _, video_root = self._write_2025_layout(root, manifest_rows=[{
+                "audio_feature_path": "1178_A_1.npy",
+                "video_feature_path": "1178_V_2.npy",
+            }])
+            (video_root / "1178_V_2.npy").touch()
+
+            with self.assertRaisesRegex(ValueError, "1178_A_1.npy.*1178_V_2.npy"):
+                resolve_independent_test(root, "2025", "Elder", "1s", "mfccs", "densenet")
+
+    def _write_2026_layout(self, root, audio_events=(1, 2), video_events=(1, 2), labels=None):
         track = root / "MPDD-AVG2026-test" / "Elder"
         audio = track / "Audio" / "mfcc" / "7"
         video = track / "Video" / "densenet" / "7"
@@ -94,7 +108,7 @@ class IndependentTestDatasetTest(unittest.TestCase):
         with (track / "split_labels_test.csv").open("w", encoding="utf-8", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=["ID", "label2", "label3"])
             writer.writeheader()
-            writer.writerow({"ID": 7, "label2": 1, "label3": 2})
+            writer.writerows(labels if labels is not None else [{"ID": 7, "label2": 1, "label3": 2}])
         (track / "descriptions_embeddings_with_ids.npy").touch()
         return track, audio.parent, video.parent
 
@@ -121,6 +135,35 @@ class IndependentTestDatasetTest(unittest.TestCase):
             self._write_2026_layout(root, audio_events=(1, 2), video_events=(1,))
 
             with self.assertRaisesRegex(ValueError, "2"):
+                resolve_independent_test(root, "2026", "Elder", "1s", "mfccs", "densenet")
+
+    def test_2026_rejects_feature_subject_without_label(self):
+        from experiments.dataset_layouts import resolve_independent_test
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, audio_root, video_root = self._write_2026_layout(root)
+            extra_audio = audio_root / "8"
+            extra_video = video_root / "8"
+            extra_audio.mkdir()
+            extra_video.mkdir()
+            (extra_audio / "A_1.npy").touch()
+            (extra_video / "V_1.npy").touch()
+
+            with self.assertRaisesRegex(ValueError, "unexpected audio subjects.*8"):
+                resolve_independent_test(root, "2026", "Elder", "1s", "mfccs", "densenet")
+
+    def test_2026_rejects_duplicate_label_subject(self):
+        from experiments.dataset_layouts import resolve_independent_test
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_2026_layout(root, labels=[
+                {"ID": 7, "label2": 1, "label3": 2},
+                {"ID": 7, "label2": 0, "label3": 1},
+            ])
+
+            with self.assertRaisesRegex(ValueError, "Duplicate 2026 test label for subject 7"):
                 resolve_independent_test(root, "2026", "Elder", "1s", "mfccs", "densenet")
 
 
