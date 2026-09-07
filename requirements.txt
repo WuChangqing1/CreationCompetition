@@ -1,14 +1,26 @@
-# torch>=2.0
-# torchvision>=0.15
-# torchaudio>=2.0
-numpy>=1.24
-scikit-learn>=1.3
-pandas>=2.0
-tqdm>=4.65
-transformers>=4.30
-soundfile>=0.12
-resampy>=0.4
-librosa>=0.10
-opensmile>=2.4
-opencv-python>=4.8
-Pillow>=10.0
+# Core
+torch
+numpy
+pandas
+scikit-learn==1.5.1
+
+# Classical baseline
+xgboost
+
+# Results visualization
+matplotlib
+
+# Optional raw-media feature extraction (not required for pre-extracted .npy experiments)
+# torchvision
+# librosa
+# soundfile
+# opencv-python
+# Pillow
+# tqdm
+# transformers
+# opensmile
+# fairseq
+
+# Optional: DepMamba is platform-dependent on Windows.
+# Install mamba_ssm and causal_conv1d only after verifying compatibility
+# with the dachuangxiangmu Python, PyTorch, CUDA, and compiler versions.

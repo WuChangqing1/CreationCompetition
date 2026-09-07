@@ -1,0 +1,1 @@
+{"C": 1.0, "kernel": "rbf", "gamma": "scale", "class_weight": null, "seed": 3407, "loss_function": "SVC margin", "class_balancing_strategy": "None"}

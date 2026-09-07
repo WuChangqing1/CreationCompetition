@@ -1,0 +1,60 @@
+# MPDD-main 稳定技术上下文
+
+## 原始目录与职责
+
+- `dataset.py`：从预提取 `.npy` 特征和个性化 embedding 构造样本。
+- `feature_extraction/`：离线生成音频、视觉、个性化特征，不参与训练时 backbone 更新。
+- `models/networks/`：LSTM、分类器、注意力等网络组件，多数不是可直接训练的完整模型。
+- `models/our/our_model.py`：原 MPDD-specific BiCFNet 完整模型。
+- `train.py` / `test.py`：原训练与测试入口；改造前均直接创建 `ourModel`。
+- `scripts/`：Track1/Track2 旧 Shell 命令。
+- `checkpoints/`、`logs/`：历史模型与日志，必须保留。
+
+## Dataset 实际接口
+
+`AudioVisualDataset.__getitem__()` 返回：
+
+```python
+{
+    "A_feat": audio_feature,
+    "V_feat": video_feature,
+    "emo_label": label,
+    "personalized_feat": personalized_feature,
+}
+```
+
+音视频 `.npy` 原始形状是 `[time, feature_dim]`，经 `pad_or_truncate` 后是 `[T, Da]` / `[T, Dv]`，DataLoader 后是 `[B,T,Da]` / `[B,T,Dv]`。个性化 embedding 由 `id -> embedding` 字典读取；缺失时原代码返回 1024 维零向量。真实数据目录本轮不可见，实际 Da、Dv 和样本分布尚未验证。
+
+受试者 ID 在 Dataset 中从 `audio_feature_path` 的文件名第一个下划线前提取；旧 split 的 Track1 五分类特殊分支可能把一个受试者拆到训练与验证两侧。
+
+## 数据根目录
+
+- 统一数据根：`D:\Files\Works\CreationProject\test`。
+- 2025：`2025\MPDD-Elderly`、`2025\MPDD-Young`、`2025\MPDD-Test`。
+- 2026：`2026\MPDD-AVG2026-trainval\{Elder,Young}` 与 `2026\MPDD-AVG2026-test\{Elder,Young}`。
+- `experiments/dataset_layouts.py` 将两届目录和标签格式转换为统一的 A/V/P/label manifest。
+
+## OurModel 真实结构
+
+音频/视觉分别经 `LSTMEncoder`，投影到 `hidden_size`；视觉再经 `LightweightVEM` 自注意力，音视频经 `BiCFNetCrossFeedbackModule` 双向门控反馈。两路做掩码均值池化，与 1024 维 personality 的线性投影拼接，送入主分类器 EmoC 和辅助分类器 EmoCF。训练损失为主 CE 加辅助 Focal Loss；`emo_pred` 是主 logits 的 softmax。
+
+## BaseModel
+
+提供 setup、train/eval、test、loss 查询、网络保存/加载、学习率更新和梯度开关。完整模型需实现 set_input、forward、optimize_parameters。原实现的 device 与 nn.Module 关系较松散，新 adapter 必须通过实际参数设备搬运输入。
+
+## 原 Registry 与调用链
+
+`models/__init__.py` 按 `<name>_model.py` 和 `<Name>Model` 命名发现 BaseModel 子类，并提供 `create_model(opt)`。改造前 train/test 均直接 `from models.our.our_model import ourModel`，没有使用该入口。
+
+## 原训练、测试和 checkpoint
+
+train 读取 JSON，调用旧 subject-aware holdout，创建 DataLoader，按 Macro-F1 选择最佳模型，但只保存 `model.state_dict()`。test 为每个 checkpoint 固定创建 OurModel，支持概率加权 ensemble 和 subject majority voting。新格式需要元数据，测试端必须继续接受旧纯 state_dict。
+
+## 新实验架构
+
+- PyTorch：`train.py/test.py/run_model_cv.py -> models.create_model()`。
+- 整体：`experiments/model_registry.py` 区分 classical 与 torch。
+- 完整模型：MLP、BiLSTM、LightWeightTrans、LMF、MulT、OurModel。
+- Fold：`experiments/create_splits.py` 在 subject 级先聚合标签，再 StratifiedKFold；复用 JSON 并强制检查交集。
+- 结果：evaluator 统一指标与 raw predictions；run_model_cv 追加 raw_results；aggregate 输出 mean±sample std；run_all 隔离单模型失败。
+- 可选状态：XGBoost 缺包 SKIPPED；DepMamba 缺依赖且适配未验证；Proposed 明确 N/A。

@@ -1,0 +1,50 @@
+# 实验框架变更记录
+
+## 2026-09-07
+
+- 将目标目录中的 2025 和 2026 数据分别归档到 `test\2025`、`test\2026`。
+- 接入两届 Elder/Young 数据解析，并完成四套训练数据真实读取、5-Fold 检查。
+- 2025 Elder 与 2026 Elder 完成真实数据 MLP tiny 5-Fold 闭环。
+- 为 2026 独立测试集生成标准 `split_labels_test.csv` 并补齐人格向量文件。
+
+## 2026-09-06
+
+### Added
+
+- `AGENTS.md`：稳定项目规则和文档入口。
+- `docs/PROJECT_CONTEXT.md`：源码确认的稳定技术事实。
+- `docs/CURRENT_STATUS.md`：阶段、模型、问题和下一步状态。
+- `docs/00_项目结构说明.md`、`docs/07_环境与依赖说明.md`。
+- 已批准的设计文档和详细实施计划。
+- 新增 MLP、BiLSTM、LightWeightTrans、LMF、MulT 完整 PyTorch 模型 adapter。
+- 新增 SVM/XGBoost classical baseline 与两层 experiment registry。
+- 新增 subject-level split、evaluator、efficiency、checkpoint、run_model_cv、run_all、aggregate 和 smoke test。
+- 新增 01 至 06 中文说明和自动化 tests。
+- 新增 2025/2026 统一数据布局解析器和 `08_2025与2026数据集使用说明.md`。
+
+### Changed
+
+- `train.py` 与 `test.py` 改用 `models.create_model()`；test 同时支持新旧 checkpoint。
+- `models/__init__.py` 使用精确模型名并抛明确错误，不再正常退出掩盖失败。
+- OurModel 仅训练时创建保存目录，推理实例化不再产生目录副作用。
+- OurModel 在 `use_personality=false` 时真正忽略输入人格向量。
+- requirements 保留已有依赖并增加分组说明。
+- `run_model_cv.py`、`run_all.py` 与 `smoke_test.py` 新增 `--dataset-year`、`--cohort`，支持两届 Elder/Young 数据。
+- Dataset 关闭 personality 时不再要求人格特征文件，并稳定返回零向量占位。
+
+### Fixed
+
+- 文档明确阻止 activate 失败后误用系统 Python，统一使用 `conda run -n dachuangxiangmu`。
+- 新 subject folds 杜绝 segment-level leakage。
+- run_all 直接文件入口加入项目根路径，`python experiments\run_all.py` 可正常导入包。
+- subject ID 优先使用显式 `subject_id`，否则遵循数据集文件名前缀约定，最后才回退到通用 `id`。
+- fold 缓存加入 label、seed、fold 数和数据指纹校验，阻止残缺或跨条件缓存误复用。
+- 新 CV 入口限定二分类；旧训练/测试入口继续保留 3 类、5 类兼容。
+- raw rows 加入 Run_ID/完整实验条件并对同折重跑去重，summary 不再混合不同 seed 或特征组合。
+- 测试入口校验 checkpoint 特征配置和集成权重；每折重新设 seed 并使用显式 DataLoader generator。
+
+### Known Issues
+
+- tiny 运行结果仅验证数据与框架闭环，正式多模型训练尚未执行。
+- xgboost、matplotlib 与 DepMamba 可选依赖缺失。
+- 项目不是 Git 仓库，无法提交或创建 worktree。

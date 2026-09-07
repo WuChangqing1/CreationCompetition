@@ -1,56 +1,43 @@
-# Python
+# Python caches and environments
 __pycache__/
 *.py[cod]
-*.so
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
 *.egg-info/
 dist/
 build/
-*.egg
 
-# Virtual environments
-venv/
-env/
-.venv/
-.env/
-
-# IDE
-.vscode/
+# Local secrets and editor state
+.env
+.env.*
 .idea/
-*.swp
-*.swo
+.vscode/
+.claude/
 
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
-
-# OS
-.DS_Store
-Thumbs.db
-
-# ML / Data
+# Training artifacts and generated outputs
 checkpoints/
 logs/
+answer_*/
+experiments/results/**
+experiments/splits/**
 *.pth
 *.pt
-*.pkl
+*.ckpt
+*.log
+tmp/
+
+# Local datasets and large arrays
+data/
+datasets/
+MPDD-AVG2026/
 *.npy
 *.npz
+*.pkl
+*.zip
 
-# Experiment outputs (generated)
-experiments/cv_logs/
-experiments/cv_checkpoints/
-
-# Data directories (large files)
-MPDD-AVG2026/
-
-# Environment
-.env
-.env.local
-
-# Temporary
-tmp/
-*.log
-*.csv
-
-# Claude
-.claude/
+# Operating-system files
+.DS_Store
+Thumbs.db
