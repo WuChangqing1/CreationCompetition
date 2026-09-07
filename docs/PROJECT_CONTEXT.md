@@ -52,6 +52,8 @@ train 读取 JSON，调用旧 subject-aware holdout，创建 DataLoader，按 Ma
 
 ## 新实验架构
 
+独立测试评估入口：`experiments/run_independent_test.py`，使用已完成 CV 的五折概率集成，输出独立的 `experiments/results/independent_test_results.csv`。使用方法见 `docs/09_八模型独立测试集评估.md`。用户于 2026-09-08 要求取消新增哈希验证、合并为最终一次测试；独立测试保留直接来源和样本检查。
+
 - PyTorch：`train.py/test.py/run_model_cv.py -> models.create_model()`。
 - 整体：`experiments/model_registry.py` 区分 classical 与 torch。
 - 完整模型：MLP、BiLSTM、LightWeightTrans、LMF、MulT、OurModel。
