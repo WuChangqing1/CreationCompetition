@@ -1,11 +1,29 @@
 import tempfile
 import unittest
+import json
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
 import torch
+
+from experiments.create_splits import create_subject_folds
+
+
+class _RecordingEstimator:
+    def __init__(self, probabilities, audit):
+        self.probabilities = np.asarray(probabilities, dtype=float)
+        self.audit = audit
+
+    def fit(self, features, labels):
+        self.audit["fit_features"].append(np.asarray(features).copy())
+        self.audit["fit_labels"].append(np.asarray(labels).copy())
+        return self
+
+    def predict_proba(self, features):
+        self.audit["test_features"].append(np.asarray(features).copy())
+        return self.probabilities
 
 
 class _DeterministicModel(torch.nn.Module):
@@ -281,6 +299,190 @@ class IndependentTestTorchTests(unittest.TestCase):
                     args=self.args,
                     expected_metadata=self.expected_metadata,
                 )
+
+
+class IndependentTestClassicalTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary_directory.name)
+        self.training_paths = self._make_paths("training")
+        self.test_paths = self._make_paths("test")
+        self.training_entries = self._make_entries(
+            self.training_paths, [(f"{index:02d}", index % 2, index + 1) for index in range(10)]
+        )
+        self.test_entries = self._make_entries(
+            self.test_paths, [("10", 0, 11), ("11", 1, 12)]
+        )
+        self.args = SimpleNamespace(
+            classes=2,
+            feature_max_len=2,
+            batch_size=2,
+            use_personality=True,
+            seed=3407,
+            device="cuda",
+            dataset_year="2025",
+            cohort="Elder",
+        )
+        self.fold_records = create_subject_folds(
+            self.training_entries, "bin_category", folds=5, seed=self.args.seed
+        )
+
+    def tearDown(self):
+        self.temporary_directory.cleanup()
+
+    def _make_paths(self, name):
+        root = self.root / name
+        audio = root / "audio"
+        video = root / "video"
+        audio.mkdir(parents=True)
+        video.mkdir()
+        return {"audio": audio, "video": video, "personality": root / "personality.npy"}
+
+    def _make_entries(self, paths, subjects):
+        entries, personalities = [], []
+        for subject_id, label, value in subjects:
+            filename = f"{subject_id}_event.npy"
+            np.save(
+                paths["audio"] / filename,
+                np.asarray([[value, value + 0.25], [value, value + 0.25]], dtype=np.float32),
+            )
+            np.save(
+                paths["video"] / filename,
+                np.asarray([[value + 10, value + 10.25], [value + 10, value + 10.25]], dtype=np.float32),
+            )
+            entries.append({
+                "subject_id": subject_id,
+                "audio_feature_path": filename,
+                "video_feature_path": filename,
+                "bin_category": label,
+            })
+            personalities.append({
+                "id": subject_id,
+                "embedding": np.asarray([value + 20, value + 20.25, value + 20.5], dtype=np.float32),
+            })
+        np.save(paths["personality"], np.asarray(personalities, dtype=object))
+        return entries
+
+    def _probabilities(self, fold):
+        return np.asarray(
+            [[0.9 - fold * 0.1, 0.1 + fold * 0.1], [0.2 + fold * 0.1, 0.8 - fold * 0.1]],
+            dtype=float,
+        )
+
+    def test_refits_each_fold_on_only_its_training_subjects_and_equally_averages(self):
+        from experiments.classical.common import pool_multimodal_features
+        from experiments.independent_test_models import infer_classical_fold_ensemble
+
+        audit = {"configs": [], "fit_features": [], "fit_labels": [], "test_features": []}
+
+        def create_model(model_name, config):
+            audit["configs"].append((model_name, dict(config)))
+            return _RecordingEstimator(self._probabilities(len(audit["configs"])), audit)
+
+        with (
+            patch(
+                "experiments.independent_test_models.create_experiment_model",
+                side_effect=create_model,
+            ) as model_factory,
+            patch(
+                "experiments.independent_test_models.pool_multimodal_features",
+                wraps=pool_multimodal_features,
+            ) as pool_features,
+        ):
+            labels, probabilities = infer_classical_fold_ensemble(
+                model_name="svm",
+                training_entries=self.training_entries,
+                training_paths=self.training_paths,
+                test_entries=self.test_entries,
+                test_paths=self.test_paths,
+                fold_records=self.fold_records,
+                config={"C": 2.0, "seed": 7},
+                args=self.args,
+            )
+
+        np.testing.assert_array_equal(labels, [0, 1])
+        np.testing.assert_allclose(probabilities, [[0.6, 0.4], [0.5, 0.5]], rtol=0.0, atol=1e-6)
+        self.assertEqual(model_factory.call_count, 5)
+        self.assertEqual(pool_features.call_count, 6)
+        self.assertEqual(pool_features.call_args_list[0].args[0].shape[0], 2)
+        self.assertTrue(pool_features.call_args_list[0].args[3])
+        self.assertEqual(len(audit["test_features"]), 5)
+        self.assertEqual(audit["test_features"][0].shape, (2, 7))
+        for index, record in enumerate(self.fold_records):
+            trained_subject_values = set(audit["fit_features"][index][:, 0].astype(int))
+            self.assertEqual(trained_subject_values, {int(subject) + 1 for subject in record["train_ids"]})
+            self.assertTrue(trained_subject_values.isdisjoint({int(subject) + 1 for subject in record["val_ids"]}))
+        self.assertEqual([config["seed"] for _, config in audit["configs"]], [3407] * 5)
+
+    def test_personality_toggle_and_xgboost_cuda_configuration_match_cv(self):
+        from experiments.independent_test_models import (
+            classical_execution_device,
+            infer_classical_fold_ensemble,
+        )
+
+        self.args.use_personality = False
+        audit = {"configs": [], "fit_features": [], "fit_labels": [], "test_features": []}
+
+        def create_model(model_name, config):
+            audit["configs"].append((model_name, dict(config)))
+            return _RecordingEstimator(self._probabilities(len(audit["configs"])), audit)
+
+        with patch(
+            "experiments.independent_test_models.create_experiment_model",
+            side_effect=create_model,
+        ):
+            _, probabilities = infer_classical_fold_ensemble(
+                model_name="xgboost",
+                training_entries=self.training_entries,
+                training_paths=self.training_paths,
+                test_entries=self.test_entries,
+                test_paths=self.test_paths,
+                fold_records=self.fold_records,
+                config={"max_depth": 2, "seed": 7},
+                args=self.args,
+            )
+
+        np.testing.assert_allclose(probabilities, [[0.6, 0.4], [0.5, 0.5]], rtol=0.0, atol=1e-6)
+        self.assertEqual(audit["test_features"][0].shape, (2, 4))
+        self.assertEqual(classical_execution_device("svm", self.args), "cpu:svm")
+        self.assertEqual(classical_execution_device("xgboost", self.args), "cuda:xgboost")
+        for model_name, config in audit["configs"]:
+            self.assertEqual(model_name, "xgboost")
+            self.assertEqual(config["device"], "cuda")
+            self.assertEqual(config["tree_method"], "hist")
+            self.assertEqual(config["seed"], 3407)
+
+    def test_rejects_invalid_saved_fold_provenance_before_creating_an_estimator(self):
+        from experiments.independent_test_models import infer_classical_fold_ensemble
+
+        mutations = {
+            "fold": lambda records: records[-1].update(fold=1),
+            "folds": lambda records: records[-1].update(folds=4),
+            "seed": lambda records: records[-1].update(seed=7),
+            "non_integer_seed": lambda records: records[-1].update(seed=3407.0),
+            "label_key": lambda records: records[-1].update(label_key="tri_category"),
+            "overlap": lambda records: records[-1]["train_ids"].append(records[-1]["val_ids"][0]),
+            "coverage": lambda records: records[-1]["val_ids"].pop(),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+                records = json.loads(json.dumps(self.fold_records))
+                mutate(records)
+                with patch(
+                    "experiments.independent_test_models.create_experiment_model"
+                ) as model_factory:
+                    with self.assertRaises(ValueError):
+                        infer_classical_fold_ensemble(
+                            model_name="svm",
+                            training_entries=self.training_entries,
+                            training_paths=self.training_paths,
+                            test_entries=self.test_entries,
+                            test_paths=self.test_paths,
+                            fold_records=records,
+                            config={},
+                            args=self.args,
+                        )
+                model_factory.assert_not_called()
 
 
 if __name__ == "__main__":
