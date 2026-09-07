@@ -1,6 +1,11 @@
 """Strict provenance helpers for independent-test evaluation."""
 
+import csv
 from pathlib import Path
+
+import numpy as np
+
+from experiments.evaluator import evaluate_predictions
 
 
 RESULT_COLUMNS = [
@@ -14,6 +19,7 @@ CV_SELECTION_FIELDS = (
     "DatasetYear", "Cohort", "Model", "Track", "Task", "AudioFeature",
     "VideoFeature", "UsePersonality", "SplitWindow", "Seed",
 )
+RESULT_KEY = ("DatasetYear", "Cohort", "Model", "EvaluationLevel")
 
 
 _BOOLEAN_FIELDS = {"UsePersonality", "use_personality"}
@@ -175,3 +181,189 @@ def validate_checkpoint_metadata(payload, expected):
 
     if mismatches:
         raise ValueError("Checkpoint metadata mismatch: " + "; ".join(mismatches))
+
+
+def _validate_probabilities(probabilities, expected_rows=None):
+    values = np.asarray(probabilities, dtype=float)
+    if values.ndim != 2 or values.shape[1] != 2:
+        raise ValueError("Binary probabilities must have shape [N, 2]")
+    if expected_rows is not None and len(values) != expected_rows:
+        raise ValueError(
+            f"Probability rows must match the number of labels; got {len(values)} and {expected_rows}"
+        )
+    if not np.isfinite(values).all():
+        raise ValueError("Binary probabilities must be finite")
+    if not np.allclose(values.sum(axis=1), 1.0, rtol=0.0, atol=1e-6):
+        raise ValueError("Each binary probability row must sum to one")
+    return values
+
+
+def _validate_binary_labels(labels, expected_rows=None):
+    try:
+        values = np.asarray(labels, dtype=float)
+    except (TypeError, ValueError) as error:
+        raise ValueError("Binary labels must contain only 0 and 1") from error
+    if values.ndim != 1:
+        raise ValueError("Binary labels must be one-dimensional")
+    if expected_rows is not None and len(values) != expected_rows:
+        raise ValueError(f"Labels must have {expected_rows} rows; got {len(values)}")
+    if (
+        not np.isfinite(values).all()
+        or not np.equal(values, np.floor(values)).all()
+        or not np.isin(values, (0, 1)).all()
+    ):
+        raise ValueError("Binary labels must contain only 0 and 1")
+    return values.astype(int)
+
+
+def mean_fold_probabilities(fold_probabilities):
+    """Return the equal-weight mean of compatible binary fold probabilities."""
+    folds = list(fold_probabilities)
+    if not folds:
+        raise ValueError("At least one fold probability array is required")
+    validated = [_validate_probabilities(probabilities) for probabilities in folds]
+    expected_shape = validated[0].shape
+    if any(probabilities.shape != expected_shape for probabilities in validated[1:]):
+        raise ValueError("All fold probability arrays must have the same shape")
+    return np.mean(np.stack(validated, axis=0), axis=0)
+
+
+def aggregate_subject_probabilities(subject_ids, labels, probabilities):
+    """Average event probabilities per subject while enforcing one binary label."""
+    subjects = [str(subject_id) for subject_id in subject_ids]
+    values = _validate_probabilities(probabilities, expected_rows=len(subjects))
+    binary_labels = _validate_binary_labels(labels, expected_rows=len(subjects))
+    totals = {}
+    counts = {}
+    subject_labels = {}
+
+    for subject_id, label, probability in zip(subjects, binary_labels, values):
+        if subject_id in subject_labels and subject_labels[subject_id] != label:
+            raise ValueError(f"Conflicting labels for subject {subject_id}")
+        if subject_id not in totals:
+            totals[subject_id] = probability.copy()
+            counts[subject_id] = 1
+            subject_labels[subject_id] = label
+        else:
+            totals[subject_id] += probability
+            counts[subject_id] += 1
+
+    unique_subject_ids = list(totals)
+    aggregated_labels = np.asarray([subject_labels[subject_id] for subject_id in unique_subject_ids], dtype=int)
+    aggregated_probabilities = np.asarray(
+        [totals[subject_id] / counts[subject_id] for subject_id in unique_subject_ids], dtype=float
+    )
+    return unique_subject_ids, aggregated_labels, aggregated_probabilities
+
+
+def build_result_row(*, year, cohort, model, level, labels, probabilities, folds, run_id, device, seed,
+                     status="PASS"):
+    """Build one schema-validated independent-test result row from predictions."""
+    binary_labels = _validate_binary_labels(labels)
+    values = _validate_probabilities(probabilities, expected_rows=len(binary_labels))
+    if len(binary_labels) == 0:
+        raise ValueError("Cannot build a result row from empty predictions")
+    predictions = np.argmax(values, axis=1)
+    metrics = evaluate_predictions(binary_labels, predictions, values)
+    tn, fp, fn, tp = np.asarray(metrics["Confusion_Matrix"], dtype=int).ravel()
+    result = {
+        "DatasetYear": year,
+        "Cohort": cohort,
+        "Model": model,
+        "EvaluationLevel": level,
+        "Samples": len(binary_labels),
+        "Accuracy": metrics["Accuracy"],
+        "Macro_F1": metrics["Macro_F1"],
+        "Weighted_F1": metrics["Weighted_F1"],
+        "Precision": metrics["Precision"],
+        "Recall": metrics["Recall"],
+        "Positive_Recall": metrics["Positive_Recall"],
+        "Specificity": metrics["Specificity"],
+        "ROC_AUC": metrics["ROC_AUC"],
+        "TN": int(tn),
+        "FP": int(fp),
+        "FN": int(fn),
+        "TP": int(tp),
+        "EnsembleFolds": folds,
+        "Run_ID": run_id,
+        "Device": device,
+        "Seed": seed,
+        "Status": status,
+    }
+    return {column: result[column] for column in RESULT_COLUMNS}
+
+
+def _validate_result_row(row):
+    if not isinstance(row, dict) or set(row) != set(RESULT_COLUMNS):
+        raise ValueError("Result rows must contain exactly the approved RESULT_COLUMNS")
+    return {column: row[column] for column in RESULT_COLUMNS}
+
+
+def _read_result_rows(path):
+    if not path.exists():
+        return []
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != RESULT_COLUMNS:
+            raise ValueError("Existing result CSV header does not match RESULT_COLUMNS")
+        return [{column: row[column] for column in RESULT_COLUMNS} for row in reader]
+
+
+def _result_key(row):
+    return tuple(str(row[column]) for column in RESULT_KEY)
+
+
+def upsert_result_rows(path, new_rows):
+    """Atomically replace result rows with matching evaluation identity keys."""
+    path = Path(path)
+    rows_by_key = {_result_key(row): row for row in _read_result_rows(path)}
+    for row in new_rows:
+        validated = _validate_result_row(row)
+        rows_by_key[_result_key(validated)] = validated
+    rows = sorted(
+        rows_by_key.values(),
+        key=lambda row: tuple(str(row[column]) for column in RESULT_KEY),
+    )
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_name(path.name + ".tmp")
+    try:
+        with temporary_path.open("w", encoding="utf-8-sig", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=RESULT_COLUMNS)
+            writer.writeheader()
+            writer.writerows(rows)
+        temporary_path.replace(path)
+    except Exception:
+        if temporary_path.exists():
+            temporary_path.unlink()
+        raise
+    return path
+
+
+def write_prediction_csv(path, subject_ids, labels, probabilities, model, level):
+    """Write validated event- or subject-level predictions with provenance columns."""
+    path = Path(path)
+    subjects = [str(subject_id) for subject_id in subject_ids]
+    values = _validate_probabilities(probabilities, expected_rows=len(subjects))
+    binary_labels = _validate_binary_labels(labels, expected_rows=len(subjects))
+    predictions = np.argmax(values, axis=1)
+    rows = [
+        {
+            "subject_id": subject_id,
+            "true_label": int(label),
+            "pred_label": int(prediction),
+            "prob_0": probability[0],
+            "prob_1": probability[1],
+            "model": str(model),
+            "evaluation_level": str(level),
+        }
+        for subject_id, label, prediction, probability in zip(subjects, binary_labels, predictions, values)
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=[
+            "subject_id", "true_label", "pred_label", "prob_0", "prob_1", "model", "evaluation_level",
+        ])
+        writer.writeheader()
+        writer.writerows(rows)
+    return path

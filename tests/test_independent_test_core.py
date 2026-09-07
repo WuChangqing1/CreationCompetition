@@ -1,6 +1,10 @@
 import tempfile
 import unittest
+import csv
 from pathlib import Path
+from unittest.mock import patch
+
+import numpy as np
 
 from experiments.run_model_cv import RAW_COLUMNS
 
@@ -296,6 +300,150 @@ class CheckpointProvenanceTests(unittest.TestCase):
                 expected = {**EXPECTED_METADATA, field: expected_value}
                 with self.assertRaisesRegex(ValueError, field):
                     validate_checkpoint_metadata(payload, expected)
+
+
+class AggregationTests(unittest.TestCase):
+    def test_means_equal_sized_valid_probability_folds(self):
+        from experiments.independent_test import mean_fold_probabilities
+
+        mean = mean_fold_probabilities([
+            np.array([[0.8, 0.2], [0.4, 0.6]]),
+            np.array([[0.6, 0.4], [0.2, 0.8]]),
+        ])
+
+        np.testing.assert_allclose(mean, [[0.7, 0.3], [0.3, 0.7]])
+
+    def test_rejects_malformed_probability_folds(self):
+        from experiments.independent_test import mean_fold_probabilities
+
+        cases = (
+            [np.array([[0.8, 0.2, 0.0]])],
+            [np.array([[np.nan, 0.2]])],
+            [np.array([[0.8, 0.3]])],
+            [np.array([[0.8, 0.2]]), np.array([[0.4, 0.6], [0.3, 0.7]])],
+        )
+        for fold_probabilities in cases:
+            with self.subTest(fold_probabilities=fold_probabilities):
+                with self.assertRaises(ValueError):
+                    mean_fold_probabilities(fold_probabilities)
+
+    def test_aggregates_event_probabilities_to_subjects(self):
+        from experiments.independent_test import aggregate_subject_probabilities
+
+        subject_ids, labels, probabilities = aggregate_subject_probabilities(
+            ["A", "A", "B"],
+            [1, 1, 0],
+            np.array([[0.2, 0.8], [0.4, 0.6], [0.9, 0.1]]),
+        )
+
+        self.assertEqual(subject_ids, ["A", "B"])
+        np.testing.assert_array_equal(labels, [1, 0])
+        np.testing.assert_allclose(probabilities, [[0.3, 0.7], [0.9, 0.1]])
+
+    def test_rejects_conflicting_labels_for_one_subject(self):
+        from experiments.independent_test import aggregate_subject_probabilities
+
+        with self.assertRaisesRegex(ValueError, "Conflicting labels.*A"):
+            aggregate_subject_probabilities(
+                ["A", "A"], [1, 0], np.array([[0.2, 0.8], [0.6, 0.4]])
+            )
+
+
+class ResultArtifactTests(unittest.TestCase):
+    def test_build_result_row_uses_evaluator_metrics_and_confusion_order(self):
+        from experiments.independent_test import RESULT_COLUMNS, build_result_row
+
+        row = build_result_row(
+            year="2025", cohort="Elder", model="mlp", level="event",
+            labels=np.array([0, 0, 1, 1]),
+            probabilities=np.array([[0.9, 0.1], [0.2, 0.8], [0.7, 0.3], [0.1, 0.9]]),
+            folds=5, run_id="run-1", device="cpu", seed=3407,
+        )
+
+        self.assertEqual(list(row), RESULT_COLUMNS)
+        self.assertEqual((row["TN"], row["FP"], row["FN"], row["TP"]), (1, 1, 1, 1))
+
+    def test_upsert_preserves_other_result_keys_and_raw_results(self):
+        from experiments.independent_test import RESULT_COLUMNS, upsert_result_rows
+
+        def result_row(year, level, accuracy):
+            row = {column: "" for column in RESULT_COLUMNS}
+            row.update({
+                "DatasetYear": str(year), "Cohort": "Elder", "Model": "mlp",
+                "EvaluationLevel": level, "Accuracy": accuracy,
+            })
+            return row
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result_path = root / "independent_results.csv"
+            raw_path = root / "raw_results.csv"
+            raw_path.write_bytes(b"raw results must not change\n")
+            row_2025 = result_row(2025, "event", 0.50)
+            row_2026 = result_row(2026, "event", 0.60)
+
+            upsert_result_rows(result_path, [row_2025])
+            upsert_result_rows(result_path, [row_2026])
+            upsert_result_rows(result_path, [result_row(2025, "event", 0.75)])
+
+            with result_path.open("r", encoding="utf-8-sig", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertEqual([(row["DatasetYear"], row["Accuracy"]) for row in rows], [("2025", "0.75"), ("2026", "0.6")])
+            self.assertEqual(raw_path.read_bytes(), b"raw results must not change\n")
+            self.assertFalse(result_path.with_suffix(".csv.tmp").exists())
+
+    def test_upsert_keeps_original_when_tmp_write_fails(self):
+        from experiments.independent_test import RESULT_COLUMNS, upsert_result_rows
+
+        row = {column: "" for column in RESULT_COLUMNS}
+        row.update({
+            "DatasetYear": "2025", "Cohort": "Elder", "Model": "mlp",
+            "EvaluationLevel": "event", "Accuracy": 0.50,
+        })
+        with tempfile.TemporaryDirectory() as directory:
+            result_path = Path(directory) / "independent_results.csv"
+            upsert_result_rows(result_path, [row])
+            original = result_path.read_bytes()
+
+            with patch("experiments.independent_test.csv.DictWriter.writeheader", side_effect=OSError("disk full")):
+                with self.assertRaisesRegex(OSError, "disk full"):
+                    upsert_result_rows(result_path, [{**row, "Accuracy": 0.75}])
+
+            self.assertEqual(result_path.read_bytes(), original)
+            with result_path.open("r", encoding="utf-8-sig", newline="") as handle:
+                self.assertEqual(list(csv.DictReader(handle))[0]["Accuracy"], "0.5")
+
+    def test_upsert_rejects_existing_csv_with_an_unapproved_header(self):
+        from experiments.independent_test import RESULT_COLUMNS, upsert_result_rows
+
+        row = {column: "" for column in RESULT_COLUMNS}
+        row.update({
+            "DatasetYear": "2025", "Cohort": "Elder", "Model": "mlp",
+            "EvaluationLevel": "event",
+        })
+        with tempfile.TemporaryDirectory() as directory:
+            result_path = Path(directory) / "independent_results.csv"
+            result_path.write_text("wrong,column\nvalue,value\n", encoding="utf-8-sig")
+
+            with self.assertRaisesRegex(ValueError, "header"):
+                upsert_result_rows(result_path, [row])
+
+    def test_writes_prediction_csv_with_subject_level_metadata(self):
+        from experiments.independent_test import write_prediction_csv
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = write_prediction_csv(
+                Path(directory) / "predictions.csv", ["A", "B"], [0, 1],
+                np.array([[0.8, 0.2], [0.1, 0.9]]), "mlp", "subject",
+            )
+
+            with path.open("r", encoding="utf-8-sig", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertEqual(rows[0], {
+                "subject_id": "A", "true_label": "0", "pred_label": "0",
+                "prob_0": "0.8", "prob_1": "0.2", "model": "mlp",
+                "evaluation_level": "subject",
+            })
 
 
 if __name__ == "__main__":
