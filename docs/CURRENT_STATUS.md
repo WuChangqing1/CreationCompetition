@@ -20,7 +20,7 @@
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
-| A 环境与源码理解 | PASS | 使用 `conda run -n dachuangxiangmu` 强制隔离；2025/2026 数据已定位 |
+| A 环境与源码理解 | PASS | 用户显式激活 `dachuangxiangmu`；2025/2026 数据已定位 |
 | B Registry / OurModel | PASS | 精确路由、兼容新旧 checkpoint、人格开关已验证 |
 | C 简单 PyTorch 模型 | PASS | MLP/BiLSTM/LightWeightTrans forward 通过 |
 | D Classical | PASS | SVM 与 XGBoost Registry/Smoke 均通过 |
@@ -52,7 +52,7 @@
 
 ## Known Issues
 
-- 当前 PowerShell 未执行 conda init，直接 `conda activate dachuangxiangmu` 失败；Agent 必须使用 `conda run -n dachuangxiangmu`。
+- 用户当前 PowerShell 可以显式执行 `conda activate dachuangxiangmu`；用户命令直接使用该环境中的 `python`。
 - 完整多模型正式训练尚未执行；tiny 结果仅用于接口验证，不能作为正式成绩。
 - GPU 强制运行调整已完成代码与文档修改，但按用户要求本轮未执行新增测试或实验验证。
 - 项目已建立 Git 仓库，后续改动统一进入 `GuoChuang` 分支。

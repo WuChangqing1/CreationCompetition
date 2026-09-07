@@ -2,6 +2,7 @@
 
 ## 2026-09-07
 
+- 用户运行命令统一改为先 `conda activate dachuangxiangmu`，随后直接使用 `python`。
 - 正式实验默认设备改为 CUDA，XGBoost 使用 GPU hist，PyTorch DataLoader 启用 pinned memory，并在结果中记录 Device；SVM 明确保留 CPU。
 - 正式对比范围由十模型调整为八模型，移除 DepMamba 与 Proposed 的 Registry、占位代码、配置、Smoke Test 和运行文档入口。
 - 项目已建立 Git 仓库并使用 `GuoChuang` 分支维护后续改动。
@@ -37,7 +38,7 @@
 
 ### Fixed
 
-- 文档明确阻止 activate 失败后误用系统 Python，统一使用 `conda run -n dachuangxiangmu`。
+- 文档明确阻止环境激活失败后误用系统 Python。
 - 新 subject folds 杜绝 segment-level leakage。
 - run_all 直接文件入口加入项目根路径，`python experiments\run_all.py` 可正常导入包。
 - subject ID 优先使用显式 `subject_id`，否则遵循数据集文件名前缀约定，最后才回退到通用 `id`。
