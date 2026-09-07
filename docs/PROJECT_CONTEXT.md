@@ -57,4 +57,5 @@ train 读取 JSON，调用旧 subject-aware holdout，创建 DataLoader，按 Ma
 - 完整模型：MLP、BiLSTM、LightWeightTrans、LMF、MulT、OurModel。
 - Fold：`experiments/create_splits.py` 在 subject 级先聚合标签，再 StratifiedKFold；复用 JSON 并强制检查交集。
 - 结果：evaluator 统一指标与 raw predictions；run_model_cv 追加 raw_results；aggregate 输出 mean±sample std；run_all 隔离单模型失败。
-- 可选状态：XGBoost 缺包 SKIPPED；DepMamba 缺依赖且适配未验证；Proposed 明确 N/A。
+- 正式比较模型固定为 SVM、XGBoost、MLP、BiLSTM、LightWeightTrans、LMF、MulT、OurModel；DepMamba 与 Proposed 已退出实验范围。
+- XGBoost 3.2.0 当前已安装；若其他机器缺包，只对该模型报告 SKIPPED，不影响其余七个模型。

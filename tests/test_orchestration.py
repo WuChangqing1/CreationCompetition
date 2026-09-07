@@ -39,7 +39,7 @@ class OrchestrationTest(unittest.TestCase):
         summary = aggregate_results([
             {"Model": "mlp", "Accuracy": 0.5, "Macro_F1": 0.4, "Status": "PASS"},
             {"Model": "mlp", "Accuracy": 0.7, "Macro_F1": 0.6, "Status": "PASS"},
-            {"Model": "depmamba", "Accuracy": "N/A", "Macro_F1": "N/A", "Status": "SKIPPED"},
+            {"Model": "unavailable", "Accuracy": "N/A", "Macro_F1": "N/A", "Status": "SKIPPED"},
         ])
         self.assertEqual(summary[0]["Accuracy"], "0.6000 ± 0.1414")
         self.assertEqual(summary[1]["Accuracy"], "SKIPPED")

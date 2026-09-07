@@ -2,6 +2,8 @@
 
 ## 2026-09-07
 
+- 正式对比范围由十模型调整为八模型，移除 DepMamba 与 Proposed 的 Registry、占位代码、配置、Smoke Test 和运行文档入口。
+- 项目已建立 Git 仓库并使用 `GuoChuang` 分支维护后续改动。
 - 将目标目录中的 2025 和 2026 数据分别归档到 `test\2025`、`test\2026`。
 - 接入两届 Elder/Young 数据解析，并完成四套训练数据真实读取、5-Fold 检查。
 - 2025 Elder 与 2026 Elder 完成真实数据 MLP tiny 5-Fold 闭环。
@@ -46,5 +48,4 @@
 ### Known Issues
 
 - tiny 运行结果仅验证数据与框架闭环，正式多模型训练尚未执行。
-- xgboost、matplotlib 与 DepMamba 可选依赖缺失。
-- 项目不是 Git 仓库，无法提交或创建 worktree。
+- matplotlib 可选依赖缺失；XGBoost 3.2.0 已安装并通过创建 Smoke Test。

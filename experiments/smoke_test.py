@@ -136,8 +136,6 @@ def run_smoke(data_root=None, device="cpu", **dataset_options):
         results.append(_utility_result(name, lambda current=name: _torch_model_result(current, device).detail))
     results.append(_utility_result("SVM", lambda: type(create_experiment_model("svm", config={})).__name__))
     results.append(_utility_result("XGBoost", lambda: type(create_experiment_model("xgboost", config={})).__name__))
-    results.append(_utility_result("DepMamba", lambda: type(create_model(_opt("depmamba"))).__name__))
-    results.append(_utility_result("Proposed", lambda: type(create_model(_opt("proposed"))).__name__))
     results.append(_utility_result("Evaluator", lambda: evaluate_predictions([0, 1], [0, 1], [[0.9, 0.1], [0.1, 0.9]])["Macro_F1"]))
     results.append(_utility_result("Subject Split", _split_smoke))
     return results

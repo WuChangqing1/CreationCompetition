@@ -25,11 +25,24 @@ class ExperimentRegistryTest(unittest.TestCase):
         self.assertEqual(list(create_svm().named_steps), ["scaler", "classifier"])
 
     def test_registry_separates_classical_and_torch(self):
-        from experiments.model_registry import get_model_kind
+        from experiments.model_registry import CLASSICAL_MODELS, TORCH_MODELS, get_model_kind
 
         self.assertEqual(get_model_kind("svm"), "classical")
         self.assertEqual(get_model_kind("xgboost"), "classical")
         self.assertEqual(get_model_kind("mlp"), "torch")
+        self.assertEqual(CLASSICAL_MODELS, frozenset({"svm", "xgboost"}))
+        self.assertEqual(
+            TORCH_MODELS,
+            frozenset({"mlp", "bilstm", "lightweighttrans", "lmf", "mult", "our"}),
+        )
+
+    def test_removed_models_are_rejected(self):
+        from experiments.model_registry import get_model_kind
+
+        for name in ("depmamba", "proposed"):
+            with self.subTest(model=name):
+                with self.assertRaisesRegex(ValueError, f"Unknown model: {name}"):
+                    get_model_kind(name)
 
     def test_missing_xgboost_isolated_to_xgboost(self):
         from experiments.model_registry import OptionalDependencyError, create_experiment_model

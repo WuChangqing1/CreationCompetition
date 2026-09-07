@@ -1,5 +1,7 @@
 # MPDD 2025 Multi-model Experiment Framework Implementation Plan
 
+> 历史计划说明：本文记录 2026-09-06 的原始实施过程。自 2026-09-07 起，Task 10 所述 DepMamba 与 Proposed 已按用户决定退出正式实验范围，相关占位实现与测试已移除；当前口径以 `docs/CURRENT_STATUS.md` 为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 把现有 MPDD-main 增量改造成以 `models.create_model()` 为 PyTorch 统一入口、以 `experiments/model_registry.py` 为整体调度入口的可复现多模型实验框架。

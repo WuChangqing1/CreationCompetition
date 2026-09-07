@@ -23,7 +23,7 @@
 - Fold 必须按 subject 分层，训练/验证 subject 交集必须为空。
 - 主指标为 Macro-F1；损失与类别平衡策略必须写入结果。
 - 不写死数据路径/GPU，不在 import 时训练，不吞异常，不伪造结果。
-- DepMamba 缺依赖时 SKIPPED；Proposed 未实现时 N/A。
+- 正式对比固定为 8 个模型：SVM、XGBoost、MLP、BiLSTM、LightWeightTrans、LMF、MulT、OurModel。
 - 不自动运行完整多模型 5-Fold 长训练。
 
 ## 文档读取顺序

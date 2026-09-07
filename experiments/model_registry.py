@@ -9,7 +9,7 @@ from models import create_model
 CLASSICAL_MODELS = frozenset({"svm", "xgboost"})
 TORCH_MODELS = frozenset({
     "mlp", "bilstm", "lightweighttrans", "lmf", "mult",
-    "our", "depmamba", "proposed",
+    "our",
 })
 
 

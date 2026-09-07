@@ -20,7 +20,3 @@ matplotlib
 # transformers
 # opensmile
 # fairseq
-
-# Optional: DepMamba is platform-dependent on Windows.
-# Install mamba_ssm and causal_conv1d only after verifying compatibility
-# with the dachuangxiangmu Python, PyTorch, CUDA, and compiler versions.

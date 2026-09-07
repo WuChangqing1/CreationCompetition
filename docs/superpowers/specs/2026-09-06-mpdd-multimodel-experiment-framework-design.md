@@ -1,5 +1,7 @@
 # MPDD 2025 多模型对比实验框架设计
 
+> 历史设计说明：本文记录 2026-09-06 已批准的原始十模型方案。自 2026-09-07 起，正式实验范围已调整为八模型，DepMamba 与 Proposed 不再注册、运行或参与对比；当前口径以 `docs/CURRENT_STATUS.md` 为准。
+
 ## 1. 目标与范围
 
 在不删除原有 Track2、三分类、五分类、scripts、checkpoints、logs 和既有训练/测试能力的前提下，将 MPDD-main 增量改造成统一、可复现、可扩展的多模型对比实验框架。本轮默认范围是 Track1 Elderly Binary Classification，固定比较 MFCC、DenseNet 和 Personality Enabled，不自动运行所有模型的完整 5-Fold 长时训练。

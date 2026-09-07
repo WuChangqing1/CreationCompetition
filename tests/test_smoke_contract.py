@@ -14,9 +14,9 @@ class SmokeContractTest(unittest.TestCase):
         required = {
             "Environment", "Dataset", "our", "mlp", "bilstm",
             "lightweighttrans", "lmf", "mult", "SVM", "XGBoost",
-            "DepMamba", "Proposed", "Evaluator", "Subject Split",
+            "Evaluator", "Subject Split",
         }
-        self.assertTrue(required <= names)
+        self.assertEqual(names, required)
         self.assertTrue(all(result.status in {"PASS", "FAIL", "SKIPPED", "N/A"} for result in results))
         dataset = next(result for result in results if result.name == "Dataset")
         self.assertEqual(dataset.status, "SKIPPED")
