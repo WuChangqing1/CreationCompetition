@@ -252,6 +252,36 @@ class IndependentTestTorchTests(unittest.TestCase):
                     expected_metadata=self.expected_metadata,
                 )
 
+    def test_rejects_fold_probabilities_missing_an_event_row(self):
+        from experiments.independent_test_models import infer_torch_fold_ensemble
+
+        checkpoint_paths = self._write_checkpoints()
+        for checkpoint_path in checkpoint_paths:
+            payload = torch.load(checkpoint_path, map_location="cpu")
+            payload["model_state_dict"]["probabilities"] = payload[
+                "model_state_dict"
+            ]["probabilities"][:1]
+            torch.save(payload, checkpoint_path)
+        audit = {
+            "loaded_folds": [],
+            "strict": [],
+            "devices": [],
+            "label_orders": [],
+        }
+        with patch(
+            "experiments.independent_test_models.create_experiment_model",
+            side_effect=lambda _model_name, opt=None: _DeterministicModel(audit),
+        ):
+            with self.assertRaisesRegex(ValueError, r"expected \(2, 2\).+got \(1, 2\)"):
+                infer_torch_fold_ensemble(
+                    model_name="mlp",
+                    test_entries=self.entries,
+                    test_paths=self.paths,
+                    checkpoint_paths=checkpoint_paths,
+                    args=self.args,
+                    expected_metadata=self.expected_metadata,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

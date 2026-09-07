@@ -81,6 +81,13 @@ def infer_torch_fold_ensemble(
         labels, _, probabilities = evaluate_torch(model, loader, device)
         if not np.array_equal(np.asarray(labels), expected_labels):
             raise ValueError("Fold labels do not match the independent-test dataset order")
+        probabilities = np.asarray(probabilities)
+        expected_shape = (len(expected_labels), 2)
+        if probabilities.shape != expected_shape:
+            raise ValueError(
+                "Fold probabilities must have shape [N, 2]: "
+                f"expected {expected_shape}, got {probabilities.shape}"
+            )
         fold_probabilities.append(mean_fold_probabilities([probabilities]))
 
     return mean_fold_probabilities(fold_probabilities)
