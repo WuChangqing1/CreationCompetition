@@ -2,6 +2,7 @@
 
 ## 2026-09-07
 
+- 正式实验默认设备改为 CUDA，XGBoost 使用 GPU hist，PyTorch DataLoader 启用 pinned memory，并在结果中记录 Device；SVM 明确保留 CPU。
 - 正式对比范围由十模型调整为八模型，移除 DepMamba 与 Proposed 的 Registry、占位代码、配置、Smoke Test 和运行文档入口。
 - 项目已建立 Git 仓库并使用 `GuoChuang` 分支维护后续改动。
 - 将目标目录中的 2025 和 2026 数据分别归档到 `test\2025`、`test\2026`。

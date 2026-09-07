@@ -22,6 +22,7 @@
 - 主比较固定 MFCC + DenseNet + Personality Enabled，默认 seed 3407。
 - Fold 必须按 subject 分层，训练/验证 subject 交集必须为空。
 - 主指标为 Macro-F1；损失与类别平衡策略必须写入结果。
+- 正式实验强制 `--device cuda`；六个 PyTorch 模型与 XGBoost 使用 GPU，SVM 因算法限制保留 CPU。
 - 不写死数据路径/GPU，不在 import 时训练，不吞异常，不伪造结果。
 - 正式对比固定为 8 个模型：SVM、XGBoost、MLP、BiLSTM、LightWeightTrans、LMF、MulT、OurModel。
 - 不自动运行完整多模型 5-Fold 长训练。

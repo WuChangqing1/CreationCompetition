@@ -31,7 +31,7 @@ from experiments.model_registry import create_experiment_model, get_model_kind
 
 RAW_COLUMNS = [
     "Run_ID", "DatasetYear", "Cohort", "Model", "Fold", "Track", "Task", "AudioFeature", "VideoFeature",
-    "UsePersonality", "SplitWindow",
+    "UsePersonality", "SplitWindow", "Device",
     "Accuracy", "Macro_F1", "Weighted_F1", "Precision", "Recall",
     "Positive_Recall", "Specificity", "ROC_AUC", "Parameters", "Model_Size_MB",
     "Inference_Latency_ms", "Peak_VRAM_MB", "Loss_Function",
@@ -67,6 +67,7 @@ def build_run_id(args, config=None):
         "audio_feature": args.audio_feature, "video_feature": args.video_feature,
         "use_personality": args.use_personality, "split_window": args.split_window,
         "seed": args.seed, "folds": getattr(args, "folds", 5),
+        "device": getattr(args, "device", "cuda"),
         "tiny": getattr(args, "tiny", False),
         "epochs": getattr(args, "epochs", None),
         "batch_size": getattr(args, "batch_size", None),
@@ -188,14 +189,20 @@ def run_fold(args, fold_data, entries, paths, config):
     model_name = args.model.lower()
     dataset_year = getattr(args, "dataset_year", "2025")
     cohort = getattr(args, "cohort", "Elder")
+    execution_device = "cpu:svm" if model_name == "svm" else (
+        f"{args.device}:xgboost" if model_name == "xgboost" else str(args.device)
+    )
     run_id = getattr(args, "run_id", None) or build_run_id(args, config)
     resolved_config = dict(config)
     resolved_config["seed"] = args.seed
+    if model_name == "xgboost":
+        resolved_config["device"] = args.device
+        resolved_config.setdefault("tree_method", "hist")
     feature_config = {
         "dataset_year": dataset_year, "cohort": cohort,
         "track": args.track, "task": args.task, "audio_feature": args.audio_feature,
         "video_feature": args.video_feature, "use_personality": args.use_personality,
-        "split_window": args.split_window,
+        "split_window": args.split_window, "device": execution_device,
     }
     efficiency = {key: "N/A" for key in ("Parameters", "Model_Size_MB", "Inference_Latency_ms", "Peak_VRAM_MB")}
 
@@ -219,10 +226,23 @@ def run_fold(args, fold_data, entries, paths, config):
         opt.use_personality = args.use_personality
         model = create_experiment_model(model_name, opt=opt)
         device = torch.device(args.device)
+        if device.type == "cuda" and not torch.cuda.is_available():
+            raise RuntimeError(
+                "CUDA is required for PyTorch comparison models, but torch.cuda.is_available() is False. "
+                "Fix the GPU environment or pass --device cpu explicitly for diagnostics only."
+            )
         model.to(device)
+        opt.device = str(device)
         generator = torch.Generator().manual_seed(args.seed + fold_number)
-        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, generator=generator)
-        val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
+        use_pinned_memory = device.type == "cuda"
+        train_loader = DataLoader(
+            train_dataset, batch_size=args.batch_size, shuffle=True, generator=generator,
+            pin_memory=use_pinned_memory,
+        )
+        val_loader = DataLoader(
+            val_dataset, batch_size=args.batch_size, shuffle=False,
+            pin_memory=use_pinned_memory,
+        )
         epochs = 1 if args.tiny else args.epochs
         for _ in range(epochs):
             model.train(True)
@@ -255,7 +275,7 @@ def run_fold(args, fold_data, entries, paths, config):
         "Model": model_name, "Fold": fold_number,
         "Track": args.track, "Task": args.task, "AudioFeature": args.audio_feature,
         "VideoFeature": args.video_feature, "UsePersonality": args.use_personality,
-        "SplitWindow": args.split_window,
+        "SplitWindow": args.split_window, "Device": execution_device,
         **{key: metrics[key] for key in metrics if key != "Confusion_Matrix"},
         **efficiency,
         "Loss_Function": config.get("loss_function", "N/A"),
@@ -280,7 +300,10 @@ def parse_args(argv=None):
     parser.add_argument("--split-window", default="1s")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=3407)
-    parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument(
+        "--device", default="cuda", choices=["cuda", "cpu"],
+        help="Formal comparisons use cuda; cpu is reserved for diagnostics. SVM always runs on CPU.",
+    )
     parser.add_argument("--feature-max-len", type=int, default=5)
     parser.add_argument("--batch-size", type=int)
     parser.add_argument("--epochs", type=int)

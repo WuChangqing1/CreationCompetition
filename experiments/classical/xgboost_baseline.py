@@ -21,6 +21,8 @@ def create_xgboost(config=None):
         colsample_bytree=float(config.get("colsample_bytree", 0.9)),
         objective="binary:logistic",
         eval_metric="logloss",
+        tree_method=str(config.get("tree_method", "hist")),
+        device=str(config.get("device", "cuda")),
         random_state=int(config.get("seed", 3407)),
         n_jobs=int(config.get("n_jobs", -1)),
     )

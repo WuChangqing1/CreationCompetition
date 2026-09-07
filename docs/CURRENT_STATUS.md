@@ -8,6 +8,7 @@
 - 已建立精确模型 Registry、统一数据接口、subject-level 5-Fold、指标与效率统计、checkpoint 元数据、独立失败隔离和结果聚合。
 - 已完成自动化测试、合成数据集成测试，以及 2025/2026 真实数据 Smoke Test。
 - 正式比较范围已按用户决定收缩为 8 个模型，不再包含 DepMamba 与 Proposed。
+- 正式运行入口默认强制 CUDA：六个 PyTorch 模型与 XGBoost 使用 GPU，SVM 保留 CPU；结果新增 `Device` 字段。
 - 已接入统一的 2025/2026 数据布局解析，并对两年 Elder/Young 数据验证真实读取与 subject-level 5-Fold。
 - 本轮未执行完整多模型 5-Fold 长时间训练，也未伪造正式结果。
 
@@ -53,6 +54,7 @@
 
 - 当前 PowerShell 未执行 conda init，直接 `conda activate dachuangxiangmu` 失败；Agent 必须使用 `conda run -n dachuangxiangmu`。
 - 完整多模型正式训练尚未执行；tiny 结果仅用于接口验证，不能作为正式成绩。
+- GPU 强制运行调整已完成代码与文档修改，但按用户要求本轮未执行新增测试或实验验证。
 - 项目已建立 Git 仓库，后续改动统一进入 `GuoChuang` 分支。
 - matplotlib、seaborn 当前缺失；XGBoost 3.2.0 已安装并通过创建 Smoke Test。
 - 新多模型 CV 入口当前限定二分类；旧 `train.py` / `test.py` 仍保留 3 类、5 类兼容路径。

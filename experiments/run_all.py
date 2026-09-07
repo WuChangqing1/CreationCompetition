@@ -57,7 +57,10 @@ def parse_args(argv=None):
     parser.add_argument("--split-window", default="1s")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=3407)
-    parser.add_argument("--device")
+    parser.add_argument(
+        "--device", default="cuda", choices=["cuda", "cpu"],
+        help="Formal comparisons use cuda; SVM remains a CPU-only baseline.",
+    )
     parser.add_argument("--tiny", action="store_true")
     parser.add_argument("--report", type=Path, default=ROOT / "experiments" / "results" / "run_report.json")
     return parser.parse_args(argv)
@@ -80,8 +83,7 @@ def main(argv=None):
             command.extend(["--cohort", args.cohort])
         if args.data_root:
             command.extend(["--data-root", str(args.data_root)])
-        if args.device:
-            command.extend(["--device", args.device])
+        command.extend(["--device", args.device])
         if args.tiny:
             command.append("--tiny")
         result = subprocess.run(command, cwd=ROOT, text=True, capture_output=True)
