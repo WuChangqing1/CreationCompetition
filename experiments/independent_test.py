@@ -72,11 +72,16 @@ def _normalize_scalar(field, value):
 
 
 def _row_matches(row, condition):
-    return all(
-        _normalize_scalar(column, row.get(column, _MISSING))
-        == _normalize_scalar(column, expected)
-        for column, expected in condition.items()
-    )
+    for column, expected in condition.items():
+        actual_normalized = _normalize_scalar(column, row.get(column, _MISSING))
+        expected_normalized = _normalize_scalar(column, expected)
+        if (
+            actual_normalized is _MISSING
+            or expected_normalized is _MISSING
+            or actual_normalized != expected_normalized
+        ):
+            return False
+    return True
 
 
 def _require_approved_model(model):
@@ -84,8 +89,14 @@ def _require_approved_model(model):
         raise ValueError(f"Unsupported independent-test model: {model!r}")
 
 
+def _require_five_folds(folds):
+    if folds != 5:
+        raise ValueError(f"Independent-test evaluator requires exactly five folds; got {folds!r}")
+
+
 def select_cv_run(rows, condition, folds=5):
     """Select one fully matching PASS CV run with each required fold exactly once."""
+    _require_five_folds(folds)
     missing_condition_fields = [field for field in CV_SELECTION_FIELDS if field not in condition]
     if missing_condition_fields:
         raise ValueError(f"Missing required CV selection condition fields: {missing_condition_fields}")
@@ -108,6 +119,7 @@ def select_cv_run(rows, condition, folds=5):
 
 def resolve_checkpoint_paths(results_dir, run_id, model, folds=5):
     """Resolve every expected fold checkpoint without accepting partial ensembles."""
+    _require_five_folds(folds)
     _require_approved_model(_normalize_scalar("Model", model))
     results_dir = Path(results_dir)
     paths = [
@@ -153,7 +165,11 @@ def validate_checkpoint_metadata(payload, expected):
         else:
             actual_normalized = _normalize_scalar(field, actual)
             wanted_normalized = _normalize_scalar(field, wanted)
-        if actual_normalized != wanted_normalized:
+        if (
+            actual_normalized is _MISSING
+            or wanted_normalized is _MISSING
+            or actual_normalized != wanted_normalized
+        ):
             actual_display = "<missing>" if actual is _MISSING else repr(actual)
             mismatches.append(f"{field}: expected {wanted!r}, got {actual_display}")
 

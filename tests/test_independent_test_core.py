@@ -148,6 +148,28 @@ class SelectCvRunTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Expected one CV Run_ID"):
             select_cv_run(rows, CONDITION)
 
+    def test_rejects_malformed_boolean_values_on_either_or_both_sides(self):
+        from experiments.independent_test import select_cv_run
+
+        cases = (("yes", True), (True, "yes"), ("yes", "yes"))
+        for row_value, condition_value in cases:
+            with self.subTest(row_value=row_value, condition_value=condition_value):
+                rows = [make_row(fold=fold, UsePersonality=row_value) for fold in range(1, 6)]
+                condition = {**CONDITION, "UsePersonality": condition_value}
+                with self.assertRaisesRegex(ValueError, "Expected one CV Run_ID"):
+                    select_cv_run(rows, condition)
+
+    def test_rejects_malformed_integer_values_on_either_or_both_sides(self):
+        from experiments.independent_test import select_cv_run
+
+        cases = (("not-a-seed", 3407), (3407, "not-a-seed"), ("not-a-seed", "not-a-seed"))
+        for row_value, condition_value in cases:
+            with self.subTest(row_value=row_value, condition_value=condition_value):
+                rows = [make_row(fold=fold, Seed=row_value) for fold in range(1, 6)]
+                condition = {**CONDITION, "Seed": condition_value}
+                with self.assertRaisesRegex(ValueError, "Expected one CV Run_ID"):
+                    select_cv_run(rows, condition)
+
     def test_rejects_a_model_outside_the_approved_comparison_set(self):
         from experiments.independent_test import select_cv_run
 
@@ -165,6 +187,14 @@ class SelectCvRunTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "Missing required CV selection condition"):
             select_cv_run(rows, condition)
+
+    def test_rejects_non_five_fold_selection_requests(self):
+        from experiments.independent_test import select_cv_run
+
+        rows = [make_row(fold=fold) for fold in range(1, 6)]
+
+        with self.assertRaisesRegex(ValueError, "requires exactly five folds"):
+            select_cv_run(rows, CONDITION, folds=4)
 
     def test_false_boolean_is_normalized_without_truthiness(self):
         from experiments.independent_test import select_cv_run
@@ -223,6 +253,13 @@ class CheckpointProvenanceTests(unittest.TestCase):
             with self.assertRaisesRegex(FileNotFoundError, "fold_5"):
                 resolve_checkpoint_paths(results_dir, "mlp-example", "mlp", folds=5)
 
+    def test_rejects_non_five_fold_checkpoint_requests(self):
+        from experiments.independent_test import resolve_checkpoint_paths
+
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(ValueError, "requires exactly five folds"):
+                resolve_checkpoint_paths(Path(directory), "mlp-example", "mlp", folds=4)
+
     def test_accepts_matching_metadata_and_device_family(self):
         from experiments.independent_test import validate_checkpoint_metadata
 
@@ -241,6 +278,24 @@ class CheckpointProvenanceTests(unittest.TestCase):
         self.assertIn("seed", message)
         self.assertIn("cohort", message)
         self.assertIn("device", message)
+
+    def test_rejects_malformed_metadata_scalars_on_either_or_both_sides(self):
+        from experiments.independent_test import validate_checkpoint_metadata
+
+        cases = (
+            ("use_personality", "yes", True),
+            ("use_personality", True, "yes"),
+            ("use_personality", "yes", "yes"),
+            ("seed", "not-a-seed", 3407),
+            ("seed", 3407, "not-a-seed"),
+            ("seed", "not-a-seed", "not-a-seed"),
+        )
+        for field, payload_value, expected_value in cases:
+            with self.subTest(field=field, payload_value=payload_value, expected_value=expected_value):
+                payload = metadata_payload(**{field: payload_value})
+                expected = {**EXPECTED_METADATA, field: expected_value}
+                with self.assertRaisesRegex(ValueError, field):
+                    validate_checkpoint_metadata(payload, expected)
 
 
 if __name__ == "__main__":
