@@ -2,6 +2,10 @@
 
 ## 2026-09-08
 
+- 新增 `experiments/run_legacy_ourmodel.py`，提供零 Fold、单 checkpoint 的 2025 历史 OurModel 精确复现入口。
+- `test.py` 新增可选独立输出目录与 `metrics.json`，默认历史行为不变；复现结果不会覆盖五折结果或旧日志。
+- 使用历史 `best_model_2026-07-29-21.42.51.pth` 在 CUDA 上精确复现 `Acc(U)=0.9383`、`F1(U)=0.8759`、混淆矩阵 `[[187,0],[14,26]]`。
+- 新增 `docs/12_历史OurModel单模型复现.md`，记录口径、命令、输出和论文使用边界。
 - 修复旧版 seed 2024 与原 seed 3407 五折缓存冲突：`legacy_bicfnet` 自动使用独立的 `experiments/splits/legacy_bicfnet`，保留现代协议缓存且无需 `--force`。
 - 新增并默认启用 `legacy_bicfnet` 协议：seed 2024、序列长度 26、batch 8、300 epochs；OurModel 恢复 2e-5 学习率、0.01 weight decay、0.1 Focal 权重、余弦调度和验证集 Macro-F1 最优 checkpoint。
 - 原 20 轮实现保留为 `--protocol modern`；旧版结果独立写入 `experiments/results_legacy_bicfnet`，不覆盖已有结果。

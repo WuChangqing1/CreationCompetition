@@ -14,6 +14,8 @@
 - `legacy_bicfnet` 已成为默认实验协议；原 20 轮方案保留为显式 `--protocol modern`。
 - 旧版 OurModel 训练恢复 seed 2024、长度 26、batch 8、300 epochs、2e-5 学习率、余弦调度，并按验证集 Macro-F1 保存最佳 epoch。
 - 独立测试在旧版协议下同时输出事件级、严格受试者多数投票和历史投票回填事件三种口径。
+- 已新增历史 OurModel 单 checkpoint 复现入口，不创建 Fold、不重新训练，直接执行旧版受试者多数投票与事件回填。
+- 已用历史 checkpoint 在 2025 Elderly 独立测试集精确复现 `Acc(U)=0.9383`、`F1(U)=0.8759` 和混淆矩阵 `[[187, 0], [14, 26]]`。
 
 ## 当前任务
 
@@ -64,6 +66,8 @@
 - `modern` 兼容协议仍保存最终轮 checkpoint；默认 `legacy_bicfnet` 的 OurModel 保存验证集 Macro-F1 最优轮次。
 
 ## 下一步
+
+历史 OurModel 精确复现入口和结果位置见 `docs/12_历史OurModel单模型复现.md`。该结果属于 2025 独立测试集、单 checkpoint、历史投票回填事件口径，不与 subject-level 5-Fold 验证均值混合。
 
 最终验证（2026-09-08）：在 `dachuangxiangmu` 执行 `python -m unittest discover -s tests -v`，104 项通过，包含独立测试入口、subject-aware personality 与跨年输出合成 Smoke Test。未执行完整独立测试。
 

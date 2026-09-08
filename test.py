@@ -8,6 +8,7 @@ from utils.logger import get_logger
 import numpy as np
 import pandas as pd
 import time
+from pathlib import Path
 from torch.utils.data import DataLoader
 from dataset import *
 
@@ -84,6 +85,35 @@ def build_subject_ids(audio_paths):
             subject_ids.append(name.replace('.npy', ''))
     return subject_ids
 
+
+def resolve_output_dir(track_option, requested_dir=None):
+    """Keep the historical default while allowing isolated reproduction outputs."""
+    if requested_dir is not None:
+        return Path(requested_dir)
+    return Path(f"./answer_{track_option}")
+
+
+def build_metrics_payload(y_true, y_pred, label_count=2):
+    """Return the exact metrics reported by the historical test entrypoint."""
+    from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
+
+    y_true = np.asarray(y_true, dtype=np.int64)
+    y_pred = np.asarray(y_pred, dtype=np.int64)
+    class_counts = np.bincount(y_true, minlength=2)
+    sample_weights_arr = 1.0 / (class_counts[y_true] + 1e-6)
+    return {
+        "sample_count": int(len(y_true)),
+        "balanced_accuracy": float(accuracy_score(y_true, y_pred, sample_weight=sample_weights_arr)),
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "weighted_f1": float(f1_score(y_true, y_pred, average='weighted', zero_division=0)),
+        "macro_f1": float(f1_score(y_true, y_pred, average='macro', zero_division=0)),
+        "confusion_matrix": confusion_matrix(
+            y_true,
+            y_pred,
+            labels=list(range(label_count)),
+        ).astype(int).tolist(),
+    }
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Test Bi-CFNet Adapted Model")
     parser.add_argument('--labelcount', type=int, default=2, help="Number of data categories (2, 3, or 5).")
@@ -101,6 +131,10 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--device', type=str, default='cpu')
     parser.add_argument('--model', type=str, default='our', help="Fallback model name for legacy checkpoints")
+    parser.add_argument('--output_dir', type=Path, default=None,
+                        help="Optional isolated output directory; historical default is answer_<track>")
+    parser.add_argument('--metrics_json', type=Path, default=None,
+                        help="Optional machine-readable test metrics output")
 
     args = parser.parse_args()
 
@@ -189,11 +223,10 @@ if __name__ == '__main__':
         label = "pen"
 
     pred_col_name = f"{args.splitwindow_time}_{label}"
-    result_dir = f"./answer_{args.track_option}"
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
+    result_dir = resolve_output_dir(args.track_option, args.output_dir)
+    result_dir.mkdir(parents=True, exist_ok=True)
 
-    csv_file = f"{result_dir}/submission.csv"
+    csv_file = result_dir / "submission.csv"
 
     # Subject-level majority voting
     subject_to_indices = defaultdict(list)
@@ -250,16 +283,28 @@ if __name__ == '__main__':
         if len(merged) > 0:
             y_true = merged[f'label_{label}']
             y_pred = merged[pred_col_name]
-            class_counts = np.bincount(y_true)
-            sample_weights_arr = 1.0 / (class_counts[y_true] + 1e-6)
-            acc_w = accuracy_score(y_true, y_pred, sample_weight=sample_weights_arr)
-            acc_u = accuracy_score(y_true, y_pred)
-            f1_w = f1_score(y_true, y_pred, average='weighted', zero_division=0)
-            f1_u = f1_score(y_true, y_pred, average='macro', zero_division=0)
-            cm = pd.crosstab(y_true, y_pred, rownames=['True'], colnames=['Pred'])
+            metrics = build_metrics_payload(y_true, y_pred, args.labelcount)
+            acc_w = metrics["balanced_accuracy"]
+            acc_u = metrics["accuracy"]
+            f1_w = metrics["weighted_f1"]
+            f1_u = metrics["macro_f1"]
+            cm = np.asarray(metrics["confusion_matrix"])
             logger.info(f"===== Test Set Evaluation ({pred_col_name}) =====")
             logger.info(f"Acc(W)={acc_w:.4f}  Acc(U)={acc_u:.4f}  F1(W)={f1_w:.4f}  F1(U)={f1_u:.4f}")
             logger.info(f"Confusion Matrix:\n{cm}")
+            if args.metrics_json is not None:
+                args.metrics_json.parent.mkdir(parents=True, exist_ok=True)
+                metrics.update({
+                    "prediction_column": pred_col_name,
+                    "ground_truth_path": str(gt_path),
+                    "submission_path": str(csv_file),
+                    "checkpoint_paths": [str(path) for path in model_paths],
+                    "model_weights": weights,
+                })
+                args.metrics_json.write_text(
+                    json.dumps(metrics, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
         else:
             logger.warning("Ground truth found but could not be aligned with predictions.")
     else:
