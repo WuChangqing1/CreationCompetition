@@ -179,6 +179,17 @@ def validate_checkpoint_metadata(payload, expected):
             actual_display = "<missing>" if actual is _MISSING else repr(actual)
             mismatches.append(f"{field}: expected {wanted!r}, got {actual_display}")
 
+    wanted_personality_source = _expected_value(
+        expected, ("personality_id_source", "PersonalityIDSource")
+    )
+    if wanted_personality_source is not _MISSING:
+        actual_personality_source = feature_config.get("personality_id_source", "filename")
+        if str(actual_personality_source).strip().lower() != str(wanted_personality_source).strip().lower():
+            mismatches.append(
+                "personality_id_source: expected "
+                f"{wanted_personality_source!r}, got {actual_personality_source!r}"
+            )
+
     if mismatches:
         raise ValueError("Checkpoint metadata mismatch: " + "; ".join(mismatches))
 

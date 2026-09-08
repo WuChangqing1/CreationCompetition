@@ -69,6 +69,10 @@ def parse_args(argv=None):
     personality.add_argument("--use-personality", dest="use_personality", action="store_true")
     personality.add_argument("--no-use-personality", dest="use_personality", action="store_false")
     parser.set_defaults(use_personality=True)
+    parser.add_argument(
+        "--personality-id-source", choices=("filename", "subject_id"), default="filename",
+        help="must match the mode used by the selected CV run",
+    )
     parser.add_argument("--split-window", default="1s")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=3407)
@@ -173,10 +177,17 @@ def evaluate_one_model(args, model_name, cv_rows, training_paths, test_paths, fo
         "dataset_year": args.dataset_year, "cohort": args.cohort, "track": args.track,
         "task": args.task, "audio_feature": args.audio_feature, "video_feature": args.video_feature,
         "use_personality": args.use_personality, "split_window": args.split_window,
+        "personality_id_source": args.personality_id_source,
         "seed": args.seed,
     }
     if model_name in CLASSICAL_MODELS:
         config = _load_matching_saved_config(args, run_id, model_name)
+        saved_personality_source = str(config.get("personality_id_source", "filename")).lower()
+        if saved_personality_source != args.personality_id_source:
+            raise ValueError(
+                "Saved CV personality ID source mismatch: "
+                f"expected {args.personality_id_source}, got {saved_personality_source}"
+            )
         args.feature_max_len = int(config.get("feature_max_len", args.feature_max_len_fallback))
         _, probabilities = infer_classical_fold_ensemble(
             model_name=model_name, training_entries=training_paths["entries"],

@@ -18,7 +18,6 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from dataset import AudioVisualDataset
 from experiments.checkpointing import build_checkpoint_payload
 from experiments.classical.common import pool_multimodal_features
 from experiments.create_splits import LABEL_KEYS, create_subject_folds, validate_no_subject_leakage, write_subject_folds
@@ -27,6 +26,7 @@ from experiments.dataset_layouts import resolve_dataset
 from experiments.efficiency import measure_torch_efficiency
 from experiments.evaluator import evaluate_predictions, save_confusion_matrix, save_overall_confusion, save_predictions
 from experiments.model_registry import create_experiment_model, get_model_kind
+from experiments.subject_aware_dataset import create_audio_visual_dataset
 
 
 RAW_COLUMNS = [
@@ -76,6 +76,9 @@ def build_run_id(args, config=None):
         "dataset_fingerprint": getattr(args, "dataset_fingerprint", None),
         "config": config or {},
     }
+    personality_id_source = getattr(args, "personality_id_source", "filename")
+    if personality_id_source != "filename":
+        condition["personality_id_source"] = personality_id_source
     digest = hashlib.sha256(
         json.dumps(condition, sort_keys=True, ensure_ascii=False).encode("utf-8")
     ).hexdigest()[:12]
@@ -126,10 +129,11 @@ def build_opt(model_name, config, input_dim_a, input_dim_v, classes, feature_max
 
 
 def make_dataset(entries, args, paths):
-    return AudioVisualDataset(
+    return create_audio_visual_dataset(
         entries, args.classes, str(paths["personality"]) if args.use_personality else None, args.feature_max_len,
         batch_size=args.batch_size, audio_path=str(paths["audio"]), video_path=str(paths["video"]),
         use_personality=args.use_personality,
+        personality_id_source=getattr(args, "personality_id_source", "filename"),
     )
 
 
@@ -195,6 +199,7 @@ def run_fold(args, fold_data, entries, paths, config):
     run_id = getattr(args, "run_id", None) or build_run_id(args, config)
     resolved_config = dict(config)
     resolved_config["seed"] = args.seed
+    resolved_config["personality_id_source"] = getattr(args, "personality_id_source", "filename")
     if model_name == "xgboost":
         resolved_config["device"] = args.device
         resolved_config.setdefault("tree_method", "hist")
@@ -203,6 +208,7 @@ def run_fold(args, fold_data, entries, paths, config):
         "track": args.track, "task": args.task, "audio_feature": args.audio_feature,
         "video_feature": args.video_feature, "use_personality": args.use_personality,
         "split_window": args.split_window, "device": execution_device,
+        "personality_id_source": getattr(args, "personality_id_source", "filename"),
     }
     efficiency = {key: "N/A" for key in ("Parameters", "Model_Size_MB", "Inference_Latency_ms", "Peak_VRAM_MB")}
 
@@ -297,6 +303,10 @@ def parse_args(argv=None):
     parser.add_argument("--audio-feature", default="mfccs")
     parser.add_argument("--video-feature", default="densenet")
     parser.add_argument("--use-personality", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--personality-id-source", choices=["filename", "subject_id"], default="filename",
+        help="legacy filename lookup or strict manifest subject_id lookup",
+    )
     parser.add_argument("--split-window", default="1s")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=3407)

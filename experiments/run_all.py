@@ -54,6 +54,9 @@ def parse_args(argv=None):
     parser.add_argument("--audio-feature", default="mfccs")
     parser.add_argument("--video-feature", default="densenet")
     parser.add_argument("--use-personality", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--personality-id-source", choices=["filename", "subject_id"], default="filename",
+    )
     parser.add_argument("--split-window", default="1s")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=3407)
@@ -62,6 +65,7 @@ def parse_args(argv=None):
         help="Formal comparisons use cuda; SVM remains a CPU-only baseline.",
     )
     parser.add_argument("--tiny", action="store_true")
+    parser.add_argument("--results-dir", type=Path, default=ROOT / "experiments" / "results")
     parser.add_argument("--report", type=Path, default=ROOT / "experiments" / "results" / "run_report.json")
     return parser.parse_args(argv)
 
@@ -78,6 +82,8 @@ def main(argv=None):
             "--audio-feature", args.audio_feature, "--video-feature", args.video_feature,
             "--split-window", args.split_window, "--folds", str(args.folds), "--seed", str(args.seed),
             "--use-personality" if args.use_personality else "--no-use-personality",
+            "--personality-id-source", args.personality_id_source,
+            "--results-dir", str(args.results_dir),
         ]
         if args.cohort:
             command.extend(["--cohort", args.cohort])
