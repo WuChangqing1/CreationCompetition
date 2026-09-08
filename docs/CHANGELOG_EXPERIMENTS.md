@@ -2,6 +2,11 @@
 
 ## 2026-09-08
 
+- 新增 `experiments/run_legacy_comparison.py` 与 `experiments/legacy_comparison.py`，提供无 5-Fold 的 2025 八模型单次划分对比入口。
+- OurModel 在该入口中冻结历史 checkpoint，并在任何基线训练前严格校验 `Accuracy=0.9383`、`Macro-F1=0.8759`、混淆矩阵 `[[187,0],[14,26]]`。
+- 冻结 45 条历史兼容验证事件身份，消除旧 `train_val_split1` 因 `set` 遍历造成的跨进程 292/45、294/43 等漂移。
+- 七个基线使用固定 292/45 划分训练一次；神经模型按验证 Macro-F1 保存最佳 epoch，并在同一 227 条独立测试集执行旧版多数投票与事件回填。
+- 新增 `docs/13_旧版八模型单次划分对比实验.md`，记录命令、输出、恢复证据和论文报告边界。
 - 新增 `experiments/run_legacy_ourmodel.py`，提供零 Fold、单 checkpoint 的 2025 历史 OurModel 精确复现入口。
 - `test.py` 新增可选独立输出目录与 `metrics.json`，默认历史行为不变；复现结果不会覆盖五折结果或旧日志。
 - 使用历史 `best_model_2026-07-29-21.42.51.pth` 在 CUDA 上精确复现 `Acc(U)=0.9383`、`F1(U)=0.8759`、混淆矩阵 `[[187,0],[14,26]]`。

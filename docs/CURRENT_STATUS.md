@@ -16,10 +16,12 @@
 - 独立测试在旧版协议下同时输出事件级、严格受试者多数投票和历史投票回填事件三种口径。
 - 已新增历史 OurModel 单 checkpoint 复现入口，不创建 Fold、不重新训练，直接执行旧版受试者多数投票与事件回填。
 - 已用历史 checkpoint 在 2025 Elderly 独立测试集精确复现 `Acc(U)=0.9383`、`F1(U)=0.8759` 和混淆矩阵 `[[187, 0], [14, 26]]`。
+- 已新增 2025 旧版单次划分八模型对比入口；OurModel 冻结历史权重并先做结果锁验证，其余七模型使用固定 292/45 划分训练一次。
+- 已消除旧 `train_val_split1` 中 `set` 遍历导致的跨进程漂移，冻结 45 条验证事件身份；入口没有 `--folds` 参数。
 
 ## 当前任务
 
-八模型框架调整已完成；真实数据已验证，等待用户决定何时启动正式实验。
+旧版八模型单次划分入口已完成并通过 OurModel 端到端验证；完整七基线 300-epoch 正式训练等待用户启动。
 
 ## 阶段状态
 
@@ -50,7 +52,7 @@
 
 ## 验收证据
 
-- `python -m unittest discover -s tests -v`：112 tests，全部通过（2026-09-08）。
+- `python -m unittest discover -s tests -v`：126 tests，全部通过（2026-09-08）。
 - `python experiments\smoke_test.py`：六个 PyTorch 模型、SVM、Evaluator、Subject Split 均 PASS；XGBoost 按实际依赖状态报告。
 - Dataset：2025/2026 的 Elder/Young 四套训练数据真实读取及 5-Fold 检查均 PASS。
 - tiny MLP fold：2025 Elder 与 2026 Elder 均完成真实数据 5-Fold 单 batch 闭环。
@@ -59,7 +61,8 @@
 
 - 用户当前 PowerShell 可以显式执行 `conda activate dachuangxiangmu`；用户命令直接使用该环境中的 `python`。
 - 完整多模型正式训练尚未执行；tiny 结果仅用于接口验证，不能作为正式成绩。
-- GPU 强制运行调整已完成代码与文档修改，但按用户要求本轮未执行新增测试或实验验证。
+- 旧历史日志未保存 train/validation 逐样本清单；冻结划分依据历史 292/45 规模、28/17 验证标签分布及现有 checkpoint 诊断恢复，不能声称还原了未留档基线的历史逐样本预测。
+- GPU 强制运行及旧版单次划分入口均已完成自动化测试；本轮未自动启动七基线完整 300-epoch 长训练。
 - 项目已建立 Git 仓库，后续改动统一进入 `GuoChuang` 分支。
 - matplotlib、seaborn 当前缺失；XGBoost 3.2.0 已安装并通过创建 Smoke Test。
 - 新多模型 CV 入口当前限定二分类；旧 `train.py` / `test.py` 仍保留 3 类、5 类兼容路径。
@@ -67,9 +70,9 @@
 
 ## 下一步
 
-历史 OurModel 精确复现入口和结果位置见 `docs/12_历史OurModel单模型复现.md`。该结果属于 2025 独立测试集、单 checkpoint、历史投票回填事件口径，不与 subject-level 5-Fold 验证均值混合。
+历史 OurModel 精确复现见 `docs/12_历史OurModel单模型复现.md`；旧版八模型单次划分命令与论文使用边界见 `docs/13_旧版八模型单次划分对比实验.md`。
 
-最终验证（2026-09-08）：在 `dachuangxiangmu` 执行 `python -m unittest discover -s tests -v`，104 项通过，包含独立测试入口、subject-aware personality 与跨年输出合成 Smoke Test。未执行完整独立测试。
+最终验证（2026-09-08）：在 `dachuangxiangmu` 执行 `python -m unittest discover -s tests -v`，126 项通过；旧版对比入口另以 `--models our` 完成 CUDA 端到端历史结果锁验证。未执行七基线完整 300-epoch 训练。
 
 2026-09-08：用户已报告两年八模型 CV 全部 PASS。当前新增独立测试入口，命令及输出位置见 `docs/09_八模型独立测试集评估.md`。独立测试正式运行由用户启动；早期 tiny/训练待运行状态仅是历史记录。
 

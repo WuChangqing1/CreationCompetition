@@ -54,6 +54,8 @@ train 读取 JSON，调用旧 subject-aware holdout，创建 DataLoader，按 Ma
 
 历史 OurModel 精确复现入口为 `experiments/run_legacy_ourmodel.py`。它只接受一个历史 checkpoint，固定 2025 Track1 Elderly 二分类、1s、MFCC、DenseNet、长度 26、batch 8，并调用旧 `test.py` 的受试者多数投票后事件回填口径；不生成或读取 Fold。每次输出使用独立时间戳目录，并在 `metrics.json` 中记录指标、混淆矩阵和输入来源。
 
+旧版八模型单次划分入口为 `experiments/run_legacy_comparison.py`。它固定 seed 2024、292/45、长度 26、batch 8、300 epochs，不接受 `--folds`。旧 `train_val_split1` 的 `set` 遍历会导致跨进程划分漂移，因此 `experiments/legacy_comparison.py` 冻结 45 条验证事件身份；OurModel 只评估历史 checkpoint 且先校验 187/0/14/26，七个基线再在同一冻结划分上各训练一次。
+
 独立测试评估入口：`experiments/run_independent_test.py`，使用已完成 CV 的五折概率集成，输出独立的 `experiments/results/independent_test_results.csv`。使用方法见 `docs/09_八模型独立测试集评估.md`。用户于 2026-09-08 要求取消新增哈希验证、合并为最终一次测试；独立测试保留直接来源和样本检查。
 
 2026 personality 修复采用新增 `experiments/subject_aware_dataset.py`：显式模式从 manifest 的 `subject_id` 取人格向量，原 `dataset.py` 和默认 `filename` 模式保留。修复模式写入 Run_ID、配置及 checkpoint 元数据，并使用 `experiments/results_subject_aware_2026`，需要重新训练2026模型。
