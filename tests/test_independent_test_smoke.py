@@ -47,7 +47,8 @@ class IndependentTestSmoke(unittest.TestCase):
             def run(year, classical_effect=None):
                 write_cv(year)
                 argv = [
-                    "--models", "svm,mlp", "--dataset-year", year, "--data-root", str(root),
+                "--models", "svm,mlp", "--dataset-year", year, "--data-root", str(root),
+                "--protocol", "modern", "--seed", "3407",
                     "--cv-results", str(cv_path), "--output", str(output),
                     "--results-dir", str(root / "results"), "--splits-dir", str(root / "splits"),
                 ]
@@ -85,6 +86,7 @@ class IndependentTestSmoke(unittest.TestCase):
             write_cv("2025")
             argv = [
                 "--models", "svm,mlp", "--dataset-year", "2025", "--data-root", str(root),
+                "--protocol", "modern", "--seed", "3407",
                 "--cv-results", str(cv_path), "--output", str(output),
                 "--results-dir", str(root / "results"), "--splits-dir", str(root / "splits"),
             ]

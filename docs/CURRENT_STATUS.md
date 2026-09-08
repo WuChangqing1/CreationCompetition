@@ -1,6 +1,6 @@
 # 当前开发状态
 
-最后更新时间：2026-09-07
+最后更新时间：2026-09-08
 
 ## 已完成
 
@@ -11,6 +11,9 @@
 - 正式运行入口默认强制 CUDA：六个 PyTorch 模型与 XGBoost 使用 GPU，SVM 保留 CPU；结果新增 `Device` 字段。
 - 已接入统一的 2025/2026 数据布局解析，并对两年 Elder/Young 数据验证真实读取与 subject-level 5-Fold。
 - 本轮未执行完整多模型 5-Fold 长时间训练，也未伪造正式结果。
+- `legacy_bicfnet` 已成为默认实验协议；原 20 轮方案保留为显式 `--protocol modern`。
+- 旧版 OurModel 训练恢复 seed 2024、长度 26、batch 8、300 epochs、2e-5 学习率、余弦调度，并按验证集 Macro-F1 保存最佳 epoch。
+- 独立测试在旧版协议下同时输出事件级、严格受试者多数投票和历史投票回填事件三种口径。
 
 ## 当前任务
 
@@ -45,7 +48,7 @@
 
 ## 验收证据
 
-- `python -m unittest discover -s tests -v`：49 tests，全部通过。
+- `python -m unittest discover -s tests -v`：112 tests，全部通过（2026-09-08）。
 - `python experiments\smoke_test.py`：六个 PyTorch 模型、SVM、Evaluator、Subject Split 均 PASS；XGBoost 按实际依赖状态报告。
 - Dataset：2025/2026 的 Elder/Young 四套训练数据真实读取及 5-Fold 检查均 PASS。
 - tiny MLP fold：2025 Elder 与 2026 Elder 均完成真实数据 5-Fold 单 batch 闭环。
@@ -58,7 +61,7 @@
 - 项目已建立 Git 仓库，后续改动统一进入 `GuoChuang` 分支。
 - matplotlib、seaborn 当前缺失；XGBoost 3.2.0 已安装并通过创建 Smoke Test。
 - 新多模型 CV 入口当前限定二分类；旧 `train.py` / `test.py` 仍保留 3 类、5 类兼容路径。
-- 神经网络 CV 使用固定 epochs 的最终轮 checkpoint，不进行 best-validation epoch 选择。
+- `modern` 兼容协议仍保存最终轮 checkpoint；默认 `legacy_bicfnet` 的 OurModel 保存验证集 Macro-F1 最优轮次。
 
 ## 下一步
 

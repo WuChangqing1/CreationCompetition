@@ -26,6 +26,7 @@ from experiments.dataset_layouts import resolve_dataset
 from experiments.efficiency import measure_torch_efficiency
 from experiments.evaluator import evaluate_predictions, save_confusion_matrix, save_overall_confusion, save_predictions
 from experiments.model_registry import create_experiment_model, get_model_kind
+from experiments.protocols import PROTOCOLS, resolve_protocol
 from experiments.subject_aware_dataset import create_audio_visual_dataset
 
 
@@ -62,6 +63,7 @@ def load_model_config(model_name, config_path=None):
 def build_run_id(args, config=None):
     condition = {
         "model": args.model.lower(), "track": args.track, "task": args.task,
+        "protocol": getattr(args, "protocol", "modern"),
         "dataset_year": getattr(args, "dataset_year", "2025"),
         "cohort": getattr(args, "cohort", "Elder"),
         "audio_feature": args.audio_feature, "video_feature": args.video_feature,
@@ -83,6 +85,11 @@ def build_run_id(args, config=None):
         json.dumps(condition, sort_keys=True, ensure_ascii=False).encode("utf-8")
     ).hexdigest()[:12]
     return f"{condition['model']}-{digest}"
+
+
+def is_better_validation(candidate_macro_f1, best_macro_f1):
+    """Use the first strictly best validation Macro-F1 epoch."""
+    return best_macro_f1 is None or float(candidate_macro_f1) > float(best_macro_f1)
 
 
 def resolve_data_paths(args):
@@ -198,7 +205,13 @@ def run_fold(args, fold_data, entries, paths, config):
     )
     run_id = getattr(args, "run_id", None) or build_run_id(args, config)
     resolved_config = dict(config)
-    resolved_config["seed"] = args.seed
+    resolved_config.update({
+        "seed": args.seed,
+        "protocol": getattr(args, "protocol", "modern"),
+        "feature_max_len": args.feature_max_len,
+        "batch_size": args.batch_size,
+        "epochs": args.epochs,
+    })
     resolved_config["personality_id_source"] = getattr(args, "personality_id_source", "filename")
     if model_name == "xgboost":
         resolved_config["device"] = args.device
@@ -209,6 +222,7 @@ def run_fold(args, fold_data, entries, paths, config):
         "video_feature": args.video_feature, "use_personality": args.use_personality,
         "split_window": args.split_window, "device": execution_device,
         "personality_id_source": getattr(args, "personality_id_source", "filename"),
+        "protocol": getattr(args, "protocol", "modern"),
     }
     efficiency = {key: "N/A" for key in ("Parameters", "Model_Size_MB", "Inference_Latency_ms", "Peak_VRAM_MB")}
 
@@ -250,20 +264,52 @@ def run_fold(args, fold_data, entries, paths, config):
             pin_memory=use_pinned_memory,
         )
         epochs = 1 if args.tiny else args.epochs
-        for _ in range(epochs):
+        scheduler = None
+        if resolved_config.get("scheduler") == "cosine":
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                model.optimizer,
+                T_max=epochs,
+                eta_min=float(resolved_config.get("scheduler_eta_min", 1e-6)),
+            )
+        select_best_epoch = resolved_config.get("checkpoint_selection") == "val_macro_f1"
+        best_macro_f1 = None
+        best_epoch = None
+        best_state_dict = None
+        labels = predictions = probabilities = None
+        for epoch in range(1, epochs + 1):
             model.train(True)
             for batch_index, batch in enumerate(train_loader):
                 model.set_input(batch)
                 model.optimize_parameters(batch_index)
                 if args.tiny:
                     break
+            if select_best_epoch:
+                labels, predictions, probabilities = evaluate_torch(model, val_loader, device)
+                validation = evaluate_predictions(labels, predictions, probabilities)
+                if is_better_validation(validation["Macro_F1"], best_macro_f1):
+                    best_macro_f1 = validation["Macro_F1"]
+                    best_epoch = epoch
+                    best_state_dict = {
+                        key: value.detach().cpu().clone() for key, value in model.state_dict().items()
+                    }
+            if scheduler is not None:
+                scheduler.step()
+        if select_best_epoch and best_state_dict is not None:
+            model.load_state_dict(best_state_dict)
         labels, predictions, probabilities = evaluate_torch(model, val_loader, device)
         sample_batch = next(iter(val_loader))
         model.set_input(sample_batch)
         efficiency = measure_torch_efficiency(model, model.forward, device, args.warmup, args.measure)
-        checkpoint = build_checkpoint_payload(model_name, model.state_dict(), vars(opt), feature_config, fold_number, args.seed)
+        saved_config = vars(opt).copy()
+        saved_config.update({
+            "protocol": getattr(args, "protocol", "modern"),
+            "best_epoch": best_epoch,
+            "best_val_macro_f1": best_macro_f1,
+            "checkpoint_selection": resolved_config.get("checkpoint_selection", "final_epoch"),
+        })
+        checkpoint = build_checkpoint_payload(model_name, model.state_dict(), saved_config, feature_config, fold_number, args.seed)
         torch.save(checkpoint, artifact_dir / "checkpoint.pth")
-        (artifact_dir / "config.json").write_text(json.dumps(vars(opt), ensure_ascii=False, indent=2), encoding="utf-8")
+        (artifact_dir / "config.json").write_text(json.dumps(saved_config, ensure_ascii=False, indent=2), encoding="utf-8")
 
     metrics = evaluate_predictions(labels, predictions, probabilities)
     subject_ids = [extract_subject_id(entry) for entry in val_entries]
@@ -295,6 +341,7 @@ def run_fold(args, fold_data, entries, paths, config):
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Run one MPDD model with reusable subject-level CV")
     parser.add_argument("--model", required=True)
+    parser.add_argument("--protocol", choices=tuple(PROTOCOLS), default="legacy_bicfnet")
     parser.add_argument("--dataset-year", default="2025", choices=["2025", "2026"])
     parser.add_argument("--cohort", choices=["Elder", "Young"])
     parser.add_argument("--track", default="Track1", choices=["Track1", "Track2"])
@@ -309,17 +356,17 @@ def parse_args(argv=None):
     )
     parser.add_argument("--split-window", default="1s")
     parser.add_argument("--folds", type=int, default=5)
-    parser.add_argument("--seed", type=int, default=3407)
+    parser.add_argument("--seed", type=int)
     parser.add_argument(
         "--device", default="cuda", choices=["cuda", "cpu"],
         help="Formal comparisons use cuda; cpu is reserved for diagnostics. SVM always runs on CPU.",
     )
-    parser.add_argument("--feature-max-len", type=int, default=5)
+    parser.add_argument("--feature-max-len", type=int)
     parser.add_argument("--batch-size", type=int)
     parser.add_argument("--epochs", type=int)
     parser.add_argument("--config", type=Path)
     parser.add_argument("--splits-dir", type=Path)
-    parser.add_argument("--results-dir", type=Path, default=ROOT / "experiments" / "results")
+    parser.add_argument("--results-dir", type=Path)
     parser.add_argument("--force-splits", action="store_true")
     parser.add_argument("--tiny", action="store_true")
     parser.add_argument("--warmup", type=int, default=10)
@@ -328,8 +375,12 @@ def parse_args(argv=None):
     args.cohort = args.cohort or ("Elder" if args.track == "Track1" else "Young")
     args.splits_dir = args.splits_dir or ROOT / "experiments" / "splits" / args.dataset_year / args.cohort
     config = load_model_config(args.model.lower(), args.config)
-    args.batch_size = args.batch_size or int(config.get("batch_size", 32))
-    args.epochs = args.epochs or int(config.get("epochs", 20))
+    protocol, config = resolve_protocol(args.protocol, args.model, config)
+    args.seed = protocol["seed"] if args.seed is None else args.seed
+    args.feature_max_len = protocol["feature_max_len"] if args.feature_max_len is None else args.feature_max_len
+    args.batch_size = args.batch_size or int(protocol.get("batch_size", config.get("batch_size", 32)))
+    args.epochs = args.epochs or int(protocol.get("epochs", config.get("epochs", 20)))
+    args.results_dir = args.results_dir or ROOT / "experiments" / protocol["results_directory"]
     args.classes = {"binary": 2, "ternary": 3, "quinary": 5}[args.task]
     return args, config
 

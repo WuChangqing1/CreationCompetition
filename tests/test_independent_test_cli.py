@@ -31,7 +31,7 @@ class ArgumentTests(unittest.TestCase):
         args = parse_args(["--models", MODELS, "--dataset-year", "2025", "--data-root", "data"])
         self.assertEqual(args.models, MODELS.split(","))
         self.assertEqual(args.output.name, "independent_test_results.csv")
-        self.assertEqual(args.feature_max_len, 5)
+        self.assertEqual(args.feature_max_len, 26)
 
     def test_rejects_unknown_duplicate_non_five_fold_and_cpu_torch_requests(self):
         cases = (
@@ -69,6 +69,7 @@ class OrchestrationTests(unittest.TestCase):
         paths = {"entries": entries, "audio": root, "video": root, "personality": root / "p.npy"}
         argv = [
             "--models", models, "--dataset-year", "2025", "--data-root", str(root),
+            "--protocol", "modern", "--seed", "3407",
             "--cv-results", str(cv_path), "--output", str(output),
             "--results-dir", str(root / "results"), "--splits-dir", str(root / "splits"),
         ]

@@ -267,6 +267,42 @@ def aggregate_subject_probabilities(subject_ids, labels, probabilities):
     return unique_subject_ids, aggregated_labels, aggregated_probabilities
 
 
+def aggregate_subject_predictions(subject_ids, labels, probabilities, method="probability_mean"):
+    """Aggregate events per subject using probability mean or historical majority voting."""
+    unique_ids, aggregated_labels, means = aggregate_subject_probabilities(
+        subject_ids, labels, probabilities
+    )
+    if method == "probability_mean":
+        return unique_ids, aggregated_labels, means
+    if method != "majority_vote":
+        raise ValueError(f"Unknown subject aggregation method: {method}")
+
+    values = _validate_probabilities(probabilities, expected_rows=len(subject_ids))
+    event_predictions = values.argmax(axis=1)
+    vote_probabilities = []
+    for subject_id, mean_probability in zip(unique_ids, means):
+        indices = [index for index, value in enumerate(subject_ids) if str(value) == subject_id]
+        counts = np.bincount(event_predictions[indices], minlength=2)
+        if counts[0] == counts[1]:
+            winner = int(mean_probability.argmax())
+        else:
+            winner = int(counts.argmax())
+        vote_probabilities.append([1.0, 0.0] if winner == 0 else [0.0, 1.0])
+    return unique_ids, aggregated_labels, np.asarray(vote_probabilities, dtype=float)
+
+
+def broadcast_subject_predictions(event_subject_ids, subject_ids, subject_probabilities):
+    """Broadcast one subject decision to its events for old test.py-compatible metrics."""
+    lookup = {
+        str(subject_id): probability
+        for subject_id, probability in zip(subject_ids, _validate_probabilities(subject_probabilities))
+    }
+    missing = sorted({str(value) for value in event_subject_ids} - set(lookup))
+    if missing:
+        raise ValueError(f"Missing subject predictions for: {missing}")
+    return np.asarray([lookup[str(subject_id)] for subject_id in event_subject_ids], dtype=float)
+
+
 def build_result_row(*, year, cohort, model, level, labels, probabilities, folds, run_id, device, seed,
                      status="PASS"):
     """Build one schema-validated independent-test result row from predictions."""

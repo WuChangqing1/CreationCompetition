@@ -16,7 +16,8 @@ import numpy as np
 from experiments.dataset_layouts import resolve_dataset, resolve_independent_test
 from experiments.independent_test import (
     RESULT_COLUMNS,
-    aggregate_subject_probabilities,
+    aggregate_subject_predictions,
+    broadcast_subject_predictions,
     build_result_row,
     resolve_checkpoint_paths,
     select_cv_run,
@@ -29,14 +30,11 @@ from experiments.independent_test_models import (
     infer_torch_fold_ensemble,
     load_saved_fold_records,
 )
+from experiments.protocols import PROTOCOLS
 
 
 APPROVED_MODELS = ("svm", "xgboost", "mlp", "bilstm", "lightweighttrans", "lmf", "mult", "our")
 CLASSICAL_MODELS = {"svm", "xgboost"}
-DEFAULT_CV_RESULTS = ROOT / "experiments" / "results" / "raw_results.csv"
-DEFAULT_OUTPUT = ROOT / "experiments" / "results" / "independent_test_results.csv"
-
-
 def _model_list(value):
     models = [item.strip().lower() for item in value.split(",") if item.strip()]
     if not models:
@@ -56,13 +54,14 @@ def _resolved(path):
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--models", type=_model_list, default=list(APPROVED_MODELS))
+    parser.add_argument("--protocol", choices=tuple(PROTOCOLS), default="legacy_bicfnet")
     parser.add_argument("--dataset-year", choices=("2025", "2026"), required=True)
     parser.add_argument("--cohort", choices=("Elder", "Young"), default="Elder")
     parser.add_argument("--track", default="Track1")
     parser.add_argument("--task", choices=("binary",), default="binary")
     parser.add_argument("--data-root", type=Path)
-    parser.add_argument("--cv-results", type=Path, default=DEFAULT_CV_RESULTS)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--cv-results", type=Path)
+    parser.add_argument("--output", type=Path)
     parser.add_argument("--audio-feature", default="mfccs")
     parser.add_argument("--video-feature", default="densenet")
     personality = parser.add_mutually_exclusive_group()
@@ -75,16 +74,27 @@ def parse_args(argv=None):
     )
     parser.add_argument("--split-window", default="1s")
     parser.add_argument("--folds", type=int, default=5)
-    parser.add_argument("--seed", type=int, default=3407)
+    parser.add_argument("--seed", type=int)
     parser.add_argument("--device", default="cuda")
     parser.add_argument(
-        "--feature-max-len", type=int, default=5,
-        help="fallback sequence length for legacy classical CV configs (default: 5)",
+        "--feature-max-len", type=int,
+        help="fallback sequence length for legacy classical CV configs",
     )
-    parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--batch-size", type=int)
     parser.add_argument("--splits-dir", type=Path)
-    parser.add_argument("--results-dir", type=Path, default=ROOT / "experiments" / "results")
+    parser.add_argument("--results-dir", type=Path)
     args = parser.parse_args(argv)
+
+    protocol = PROTOCOLS[args.protocol]
+    default_results_dir = ROOT / "experiments" / protocol["results_directory"]
+    args.seed = protocol["seed"] if args.seed is None else args.seed
+    args.feature_max_len = protocol["feature_max_len"] if args.feature_max_len is None else args.feature_max_len
+    args.batch_size = args.batch_size or int(protocol.get("batch_size", 32))
+    args.results_dir = args.results_dir or default_results_dir
+    args.cv_results = args.cv_results or default_results_dir / "raw_results.csv"
+    args.output = args.output or default_results_dir / "independent_test_results.csv"
+    args.subject_aggregation = protocol["subject_aggregation"]
+    args.include_legacy_voted_event = args.protocol == "legacy_bicfnet"
 
     if args.data_root is None:
         configured_root = os.environ.get("MPDD_DATA_ROOT")
@@ -214,18 +224,34 @@ def evaluate_one_model(args, model_name, cv_rows, training_paths, test_paths, fo
         labels=labels, probabilities=probabilities, folds=args.folds, run_id=run_id,
         device=device, seed=args.seed,
     )
-    unique_subjects, subject_labels, subject_probabilities = aggregate_subject_probabilities(
-        subject_ids, labels, probabilities
+    unique_subjects, subject_labels, subject_probabilities = aggregate_subject_predictions(
+        subject_ids, labels, probabilities, method=args.subject_aggregation
     )
     subject_row = build_result_row(
         year=args.dataset_year, cohort=args.cohort, model=model_name, level="subject",
         labels=subject_labels, probabilities=subject_probabilities, folds=args.folds, run_id=run_id,
         device=device, seed=args.seed,
     )
-    return {
-        "rows": [event_row, subject_row], "run_id": run_id,
+    rows = [event_row, subject_row]
+    outputs = {
         "event": (subject_ids, labels, probabilities),
         "subject": (unique_subjects, subject_labels, subject_probabilities),
+    }
+    if args.include_legacy_voted_event:
+        voted_event_probabilities = broadcast_subject_predictions(
+            subject_ids, unique_subjects, subject_probabilities
+        )
+        rows.append(build_result_row(
+            year=args.dataset_year, cohort=args.cohort, model=model_name,
+            level="legacy_voted_event", labels=labels,
+            probabilities=voted_event_probabilities, folds=args.folds, run_id=run_id,
+            device=device, seed=args.seed,
+        ))
+        outputs["legacy_voted_event"] = (
+            subject_ids, labels, voted_event_probabilities
+        )
+    return {
+        "rows": rows, "run_id": run_id, **outputs,
     }
 
 
@@ -243,7 +269,10 @@ def _write_confusion_csv(path, row):
 def _failure_rows(args, model_name, run_id, reason):
     status = f"FAILED: {reason}".replace("\n", " ")[:500]
     rows = []
-    for level in ("event", "subject"):
+    levels = ["event", "subject"]
+    if args.include_legacy_voted_event:
+        levels.append("legacy_voted_event")
+    for level in levels:
         row = {column: "N/A" for column in RESULT_COLUMNS}
         row.update({
             "DatasetYear": args.dataset_year, "Cohort": args.cohort, "Model": model_name,
@@ -284,7 +313,8 @@ def main(argv=None):
                 args, model_name, cv_rows, training_paths, test_paths, fold_records
             )
             run_id = result["run_id"]
-            for row, level in zip(result["rows"], ("event", "subject")):
+            for row in result["rows"]:
+                level = row["EvaluationLevel"]
                 ids, labels, probabilities = result[level]
                 stem = f"{args.dataset_year}_{args.cohort}_{model_name}_{level}"
                 write_prediction_csv(

@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from experiments.errors import OptionalDependencyError
+from experiments.protocols import PROTOCOLS
 
 
 def run_models(model_names, runner, report_path):
@@ -46,6 +47,7 @@ def run_models(model_names, runner, report_path):
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Run multiple MPDD models with failure isolation")
     parser.add_argument("--models", required=True, help="Comma-separated model names")
+    parser.add_argument("--protocol", choices=tuple(PROTOCOLS), default="legacy_bicfnet")
     parser.add_argument("--dataset-year", default="2025", choices=["2025", "2026"])
     parser.add_argument("--cohort", choices=["Elder", "Young"])
     parser.add_argument("--data-root", type=Path)
@@ -59,15 +61,20 @@ def parse_args(argv=None):
     )
     parser.add_argument("--split-window", default="1s")
     parser.add_argument("--folds", type=int, default=5)
-    parser.add_argument("--seed", type=int, default=3407)
+    parser.add_argument("--seed", type=int)
     parser.add_argument(
         "--device", default="cuda", choices=["cuda", "cpu"],
         help="Formal comparisons use cuda; SVM remains a CPU-only baseline.",
     )
     parser.add_argument("--tiny", action="store_true")
-    parser.add_argument("--results-dir", type=Path, default=ROOT / "experiments" / "results")
-    parser.add_argument("--report", type=Path, default=ROOT / "experiments" / "results" / "run_report.json")
-    return parser.parse_args(argv)
+    parser.add_argument("--results-dir", type=Path)
+    parser.add_argument("--report", type=Path)
+    args = parser.parse_args(argv)
+    protocol = PROTOCOLS[args.protocol]
+    args.seed = protocol["seed"] if args.seed is None else args.seed
+    args.results_dir = args.results_dir or ROOT / "experiments" / protocol["results_directory"]
+    args.report = args.report or args.results_dir / "run_report.json"
+    return args
 
 
 def main(argv=None):
@@ -77,6 +84,7 @@ def main(argv=None):
     def runner(model_name):
         command = [
             sys.executable, str(ROOT / "experiments" / "run_model_cv.py"),
+            "--protocol", args.protocol,
             "--dataset-year", args.dataset_year,
             "--model", model_name, "--track", args.track, "--task", args.task,
             "--audio-feature", args.audio_feature, "--video-feature", args.video_feature,
