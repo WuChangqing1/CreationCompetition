@@ -76,6 +76,28 @@ class LegacyProtocolDefaultsTest(unittest.TestCase):
         self.assertEqual(modern.subject_aggregation, "probability_mean")
         self.assertFalse(modern.include_legacy_voted_event)
 
+    def test_legacy_protocol_uses_a_separate_split_cache(self):
+        from experiments.run_model_cv import parse_args as parse_cv
+        from experiments.run_independent_test import parse_args as parse_independent
+
+        cv_args, _ = parse_cv(["--model", "our", "--dataset-year", "2025"])
+        independent_args = parse_independent([
+            "--models", "our", "--dataset-year", "2025", "--data-root", "data"
+        ])
+
+        expected_tail = ("splits", "legacy_bicfnet", "2025", "Elder")
+        self.assertEqual(cv_args.splits_dir.parts[-4:], expected_tail)
+        self.assertEqual(independent_args.splits_dir.parts[-4:], expected_tail)
+
+    def test_modern_protocol_keeps_the_existing_split_cache_location(self):
+        from experiments.run_model_cv import parse_args
+
+        args, _ = parse_args([
+            "--model", "our", "--protocol", "modern", "--dataset-year", "2025"
+        ])
+
+        self.assertEqual(args.splits_dir.parts[-3:], ("splits", "2025", "Elder"))
+
 
 class LegacyCheckpointSelectionTest(unittest.TestCase):
     def test_validation_macro_f1_improvement_is_strict(self):

@@ -373,7 +373,11 @@ def parse_args(argv=None):
     parser.add_argument("--measure", type=int, default=50)
     args = parser.parse_args(argv)
     args.cohort = args.cohort or ("Elder" if args.track == "Track1" else "Young")
-    args.splits_dir = args.splits_dir or ROOT / "experiments" / "splits" / args.dataset_year / args.cohort
+    if args.splits_dir is None:
+        split_root = ROOT / "experiments" / "splits"
+        if args.protocol == "legacy_bicfnet":
+            split_root = split_root / args.protocol
+        args.splits_dir = split_root / args.dataset_year / args.cohort
     config = load_model_config(args.model.lower(), args.config)
     protocol, config = resolve_protocol(args.protocol, args.model, config)
     args.seed = protocol["seed"] if args.seed is None else args.seed

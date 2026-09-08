@@ -112,9 +112,12 @@ def parse_args(argv=None):
     args.cv_results = _resolved(args.cv_results)
     args.output = _resolved(args.output)
     args.results_dir = _resolved(args.results_dir)
-    args.splits_dir = _resolved(
-        args.splits_dir or ROOT / "experiments" / "splits" / args.dataset_year / args.cohort
-    )
+    if args.splits_dir is None:
+        split_root = ROOT / "experiments" / "splits"
+        if args.protocol == "legacy_bicfnet":
+            split_root = split_root / args.protocol
+        args.splits_dir = split_root / args.dataset_year / args.cohort
+    args.splits_dir = _resolved(args.splits_dir)
     protected = {
         args.cv_results,
         _resolved(ROOT / "experiments" / "results" / "raw_results.csv"),

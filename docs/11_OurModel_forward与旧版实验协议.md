@@ -22,6 +22,8 @@
 
 旧版协议的五折结果单独写入 `experiments/results_legacy_bicfnet`，不会覆盖原先 `experiments/results` 及此前的独立测试 CSV。原来的 20 轮配置没有删除；只有明确传入 `--protocol modern` 时才启用。
 
+旧版受试者划分缓存也使用独立目录 `experiments/splits/legacy_bicfnet/<年份>/<人群>`。这是因为旧版 seed 2024 与现代协议 seed 3407 的划分不兼容；两套缓存必须分开保存，不能用 `--force` 覆盖原缓存。
+
 这次改造没有把旧的 `train.py`、`test.py`、历史日志或 checkpoint 删除，也没有更改 OurModel 网络结构。变化集中在新增协议配置、五折训练选择逻辑及独立测试聚合逻辑。
 
 ## 2. 输入与张量形状
@@ -149,6 +151,7 @@ python experiments\run_independent_test.py --models "svm,xgboost,mlp,bilstm,ligh
 ## 7. 结果位置
 
 - 五折逐折指标：`experiments/results_legacy_bicfnet/raw_results.csv`
+- 旧版五折划分缓存：`experiments/splits/legacy_bicfnet/<年份>/<人群>/`
 - 每折 checkpoint：`experiments/results_legacy_bicfnet/raw/<Run_ID>/<模型>/fold_<折号>/checkpoint.pth`
 - 独立测试汇总：`experiments/results_legacy_bicfnet/independent_test_results.csv`
 - 独立测试逐样本预测：`experiments/results_legacy_bicfnet/independent_test_predictions/`

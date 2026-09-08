@@ -2,6 +2,7 @@
 
 ## 2026-09-08
 
+- 修复旧版 seed 2024 与原 seed 3407 五折缓存冲突：`legacy_bicfnet` 自动使用独立的 `experiments/splits/legacy_bicfnet`，保留现代协议缓存且无需 `--force`。
 - 新增并默认启用 `legacy_bicfnet` 协议：seed 2024、序列长度 26、batch 8、300 epochs；OurModel 恢复 2e-5 学习率、0.01 weight decay、0.1 Focal 权重、余弦调度和验证集 Macro-F1 最优 checkpoint。
 - 原 20 轮实现保留为 `--protocol modern`；旧版结果独立写入 `experiments/results_legacy_bicfnet`，不覆盖已有结果。
 - 独立测试的旧版协议新增受试者多数投票和平票概率决胜，同时输出严格受试者级及 `legacy_voted_event` 历史兼容口径。
