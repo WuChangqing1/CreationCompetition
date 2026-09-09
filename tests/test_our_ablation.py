@@ -167,34 +167,45 @@ class AblationRunnerTest(unittest.TestCase):
         self.assertEqual([row["Ablation"] for row in rows], ["full", "no_vem"])
         self.assertEqual([row["Macro_F1"] for row in rows], ["0.90", "0.80"])
 
-    def test_independent_stage_uses_a_separate_output_filename(self):
+    def test_runner_defaults_to_one_training_and_direct_test_pass(self):
         from experiments.run_ablation import parse_args
 
         args = parse_args([
-            "--stage", "independent-test",
             "--dataset-year", "2026",
             "--data-root", r"D:\dataset",
             "--variants", "full,no_vem",
         ])
-        self.assertEqual(args.stage, "independent-test")
-        self.assertEqual(args.independent_output_name, "independent_test_results.csv")
+        self.assertFalse(hasattr(args, "folds"))
+        self.assertFalse(hasattr(args, "stage"))
+        self.assertEqual(args.personality_id_source, "subject_id")
+        self.assertEqual(args.epochs, 300)
 
-    def test_independent_core_accepts_only_the_dedicated_ablation_model_extension(self):
-        from experiments.independent_test import select_cv_run
+    def test_runner_rejects_fold_and_separate_stage_arguments(self):
+        from experiments.run_ablation import parse_args
 
-        condition = {
-            "DatasetYear": "2026", "Cohort": "Elder", "Model": "ourablation",
-            "Track": "Track1", "Task": "binary", "AudioFeature": "mfccs",
-            "VideoFeature": "densenet", "UsePersonality": True,
-            "SplitWindow": "1s", "Seed": 2024,
-        }
-        rows = [
-            {**condition, "Run_ID": "ablation-run", "Fold": fold, "Status": "PASS"}
-            for fold in range(1, 6)
-        ]
-        run_id, selected = select_cv_run(rows, condition, folds=5)
-        self.assertEqual(run_id, "ablation-run")
-        self.assertEqual(len(selected), 5)
+        base = ["--dataset-year", "2025", "--data-root", r"D:\dataset"]
+        with self.assertRaises(SystemExit):
+            parse_args([*base, "--folds", "5"])
+        with self.assertRaises(SystemExit):
+            parse_args([*base, "--stage", "cv"])
+
+    def test_2026_single_holdout_is_subject_disjoint_and_stratified(self):
+        from experiments.run_ablation import split_2026_subject_holdout
+
+        entries = []
+        for label in (0, 1):
+            for index in range(10):
+                subject = f"{label}-{index}"
+                entries.extend([
+                    {"subject_id": subject, "bin_category": label, "audio_feature_path": f"{subject}/A_1.npy"},
+                    {"subject_id": subject, "bin_category": label, "audio_feature_path": f"{subject}/A_2.npy"},
+                ])
+        train, validation = split_2026_subject_holdout(entries, seed=2024, validation_ratio=0.1)
+        train_subjects = {row["subject_id"] for row in train}
+        validation_subjects = {row["subject_id"] for row in validation}
+        self.assertFalse(train_subjects & validation_subjects)
+        self.assertEqual({row["bin_category"] for row in validation}, {0, 1})
+        self.assertEqual(len(validation_subjects), 2)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@
 
 ## 已完成
 
-- 已新增独立 OurModel 消融模型与统一运行入口；原 `models/our/our_model.py` 未修改，十个变体、五折训练、独立测试和隔离汇总 CSV 的使用方法见 `docs/15_OurModel消融实验使用说明.md`。
+- 已新增独立 OurModel 消融模型与旧版单次划分入口；原 `models/our/our_model.py` 未修改。消融不使用 5-Fold：2025 固定 292/45，2026 固定 seed 的受试者级 90/10，训练后直接独立测试，详见 `docs/15_OurModel消融实验使用说明.md`。
 - 已完成环境检查、源码分析、持久上下文、设计审批、分阶段实现、代码审查和中文文档。
 - 已建立精确模型 Registry、统一数据接口、subject-level 5-Fold、指标与效率统计、checkpoint 元数据、独立失败隔离和结果聚合。
 - 已完成自动化测试、合成数据集成测试，以及 2025/2026 真实数据 Smoke Test。

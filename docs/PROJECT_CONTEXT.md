@@ -52,7 +52,7 @@ train 读取 JSON，调用旧 subject-aware holdout，创建 DataLoader，按 Ma
 
 ## 新实验架构
 
-OurModel 消融采用新增 `models/ourablation_model.py` 继承原 `ourModel`，原模型文件保持不变。`experiments/run_ablation.py` 统一调度十个变体的 subject-level CV 与独立测试，每个变体使用隔离目录，并额外生成带 `Ablation` 列的合并 CSV。`full` 直接调用原始 forward；其余变体通过旁路 VEM/CFM、关闭单向反馈、人格槽位置零、Focal 权重置零或禁用模态编码器实现。
+OurModel 消融采用新增 `models/ourablation_model.py` 继承原 `ourModel`，原模型文件保持不变。`experiments/run_ablation.py` 按旧版单次划分训练并立即执行独立测试，不使用 5-Fold：2025 使用冻结 292/45，2026 使用固定 seed 的受试者级分层 90/10。每个变体使用隔离目录并生成带 `Ablation` 列的 `ablation_results.csv`。`full` 直接调用原始 forward；其余变体通过旁路 VEM/CFM、关闭单向反馈、人格槽位置零、Focal 权重置零或禁用模态编码器实现。
 
 历史 OurModel 精确复现入口为 `experiments/run_legacy_ourmodel.py`。它只接受一个历史 checkpoint，固定 2025 Track1 Elderly 二分类、1s、MFCC、DenseNet、长度 26、batch 8，并调用旧 `test.py` 的受试者多数投票后事件回填口径；不生成或读取 Fold。每次输出使用独立时间戳目录，并在 `metrics.json` 中记录指标、混淆矩阵和输入来源。
 

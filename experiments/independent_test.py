@@ -15,7 +15,6 @@ RESULT_COLUMNS = [
     "EnsembleFolds", "Run_ID", "Device", "Seed", "Status",
 ]
 APPROVED_MODELS = ("svm", "xgboost", "mlp", "bilstm", "lightweighttrans", "lmf", "mult", "our")
-EXPERIMENTAL_MODELS = frozenset({"ourablation"})
 CV_SELECTION_FIELDS = (
     "DatasetYear", "Cohort", "Model", "Track", "Task", "AudioFeature",
     "VideoFeature", "UsePersonality", "SplitWindow", "Seed",
@@ -92,7 +91,7 @@ def _row_matches(row, condition):
 
 
 def _require_approved_model(model):
-    if model not in APPROVED_MODELS and model not in EXPERIMENTAL_MODELS:
+    if model not in APPROVED_MODELS:
         raise ValueError(f"Unsupported independent-test model: {model!r}")
 
 
