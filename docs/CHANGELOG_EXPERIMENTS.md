@@ -1,5 +1,12 @@
 # 实验框架变更记录
 
+## 2026-09-09
+
+- 用户已完成2025旧版单次划分八模型实验，以及2026 subject-aware 五折训练和独立测试。
+- 新增 `docs/14_MPDD_2025_2026八模型对比实验报告.md`，系统整理两年度独立测试、2026五折均值与标准差、模型复杂度、类别不平衡和方法学限制。
+- 数据审查确认：2025中OurModel与BiLSTM并列第一；2026受试者级BiLSTM第一、OurModel第三。
+- 记录投稿级复验阻碍：2025旧版划分存在受试者64训练/验证交叉；2026 OurModel与其他神经基线checkpoint选择策略不一致；`raw_results.csv` 同时包含seed 3407和2024，汇总时必须按实验条件过滤。
+
 ## 2026-09-08
 
 - 新增 `experiments/run_legacy_comparison.py` 与 `experiments/legacy_comparison.py`，提供无 5-Fold 的 2025 八模型单次划分对比入口。
