@@ -11,13 +11,14 @@ TORCH_MODELS = frozenset({
     "mlp", "bilstm", "lightweighttrans", "lmf", "mult",
     "our",
 })
+EXPERIMENTAL_TORCH_MODELS = frozenset({"ourablation"})
 
 
 def get_model_kind(model_name):
     name = str(model_name).strip().lower()
     if name in CLASSICAL_MODELS:
         return "classical"
-    if name in TORCH_MODELS:
+    if name in TORCH_MODELS or name in EXPERIMENTAL_TORCH_MODELS:
         return "torch"
     raise ValueError(f"Unknown model: {model_name}")
 
@@ -36,6 +37,6 @@ def create_experiment_model(model_name, opt=None, config=None):
 
 
 __all__ = [
-    "CLASSICAL_MODELS", "TORCH_MODELS", "OptionalDependencyError",
+    "CLASSICAL_MODELS", "TORCH_MODELS", "EXPERIMENTAL_TORCH_MODELS", "OptionalDependencyError",
     "get_model_kind", "create_experiment_model",
 ]
